@@ -1,11 +1,9 @@
 import React from 'react';
 import { Drawer, Toolbar, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box } from '@mui/material';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
 
 const drawerWidth = 240;
 
-function SidebarLeft() {
+function Sidebar({ anchor, items }) {
   return (
     <Drawer
       sx={{
@@ -14,21 +12,23 @@ function SidebarLeft() {
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
+          backgroundColor: (theme) => anchor === 'left' ? theme.sidebarLeft.background : theme.sidebarRight.background,
+          color: (theme) => anchor === 'left' ? theme.sidebarLeft.textColor : theme.sidebarRight.textColor,
         },
       }}
       variant="permanent"
-      anchor="left"
+      anchor={anchor}
     >
       <Toolbar />
       <Box sx={{ overflow: 'auto' }}>
         <List>
-          {[ 'Inbox', 'Starred', 'Send email', 'Drafts' ].map((text, index) => (
-            <ListItem key={text} disablePadding>
+          {items.map((item, index) => (
+            <ListItem key={item.text} disablePadding>
               <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                <ListItemIcon sx={{ color: (theme) => anchor === 'left' ? theme.sidebarLeft.iconColor : theme.sidebarRight.iconColor }}>
+                  {item.icon}
                 </ListItemIcon>
-                <ListItemText primary={text} />
+                <ListItemText primary={item.text} />
               </ListItemButton>
             </ListItem>
           ))}
@@ -38,4 +38,4 @@ function SidebarLeft() {
   );
 }
 
-export default SidebarLeft;
+export default Sidebar;
