@@ -1,17 +1,23 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import Search from '../Search/Search';
 
 function Header() {
   return (
-    <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+    <AppBar
+      position="sticky"
+      sx={{
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        backgroundColor: (theme) => alpha(theme.header.background, 0.8),
+        backdropFilter: 'blur(10px)',
+      }}
+    >
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           CMCMp3
         </Typography>
-        {/* Future components like Search, User Button will go here */}
-        <Box>
-          {/* Placeholder for other components */}
-        </Box>
+        <Search />
       </Toolbar>
     </AppBar>
   );

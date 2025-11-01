@@ -10,7 +10,13 @@ function MainLayout({ children }) {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Box sx={{ display: 'flex', flexGrow: 1}}>
         <SidebarLeft />
-        <Box component="main" sx={{ flexGrow: 1}}>
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            backgroundColor: (theme) => theme.body.background,
+          }}
+        >
           <Header />
           <Toolbar />
           {children}

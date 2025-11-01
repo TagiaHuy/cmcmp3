@@ -14,6 +14,8 @@ function SidebarLeft() {
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
+          backgroundColor: (theme) => theme.sidebarLeft.background,
+          color: (theme) => theme.sidebarLeft.textColor,
         },
       }}
       variant="permanent"
@@ -25,7 +27,7 @@ function SidebarLeft() {
           {[ 'Inbox', 'Starred', 'Send email', 'Drafts' ].map((text, index) => (
             <ListItem key={text} disablePadding>
               <ListItemButton>
-                <ListItemIcon>
+                <ListItemIcon sx={{ color: (theme) => theme.sidebarLeft.iconColor }}>
                   {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
                 </ListItemIcon>
                 <ListItemText primary={text} />
