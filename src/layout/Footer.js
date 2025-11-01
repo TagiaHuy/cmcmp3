@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Box, Container, Grid, Typography, Link } from '@mui/material';
-import logo from '../../assets/cmcmp3-logo.png';
+import logo from '../assets/cmcmp3-logo.png';
 
 function Footer() {
   return (

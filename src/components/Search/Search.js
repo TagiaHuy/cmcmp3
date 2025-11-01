@@ -7,6 +7,7 @@ function Search() {
     <TextField
       type="search"
       variant="outlined" 
+      size="small"
       sx={{
         width: 500,
         '& .MuiOutlinedInput-root': {

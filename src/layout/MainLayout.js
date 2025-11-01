@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, Toolbar } from '@mui/material';
-import Header from '../components/Header/Header';
-import SidebarLeft from '../components/SidebarLeft/SidebarLeft';
-import SidebarRight from '../components/SidebarRight/SidebarRight';
-import Footer from '../components/Footer/Footer';
+import Header from './Header';
+import SidebarLeft from '../components/Sidebar/Specific/SidebarLeft';
+import SidebarRight from '../components/Sidebar/Specific/SidebarRight';
+import Footer from './Footer';
 
 function MainLayout({ children }) {
   return (
