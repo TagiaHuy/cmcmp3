@@ -1,7 +1,7 @@
 import React from 'react';
 import { Drawer, Toolbar, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box } from '@mui/material';
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 function Sidebar({ anchor, items, logoComponent }) {
   return (
