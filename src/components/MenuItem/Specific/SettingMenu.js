@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, MenuItem, Typography } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
 import InternalLinkMenuItem from '../InternalLinkMenuItem';
 import ExternalLinkMenuItem from '../ExternalLinkMenuItem';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';

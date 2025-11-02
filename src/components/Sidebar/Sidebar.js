@@ -3,7 +3,7 @@ import { Drawer, Toolbar, List, ListItem, ListItemButton, ListItemIcon, ListItem
 
 const drawerWidth = 240;
 
-function Sidebar({ anchor, items }) {
+function Sidebar({ anchor, items, logoComponent }) {
   return (
     <Drawer
       sx={{
@@ -19,6 +19,7 @@ function Sidebar({ anchor, items }) {
       variant="permanent"
       anchor={anchor}
     >
+      {logoComponent}
       <Toolbar />
       <Box sx={{ overflow: 'auto' }}>
         <List>

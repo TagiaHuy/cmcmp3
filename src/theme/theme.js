@@ -47,7 +47,7 @@ const darkTheme = createTheme({
     icon: '#a0a0b0',
   },
   header: {
-    background: '#33335eff',
+    background: '#1f1f35ff',
   },
   body: {
     background: '#1f1f35ff',

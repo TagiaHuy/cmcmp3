@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { IconButton } from '@mui/material';
 import NightlightOutlinedIcon from '@mui/icons-material/NightlightOutlined';
 import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
-import { ThemeContext } from '../../../ThemeContext';
+import { ThemeContext } from '../../../theme/ThemeContext';
 
 const ThemeToggleButton = () => {
   const { toggleTheme, currentTheme } = useContext(ThemeContext);
