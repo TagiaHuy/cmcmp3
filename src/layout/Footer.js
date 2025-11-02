@@ -20,7 +20,7 @@ function Footer() {
             <img src={logo} alt="logo" width="120" />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Typography variant="h6" color="#e0e0e0" gutterBottom>
+            <Typography variant="h6" color={(theme) => theme.footer.h6TextColor} gutterBottom>
               About Us
             </Typography>
             <Typography variant="body2">
@@ -28,7 +28,7 @@ function Footer() {
             </Typography>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Typography variant="h6" color="#e0e0e0" gutterBottom>
+            <Typography variant="h6" color={(theme) => theme.footer.h6TextColor} gutterBottom>
               Contact Us
             </Typography>
             <Typography variant="body2">

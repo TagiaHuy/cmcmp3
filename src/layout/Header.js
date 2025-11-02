@@ -6,6 +6,7 @@ import UpgradeButton from '../components/Button/Specific/UpgradeButton';
 import SettingButton from '../components/Button/Specific/SettingButton';
 import UserAccountButton from '../components/Button/Specific/UserAccountButton';
 import Navigation from '../components/Navigation/Navigation';
+import ThemeToggleButton from '../components/Button/Specific/ThemeToggleButton';
 
 function Header() {
   return (
@@ -26,6 +27,7 @@ function Header() {
           <UpgradeButton />
           <SettingButton />
           <UserAccountButton />
+          <ThemeToggleButton />
         </Box>
       </Toolbar>
     </AppBar>

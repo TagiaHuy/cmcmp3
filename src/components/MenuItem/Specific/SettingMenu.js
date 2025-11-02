@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu } from '@mui/material';
+import { Menu, MenuItem, Typography } from '@mui/material';
 import InternalLinkMenuItem from '../InternalLinkMenuItem';
 import ExternalLinkMenuItem from '../ExternalLinkMenuItem';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -34,6 +34,15 @@ function SettingMenu({ anchorEl, open, handleClose }) {
         text="Giao diện"
         onClick={handleClose}
       />
+      <MenuItem
+        onClick={handleClose}
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+      </MenuItem>
       <ExternalLinkMenuItem
         icon={<AdUnitsIcon sx={{ color: (theme) => theme.Button.textColor }} />}
         text="Quảng cáo"
