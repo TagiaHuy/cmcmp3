@@ -4,8 +4,10 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import { useMediaPlayer } from '../../context/MediaPlayerContext';
 
-const MediaPlayer = ({ src }) => {
+const MediaPlayer = () => {
+  const { currentPlayingSrc, mediaPlayerKey } = useMediaPlayer();
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -14,11 +16,13 @@ const MediaPlayer = ({ src }) => {
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !currentPlayingSrc) return;
 
     const setAudioData = () => {
       setDuration(audio.duration);
       setCurrentTime(audio.currentTime);
+      audio.play(); // Autoplay when new source is loaded
+      setIsPlaying(true); // Set playing state to true
     };
 
     const setAudioTime = () => setCurrentTime(audio.currentTime);
@@ -35,7 +39,7 @@ const MediaPlayer = ({ src }) => {
       audio.removeEventListener('play', togglePlay);
       audio.removeEventListener('pause', togglePlay);
     };
-  }, [src]);
+  }, [currentPlayingSrc, mediaPlayerKey]); // Depend on currentPlayingSrc and mediaPlayerKey
 
   useEffect(() => {
     if (audioRef.current) {
@@ -83,7 +87,7 @@ const MediaPlayer = ({ src }) => {
       borderRadius: 2,
       boxShadow: 3,
     }}>
-      <audio ref={audioRef} src={src} preload="metadata" />
+      <audio ref={audioRef} src={currentPlayingSrc} preload="metadata" />
       <Stack direction="row" alignItems="center" spacing={1}>
         <IconButton onClick={handlePlayPause}>
           {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}

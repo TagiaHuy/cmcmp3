@@ -1,100 +1,84 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';
-import MediaPlayer from '../components/MediaPlayer/MediaPlayer';
 import song1 from '../assets/slaygirl.jpg';
+import sampleMusic from '../assets/Sample.mp3'; // Assuming sample.mp3 is in assets
+import { useMediaPlayer } from '../context/MediaPlayerContext';
 
 const dummyPlaylists = [
   {
     title: 'Top Hits 2023',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverending_Story.mp3',
+    mediaSrc: sampleMusic,
   },
   {
     title: 'Chill Vibes',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3',
+    mediaSrc: sampleMusic,
   },
   {
     title: 'Workout Mix',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://commondatastorage.googleapis.com/codeskulptor-assets/sounddogs/explosion.mp3',
+    mediaSrc: sampleMusic,
+    
   },
   {
     title: 'Focus Music',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverending_Story.mp3',
+    mediaSrc: sampleMusic,
   },
   {
     title: 'Road Trip Jams',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3',
+    mediaSrc: sampleMusic,
   },
   {
     title: 'Top Hits 2023',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://commondatastorage.googleapis.com/codeskulptor-assets/sounddogs/explosion.mp3',
+    mediaSrc: sampleMusic,
   },
   {
     title: 'Chill Vibes',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverending_Story.mp3',
+    mediaSrc: sampleMusic,
   },
   {
     title: 'Workout Mix',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3',
+    mediaSrc: sampleMusic,
   },
   {
     title: 'Focus Music',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://commondatastorage.googleapis.com/codeskulptor-assets/sounddogs/explosion.mp3',
+    mediaSrc: sampleMusic,
   },
   {
     title: 'Road Trip Jams',
     artists: 'Various Artists',
     imageUrl: song1,
-    mediaSrc: 'http://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverending_Story.mp3',
+    mediaSrc: sampleMusic,
   },
 ];
 
 const HomePage = () => {
-  const [currentPlayingSrc, setCurrentPlayingSrc] = useState(null);
-  const [isMediaPlayerVisible, setIsMediaPlayerVisible] = useState(false);
+  const { handlePlay } = useMediaPlayer();
 
-  const handlePlay = (src) => {
-    setCurrentPlayingSrc(src);
-    setIsMediaPlayerVisible(true);
-  };
+  useEffect(() => {
+    console.log('HomePage: received handlePlay from context', handlePlay);
+  }, [handlePlay]);
 
   return (
-    <Box sx={{ p: 3, paddingBottom: isMediaPlayerVisible ? '100px' : '24px' }}>
+    <Box sx={{ p: 3 }}>
       <PlaylistCarousel playlists={dummyPlaylists} onPlay={handlePlay} />
-
-      {isMediaPlayerVisible && (
-        <Box sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-          bgcolor: 'background.paper',
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          p: 1,
-        }}>
-          <MediaPlayer src={currentPlayingSrc} />
-        </Box>
-      )}
     </Box>
   );
 };
