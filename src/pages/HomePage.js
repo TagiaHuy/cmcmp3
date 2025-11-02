@@ -1,7 +1,10 @@
-import React, { useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
-import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';
-import song1 from '../assets/slaygirl.jpg';
+import BannerCarousel from '../components/Carousel/BannerCarousel';
+import React, { useEffect } from 'react';  
+import { Box, Typography } from '@mui/material'; 
+import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';  
+import Banner from '../components/Card/Banner'; // Import the Banner component
+import song1 from '../assets/slaygirl.jpg';  
+import banner from '../assets/anh-ech-meme.jpg';  
 import sampleMusic from '../assets/Sample.mp3'; // Assuming sample.mp3 is in assets
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 
@@ -69,6 +72,15 @@ const dummyPlaylists = [
   },
 ];
 
+const sampleBanners = [
+  {
+    imageUrl: banner,
+  },
+  {
+    imageUrl: song1,
+  },
+];
+
 const HomePage = () => {
   const { handlePlay } = useMediaPlayer();
 
@@ -79,6 +91,7 @@ const HomePage = () => {
   return (
     <Box sx={{ p: 3 }}>
       <PlaylistCarousel playlists={dummyPlaylists} onPlay={handlePlay} />
+      <BannerCarousel banners={sampleBanners} />
     </Box>
   );
 };
