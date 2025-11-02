@@ -4,7 +4,7 @@ import PlaylistCard from '../Card/PlaylistCard';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const PlaylistCarousel = ({ title, playlists, columns = 3 }) => {
+const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
   const [startIndex, setStartIndex] = useState(0);
 
   const handleNext = () => {
@@ -47,6 +47,8 @@ const PlaylistCarousel = ({ title, playlists, columns = 3 }) => {
               title={playlist.title}
               artists={playlist.artists}
               imageUrl={playlist.imageUrl}
+              mediaSrc={playlist.mediaSrc}
+              onPlay={onPlay}
             />
           </Grid>
         ))}

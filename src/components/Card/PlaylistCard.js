@@ -4,7 +4,7 @@ import BaseCard from './BaseCard';
 import CardTag from './CardTag';
 import PlayableImage from './PlayableImage';
 
-function PlaylistCard({ title, artists, imageUrl }) {
+function PlaylistCard({ title, artists, imageUrl, onPlay, mediaSrc }) {
   // Style cho container card
   const cardStyle = {
     // Chiều rộng và chiều cao cố định
@@ -61,7 +61,7 @@ function PlaylistCard({ title, artists, imageUrl }) {
         <CardTag text="CÓ THỂ BẠN THÍCH" />
 
         {/* Khung chứa hình ảnh */}
-        <PlayableImage imageUrl={imageUrl} title={title} sx={{ position: 'absolute', top: 15, left: 15, zIndex: 2 }} />
+        <PlayableImage imageUrl={imageUrl} title={title} sx={{ position: 'absolute', top: 15, left: 15, zIndex: 2 }} onPlay={onPlay} mediaSrc={mediaSrc} />
         
         {/* Nội dung chữ */}
         <Box sx={{ marginLeft: '160px', zIndex: 3, paddingBottom: 3, position: 'relative' }}>
