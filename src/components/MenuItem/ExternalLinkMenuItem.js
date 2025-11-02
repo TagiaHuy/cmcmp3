@@ -7,15 +7,15 @@ function ExternalLinkMenuItem({ icon, text, onClick }) {
     <MenuItem 
       onClick={onClick} 
       sx={{ 
-        color: (theme) => theme.settingMenu.textColor, 
-        '&:hover': { backgroundColor: (theme) => theme.settingMenu.hoverBackground } 
+        color: (theme) => theme.Button.textColor, 
+        '&:hover': { backgroundColor: (theme) => theme.Button.hoverBackground } 
       }}
     >
       <ListItemIcon>
         {icon}
       </ListItemIcon>
       <ListItemText>{text}</ListItemText>
-      <OpenInNewIcon fontSize="small" sx={{ color: (theme) => theme.settingMenu.textColor }} />
+      <OpenInNewIcon fontSize="small" sx={{ color: (theme) => theme.Button.textColor }} />
     </MenuItem>
   );
 }

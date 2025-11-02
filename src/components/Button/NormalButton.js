@@ -7,6 +7,7 @@ function NormalButton({ children, ...props }) {
       {...props}
       sx={{ 
         backgroundColor: (theme) => theme.Button.background,
+        color: (theme) => theme.Button.iconColor,
         '&:hover': {
           backgroundColor: (theme) => theme.Button.hoverBackground,
         },

@@ -7,15 +7,15 @@ function InternalLinkMenuItem({ icon, text, onClick }) {
     <MenuItem 
       onClick={onClick} 
       sx={{ 
-        color: (theme) => theme.settingMenu.textColor, 
-        '&:hover': { backgroundColor: (theme) => theme.settingMenu.hoverBackground } 
+        color: (theme) => theme.Button.textColor, 
+        '&:hover': { backgroundColor: (theme) => theme.Button.hoverBackground } 
       }}
     >
       <ListItemIcon>
         {icon}
       </ListItemIcon>
       <ListItemText>{text}</ListItemText>
-      <ChevronRightIcon fontSize="small" sx={{ color: (theme) => theme.settingMenu.textColor }} />
+      <ChevronRightIcon fontSize="small" sx={{ color: (theme) => theme.Button.textColor }} />
     </MenuItem>
   );
 }
