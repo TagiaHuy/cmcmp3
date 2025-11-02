@@ -1,10 +1,11 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Box } from '@mui/material';
+import { AppBar, Toolbar, Box } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import Search from '../components/Search/Search';
 import UpgradeButton from '../components/Button/Specific/UpgradeButton';
 import SettingButton from '../components/Button/Specific/SettingButton';
 import UserAccountButton from '../components/Button/Specific/UserAccountButton';
+import Navigation from '../components/Navigation/Navigation';
 
 function Header() {
   return (
@@ -16,12 +17,12 @@ function Header() {
         backdropFilter: 'blur(10px)',
       }}
     >
-      <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          CMCMp3
-        </Typography>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Navigation />
           <Search />
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <UpgradeButton />
           <SettingButton />
           <UserAccountButton />

@@ -82,18 +82,11 @@ const theme = createTheme({
     highlightButtonBackground: '#9353FF',
     highlightButtonHoverBackground: '#7a42cc',
     divider: '#555577',
+    iconColor: '#c2c2c2ff',
   },
-  settingMenu: {
-    background: '#302644',
-    textColor: '#e0e0e0',
-    hoverBackground: '#443a57',
-    upgradeButtonBackground: '#9353FF',
-    upgradeButtonHoverBackground: '#7a42cc',
-    divider: '#555577',
-  },
-  settingButton: {
-    background: '#434368ff',
-    hoverBackground: '#5e5e8f',
+  navigation: {
+    iconColor: '#c2c2c2ff',
+    backgroundColor: 'transparent',
   },
 });
 

@@ -1,16 +1,11 @@
 import React from 'react';
-import { Menu, Divider } from '@mui/material';
+import { Menu } from '@mui/material';
 import InternalLinkMenuItem from '../InternalLinkMenuItem';
 import ExternalLinkMenuItem from '../ExternalLinkMenuItem';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import BrushIcon from '@mui/icons-material/Brush';
-import InfoIcon from '@mui/icons-material/Info';
-import DescriptionIcon from '@mui/icons-material/Description';
-import LockIcon from '@mui/icons-material/Lock';
-import FlagIcon from '@mui/icons-material/Flag';
 import AdUnitsIcon from '@mui/icons-material/AdUnits';
 import PhoneIcon from '@mui/icons-material/Phone';
-import UpgradeButton from '../../Button/Specific/UpgradeButton';
 
 function SettingMenu({ anchorEl, open, handleClose }) {
   return (
@@ -20,7 +15,7 @@ function SettingMenu({ anchorEl, open, handleClose }) {
       onClose={handleClose}
       PaperProps={{
         sx: {
-          backgroundColor: (theme) => theme.settingMenu.background,
+          backgroundColor: (theme) => theme.Button.background,
           borderRadius: '12px',
           width: 250,
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
@@ -30,22 +25,22 @@ function SettingMenu({ anchorEl, open, handleClose }) {
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
       <InternalLinkMenuItem
-        icon={<PlayArrowIcon sx={{ color: (theme) => theme.settingMenu.textColor }} />}
+        icon={<PlayArrowIcon sx={{ color: (theme) => theme.Button.textColor }} />}
         text="Trình phát nhạc"
         onClick={handleClose}
       />
       <InternalLinkMenuItem
-        icon={<BrushIcon sx={{ color: (theme) => theme.settingMenu.textColor }} />}
+        icon={<BrushIcon sx={{ color: (theme) => theme.Button.textColor }} />}
         text="Giao diện"
         onClick={handleClose}
       />
       <ExternalLinkMenuItem
-        icon={<AdUnitsIcon sx={{ color: (theme) => theme.settingMenu.textColor }} />}
+        icon={<AdUnitsIcon sx={{ color: (theme) => theme.Button.textColor }} />}
         text="Quảng cáo"
         onClick={handleClose}
       />
       <ExternalLinkMenuItem
-        icon={<PhoneIcon sx={{ color: (theme) => theme.settingMenu.textColor }} />}
+        icon={<PhoneIcon sx={{ color: (theme) => theme.Button.textColor }} />}
         text="Liên hệ"
         onClick={handleClose}
       />

@@ -11,7 +11,7 @@ function UserAccountMenu({ anchorEl, open, handleClose }) {
       onClose={handleClose}
       PaperProps={{
         sx: {
-          backgroundColor: (theme) => theme.settingMenu.background,
+          backgroundColor: (theme) => theme.Button.background,
           borderRadius: '12px',
           width: 200,
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
@@ -20,13 +20,13 @@ function UserAccountMenu({ anchorEl, open, handleClose }) {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
-      <MenuItem onClick={handleClose} sx={{ color: (theme) => theme.settingMenu.textColor }}>
-        <AccountBoxIcon sx={{ color: (theme) => theme.settingMenu.textColor, mr: 1 }} />
+      <MenuItem onClick={handleClose} sx={{ color: (theme) => theme.Button.textColor }}>
+        <AccountBoxIcon sx={{ color: (theme) => theme.Button.textColor, mr: 1 }} />
         Profile
       </MenuItem>
-      <Divider sx={{ backgroundColor: (theme) => theme.settingMenu.divider, margin: '8px 0' }} />
-      <MenuItem onClick={handleClose} sx={{ color: (theme) => theme.settingMenu.textColor }}>
-        <ExitToAppIcon sx={{ color: (theme) => theme.settingMenu.textColor, mr: 1 }} />
+      <Divider sx={{ backgroundColor: (theme) => theme.Button.divider, margin: '8px 0' }} />
+      <MenuItem onClick={handleClose} sx={{ color: (theme) => theme.Button.textColor }}>
+        <ExitToAppIcon sx={{ color: (theme) => theme.Button.textColor, mr: 1 }} />
         Logout
       </MenuItem>
     </Menu>
