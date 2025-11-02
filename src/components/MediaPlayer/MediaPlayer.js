@@ -80,12 +80,11 @@ const MediaPlayer = () => {
   return (
     <Box sx={{
       width: '100%',
-      maxWidth: 600,
+      maxWidth: 1000,
       margin: 'auto',
       p: 2,
       bgcolor: 'background.paper',
       borderRadius: 2,
-      boxShadow: 3,
     }}>
       <audio ref={audioRef} src={currentPlayingSrc} preload="metadata" />
       <Stack direction="row" alignItems="center" spacing={1}>
