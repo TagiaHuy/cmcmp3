@@ -1,12 +1,12 @@
 import BannerCarousel from '../components/Carousel/BannerCarousel';
 import React, { useEffect } from 'react';  
-import { Box, Typography } from '@mui/material'; 
-import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';  
-import Banner from '../components/Card/Banner'; // Import the Banner component
+import RecommendCardContainer from '../components/Card/RecommendCardContainer';
 import song1 from '../assets/slaygirl.jpg';  
 import banner from '../assets/anh-ech-meme.jpg';  
 import sampleMusic from '../assets/Sample.mp3'; // Assuming sample.mp3 is in assets
 import { useMediaPlayer } from '../context/MediaPlayerContext';
+import { Box, Typography, Grid } from '@mui/material';             
+import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';                           
 import RecentlyPlayed from '../components/Card/RecentlyPlayed';
 
 const dummyPlaylists = [
@@ -89,6 +89,69 @@ const sampleBanners = [
   },
 ];
 
+const dummyRecommendations = [
+  {
+    title: 'Daily Mix 2',
+    subtitle: 'John Doe, Jane Doe',
+    imageSrc: song1,
+    mediaSrc: sampleMusic,
+  },
+  {
+    title: 'Discover Weekly 2',
+    subtitle: 'Various Artists',
+    imageSrc: banner,
+    mediaSrc: sampleMusic,
+  },
+    {
+    title: 'Daily Mix 2',
+    subtitle: 'John Doe, Jane Doe',
+    imageSrc: song1,
+    mediaSrc: sampleMusic,
+  },
+  {
+    title: 'Discover Weekly 2',
+    subtitle: 'Various Artists',
+    imageSrc: banner,
+    mediaSrc: sampleMusic,
+  },
+    {
+    title: 'Daily Mix 2',
+    subtitle: 'John Doe, Jane Doe',
+    imageSrc: song1,
+    mediaSrc: sampleMusic,
+  },
+  {
+    title: 'Discover Weekly 2',
+    subtitle: 'Various Artists',
+    imageSrc: banner,
+    mediaSrc: sampleMusic,
+  },
+    {
+    title: 'Daily Mix 2',
+    subtitle: 'John Doe, Jane Doe',
+    imageSrc: song1,
+    mediaSrc: sampleMusic,
+  },
+  {
+    title: 'Discover Weekly 2',
+    subtitle: 'Various Artists',
+    imageSrc: banner,
+    mediaSrc: sampleMusic,
+  },
+    {
+    title: 'Daily Mix 2',
+    subtitle: 'John Doe, Jane Doe',
+    imageSrc: song1,
+    mediaSrc: sampleMusic,
+  },
+  {
+    title: 'Discover Weekly 2',
+    subtitle: 'Various Artists',
+    imageSrc: banner,
+    mediaSrc: sampleMusic,
+  },
+];
+
 const HomePage = () => {
   const { handlePlay } = useMediaPlayer();
 
@@ -101,6 +164,7 @@ const HomePage = () => {
       <PlaylistCarousel playlists={dummyPlaylists} onPlay={handlePlay} />
       <RecentlyPlayed />
       <BannerCarousel banners={sampleBanners} />
+      <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
     </Box>
   );
 };
