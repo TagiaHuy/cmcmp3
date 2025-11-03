@@ -8,6 +8,8 @@ import { useMediaPlayer } from '../context/MediaPlayerContext';
 import { Box } from '@mui/material';             
 import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';                           
 import RecentlyPlayed from '../components/Card/RecentlyPlayed';
+import Top100Section from "../components/Card/Top100Section";
+
 
 const dummyPlaylists = [
   {
@@ -165,6 +167,7 @@ const HomePage = () => {
       <RecentlyPlayed />
       <BannerCarousel banners={sampleBanners} />
       <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
+      <Top100Section />
     </Box>
   );
 };
