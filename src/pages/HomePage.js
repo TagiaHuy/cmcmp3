@@ -7,6 +7,7 @@ import song1 from '../assets/slaygirl.jpg';
 import banner from '../assets/anh-ech-meme.jpg';  
 import sampleMusic from '../assets/Sample.mp3'; // Assuming sample.mp3 is in assets
 import { useMediaPlayer } from '../context/MediaPlayerContext';
+import RecentlyPlayed from '../components/Card/RecentlyPlayed';
 
 const dummyPlaylists = [
   {
@@ -41,7 +42,7 @@ const dummyPlaylists = [
     mediaSrc: sampleMusic,
   },
   {
-    title: 'Top Hits 2023',
+    title: 'Top Hits 2025',
     artists: 'Various Artists',
     imageUrl: song1,
     mediaSrc: sampleMusic,
@@ -70,6 +71,13 @@ const dummyPlaylists = [
     imageUrl: song1,
     mediaSrc: sampleMusic,
   },
+
+    {
+    title: 'Đỉnh cao trending',
+    artists: 'Various Artists',
+    imageUrl: song1,
+    mediaSrc: sampleMusic,
+  },
 ];
 
 const sampleBanners = [
@@ -91,6 +99,7 @@ const HomePage = () => {
   return (
     <Box sx={{ p: 3 }}>
       <PlaylistCarousel playlists={dummyPlaylists} onPlay={handlePlay} />
+      <RecentlyPlayed />
       <BannerCarousel banners={sampleBanners} />
     </Box>
   );

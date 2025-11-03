@@ -44,10 +44,7 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
         {visiblePlaylists.map((playlist, index) => (
           <Grid item key={index} xs={12 / columns}>
             <PlaylistCard
-              title={playlist.title}
-              artists={playlist.artists}
-              imageUrl={playlist.imageUrl}
-              mediaSrc={playlist.mediaSrc}
+              playlist={playlist}
               onPlay={onPlay}
             />
           </Grid>
