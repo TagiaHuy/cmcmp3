@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Box, IconButton } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
 
-const PlayableImage = ({ imageUrl, title, size = 130, borderRadius = '4px', sx, onPlay, mediaSrc }) => {
+const PlayableImage = ({ imageUrl, title, size = 130, borderRadius = '4px', sx, onPlay, playlist }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handlePlayClick = (event) => {
     event.stopPropagation(); // Prevent the Box's onClick from firing if it had one
-    if (onPlay && mediaSrc) {
-      onPlay(mediaSrc);
+    if (onPlay && playlist) {
+      onPlay(playlist);
     }
   };
 
