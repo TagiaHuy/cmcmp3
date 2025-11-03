@@ -7,8 +7,20 @@ import MoreButton from '../Button/Specific/MoreButton';
 function RecommendCard({ mediaSrc, imageSrc, title, subtitle, onPlay }) {
   const [isHovered, setIsHovered] = useState(false);
 
+  const handleCardClick = () => {
+    if (onPlay) {
+      onPlay({
+        title,
+        artists: subtitle,
+        imageUrl: imageSrc,
+        mediaSrc,
+      });
+    }
+  };
+
   return (
     <Box
+      onClick={handleCardClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       sx={{ 
@@ -27,7 +39,7 @@ function RecommendCard({ mediaSrc, imageSrc, title, subtitle, onPlay }) {
     >
       <BasePlayableImage
         mediaSrc={mediaSrc}
-        onPlay={onPlay}
+        onPlay={handleCardClick}
         size={50}
         isHovered={isHovered}
       >
