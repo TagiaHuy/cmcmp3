@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import RecommendCardContainer from '../components/Carousel/RecommendCardContainer';
 import song1 from '../assets/slaygirl.jpg';  
 import banner from '../assets/anh-ech-meme.jpg';  
-import sampleMusic from '../assets/Sample.mp3'; // Assuming sample.mp3 is in assets
+import sampleMusic from '../assets/Yas.mp3'; // Assuming sample.mp3 is in assets
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 import { Box } from '@mui/material';             
 import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';                           
