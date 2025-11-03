@@ -5,7 +5,7 @@ import song1 from '../assets/slaygirl.jpg';
 import banner from '../assets/anh-ech-meme.jpg';  
 import sampleMusic from '../assets/Sample.mp3'; // Assuming sample.mp3 is in assets
 import { useMediaPlayer } from '../context/MediaPlayerContext';
-import { Box, Typography, Grid } from '@mui/material';             
+import { Box } from '@mui/material';             
 import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';                           
 import RecentlyPlayed from '../components/Card/RecentlyPlayed';
 

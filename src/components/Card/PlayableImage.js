@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { Box } from '@mui/material';
 import BasePlayableImage from './Base/BasePlayableImage';
 
-const PlayableImage = ({ imageUrl, title, size = 130, borderRadius = '4px', sx, onPlay, playlist }) => {
+const PlayableImage = ({ imageUrl, title, size = 130, borderRadius = '4px', sx, onPlay, playlist, mediaSrc }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const handlePlayClick = (event) => {
-    event.stopPropagation(); // Prevent the Box's onClick from firing if it had one
+  const handlePlayClick = () => {
     if (onPlay && playlist) {
       onPlay(playlist);
     }
@@ -14,7 +13,7 @@ const PlayableImage = ({ imageUrl, title, size = 130, borderRadius = '4px', sx, 
 
   return (
     <BasePlayableImage
-      onPlay={onPlay}
+      onPlay={handlePlayClick}
       mediaSrc={mediaSrc}
       size={size}
       borderRadius={borderRadius}

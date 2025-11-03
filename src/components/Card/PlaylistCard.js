@@ -76,7 +76,7 @@ function PlaylistCard({ playlist, onPlay, variant = 'default' }) {
         )}
         
         {/* Khung chứa hình ảnh */}
-        <PlayableImage imageUrl={imageUrl} title={title} sx={{ position: 'absolute', top: 15, left: 15, zIndex: 2 }} onPlay={onPlay} playlist={playlist} />
+        <PlayableImage imageUrl={imageUrl} title={title} sx={{ position: 'absolute', top: 15, left: 15, zIndex: 2 }} onPlay={onPlay} playlist={playlist} mediaSrc={mediaSrc} />
         {/* Nội dung chữ */}
         <Box sx={{ marginLeft: '160px', zIndex: 3, paddingBottom: 3, position: 'relative' }}>
             <Typography 
