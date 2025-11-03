@@ -15,7 +15,7 @@ function RecommendCard({ mediaSrc, imageSrc, title, subtitle, onPlay }) {
         p: 1,
         bgcolor: (theme) => isHovered ? theme.palette.action.hover : theme.palette.background, 
         borderRadius: 2,
-        width: '100%',
+        width: 320,
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
