@@ -17,19 +17,18 @@ function MainLayout({ children }) {
 
 function MainLayoutContent({ children }) {
   const { currentPlayingSrc, mediaPlayerKey } = useMediaPlayer();
+  const drawerWidth = 280; // Define drawerWidth here
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* 1. Vùng Nội dung Chính (trừ MediaPlayer) */}
-      <Box sx={{ display: 'flex', flexGrow: 1}}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: `${drawerWidth}px 1fr ${drawerWidth}px`, flexGrow: 1 }}>
         <SidebarLeft />
         <Box
           component="main"
           sx={{
-            flexGrow: 1,
             backgroundColor: (theme) => theme.body.background,
-            // Đảm bảo padding-bottom đủ chỗ cho MediaPlayer cố định
-            paddingBottom: currentPlayingSrc ? '100px' : '24px', 
+            paddingBottom: currentPlayingSrc ? '100px' : '24px',
+            overflow: 'auto', // Add scroll to main content area
           }}
         >
           <Header />
@@ -39,22 +38,19 @@ function MainLayoutContent({ children }) {
         <SidebarRight />
       </Box>
       
-      {/* 2. Footer (đặt trước MediaPlayer nếu muốn nó nằm trên MediaPlayer) */}
       <Footer />
       
-      {/* 3. MediaPlayer Cố Định (Fixed MediaPlayer) */}
       {currentPlayingSrc && (
         <Box sx={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
-          // Sử dụng zIndex cao để chèn lên trên tất cả (Header, Sidebar, Main, Footer)
-          zIndex: (theme) => theme.zIndex.drawer + 2, // Thường 1000-1500 là đủ
-          bgcolor: 'background.paper', // Hoặc màu nền của trình phát nhạc
+          zIndex: (theme) => theme.zIndex.drawer + 2,
+          bgcolor: 'background.paper',
           borderTop: '1px solid',
           borderColor: 'divider',
-          p: 0, // Điều chỉnh padding nếu cần
+          p: 0,
         }}>
           <MediaPlayer key={mediaPlayerKey} src={currentPlayingSrc} />
         </Box>
