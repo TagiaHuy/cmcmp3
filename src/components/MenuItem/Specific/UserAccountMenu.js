@@ -1,7 +1,8 @@
 import React from 'react';
 import { Menu, MenuItem, Divider } from '@mui/material';
-import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import LoginIcon from '@mui/icons-material/Login';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { Link } from 'react-router-dom';
 
 function UserAccountMenu({ anchorEl, open, handleClose }) {
   return (
@@ -20,14 +21,24 @@ function UserAccountMenu({ anchorEl, open, handleClose }) {
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
-      <MenuItem onClick={handleClose} sx={{ color: (theme) => theme.Button.textColor }}>
-        <AccountBoxIcon sx={{ color: (theme) => theme.Button.textColor, mr: 1 }} />
-        Profile
+      <MenuItem 
+        component={Link} 
+        to="/login"
+        onClick={handleClose} 
+        sx={{ color: (theme) => theme.Button.textColor, textDecoration: 'none' }}
+      >
+        <LoginIcon sx={{ color: (theme) => theme.Button.textColor, mr: 1 }} />
+        Đăng nhập
       </MenuItem>
       <Divider sx={{ backgroundColor: (theme) => theme.Button.divider, margin: '8px 0' }} />
-      <MenuItem onClick={handleClose} sx={{ color: (theme) => theme.Button.textColor }}>
-        <ExitToAppIcon sx={{ color: (theme) => theme.Button.textColor, mr: 1 }} />
-        Logout
+      <MenuItem 
+        component={Link} 
+        to="/register"
+        onClick={handleClose} 
+        sx={{ color: (theme) => theme.Button.textColor, textDecoration: 'none' }}
+      >
+        <PersonAddIcon sx={{ color: (theme) => theme.Button.textColor, mr: 1 }} />
+        Đăng ký
       </MenuItem>
     </Menu>
   );

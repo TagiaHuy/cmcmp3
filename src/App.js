@@ -5,6 +5,8 @@ import { useTheme } from '@mui/material/styles';
 import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import RecentlyPlayedPage from './pages/RecentlyPlayedPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 function App() {
   const theme = useTheme();
@@ -18,6 +20,8 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/recently-played" element={<RecentlyPlayedPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
       </Routes>
     </MainLayout>
   );
