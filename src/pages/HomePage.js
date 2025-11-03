@@ -7,6 +7,8 @@ import sampleMusic from '../assets/Sample.mp3'; // Assuming sample.mp3 is in ass
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 import { Box, Typography, Grid } from '@mui/material';             
 import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';                           
+import RecentlyPlayed from '../components/Card/RecentlyPlayed';
+
 const dummyPlaylists = [
   {
     title: 'Top Hits 2023',
@@ -40,7 +42,7 @@ const dummyPlaylists = [
     mediaSrc: sampleMusic,
   },
   {
-    title: 'Top Hits 2023',
+    title: 'Top Hits 2025',
     artists: 'Various Artists',
     imageUrl: song1,
     mediaSrc: sampleMusic,
@@ -65,6 +67,13 @@ const dummyPlaylists = [
   },
   {
     title: 'Road Trip Jams',
+    artists: 'Various Artists',
+    imageUrl: song1,
+    mediaSrc: sampleMusic,
+  },
+
+    {
+    title: 'Đỉnh cao trending',
     artists: 'Various Artists',
     imageUrl: song1,
     mediaSrc: sampleMusic,
@@ -153,6 +162,7 @@ const HomePage = () => {
   return (
     <Box sx={{ p: 3 }}>
       <PlaylistCarousel playlists={dummyPlaylists} onPlay={handlePlay} />
+      <RecentlyPlayed />
       <BannerCarousel banners={sampleBanners} />
       <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
     </Box>

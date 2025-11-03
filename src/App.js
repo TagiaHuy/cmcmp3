@@ -4,6 +4,7 @@ import MainLayout from './layout/MainLayout';
 import { useTheme } from '@mui/material/styles';
 import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
+import RecentlyPlayedPage from './pages/RecentlyPlayedPage';
 
 function App() {
   const theme = useTheme();
@@ -16,6 +17,7 @@ function App() {
     <MainLayout>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/recently-played" element={<RecentlyPlayedPage />} />
       </Routes>
     </MainLayout>
   );
