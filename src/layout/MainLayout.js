@@ -28,7 +28,6 @@ function MainLayoutContent({ children }) {
           sx={{
             backgroundColor: (theme) => theme.body.background,
             paddingBottom: currentPlayingSrc ? '100px' : '24px',
-            overflow: 'auto', // Add scroll to main content area
           }}
         >
           <Header />
