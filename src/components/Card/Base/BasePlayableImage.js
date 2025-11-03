@@ -1,14 +1,25 @@
-import React from 'react';
-import { Box, IconButton } from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
+// src/components/Card/Base/BasePlayableImage.jsx
+import React from "react";
+import { Box } from "@mui/material";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
-const BasePlayableImage = ({ children, onPlay, mediaSrc, size = 130, borderRadius = '4px', sx, isHovered, onMouseEnter, onMouseLeave }) => {
+// Kích thước vòng tròn nút ▶ dùng chung cho các nơi khác (RecentlyPlayed, Top100, v.v.)
+export const PLAY_BUTTON_DIAMETER = 42; // px
 
-  const handlePlayClick = (event) => {
-    event.stopPropagation();
-    if (onPlay && mediaSrc) {
-      onPlay(mediaSrc);
-    }
+const BasePlayableImage = ({
+  children,
+  onPlay,
+  mediaSrc,
+  size = 130,
+  borderRadius = "8px",
+  sx,
+  isHovered,
+  onMouseEnter,
+  onMouseLeave,
+}) => {
+  const handlePlayClick = (e) => {
+    e.stopPropagation();
+    if (onPlay && mediaSrc) onPlay(mediaSrc);
   };
 
   return (
@@ -16,44 +27,58 @@ const BasePlayableImage = ({ children, onPlay, mediaSrc, size = 130, borderRadiu
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       sx={{
-        position: 'relative',
+        position: "relative",
         width: size,
         height: size,
-        borderRadius: borderRadius,
-        overflow: 'hidden',
-        cursor: 'pointer',
+        borderRadius,
+        overflow: "hidden",
+        cursor: "pointer",
         flexShrink: 0,
         ...sx,
       }}
     >
+      {/* Ảnh con */}
       {children}
+
+      {/* Overlay mờ khi hover */}
       {isHovered && (
         <Box
           sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.40)",
             zIndex: 2,
           }}
         />
       )}
+
+      {/* Nút ▶ trung tâm: trong suốt + viền trắng đậm (style giống Zing) */}
       {isHovered && (
-        <IconButton
+        <Box
           onClick={handlePlayClick}
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: 'white',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%,-50%)",
+            width: PLAY_BUTTON_DIAMETER,
+            height: PLAY_BUTTON_DIAMETER,
+            borderRadius: "50%",
+            display: "grid",
+            placeItems: "center",
+            cursor: "pointer",
+
+            background: "rgba(255,255,255,0.08)",       // nền trong suốt nhẹ
+            border: "3px solid rgba(255,255,255,0.95)", // viền trắng đậm
+
+            transition: "transform .18s ease",
             zIndex: 3,
+            "&:hover": { transform: "translate(-50%,-50%) scale(1.09)" },
           }}
         >
-          <PlayArrowIcon sx={{ fontSize: 40 }} />
-        </IconButton>
+          {/* lệch nhẹ sang phải như UI gốc */}
+          <PlayArrowIcon sx={{ color: "#fff", fontSize: 28, ml: 0.4 }} />
+        </Box>
       )}
     </Box>
   );
