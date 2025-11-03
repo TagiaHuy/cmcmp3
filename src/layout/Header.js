@@ -13,7 +13,8 @@ function Header() {
     <AppBar
       position="sticky"
       sx={{
-        zIndex: (theme) => theme.zIndex.drawer + 1,
+        top: 0,
+        zIndex: (theme) => theme.zIndex.appBar,
         backgroundColor: (theme) => alpha(theme.header.background, 0.8),
         backdropFilter: 'blur(10px)',
       }}
