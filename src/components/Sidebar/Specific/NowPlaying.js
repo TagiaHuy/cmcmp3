@@ -7,13 +7,14 @@ import {
   Avatar,
   ListItem,
   ListItemAvatar,
-  ListItemText,
   Paper
 } from '@mui/material';
 
 import FavoriteButton from '../../Button/Specific/FavoriteButton';
 import MoreButton from '../../Button/Specific/MoreButton';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
+
+const ACTION_WIDTH = 96;
 
 const NowPlaying = () => {
   const { currentTrack, handlePlay } = useMediaPlayer();
@@ -22,94 +23,118 @@ const NowPlaying = () => {
   if (!currentTrack) return null;
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: 1.5,
-        borderRadius: 2,
-        mb: 3,
-        background: 'rgba(155, 77, 224, 0.28)', // highlight tím
-        border: '1px solid rgba(155,77,224,0.55)'
-      }}
-    >
+    <Box sx={{ mb: 3 }}>
+      {/* ✅ Tiêu đề không nằm trong khung tím */}
       <Typography
         variant="subtitle1"
-        sx={{ fontWeight: 800, mb: 1, color: theme.palette.text.primary }}
+        sx={{
+          fontWeight: 800,
+          mb: 1.5,
+          color: theme.palette.text.primary,
+        }}
       >
         Đang phát
       </Typography>
 
-      <ListItem
+      {/* ✅ Chỉ bài hát được ôm trong khung tím */}
+      <Paper
+        elevation={0}
         sx={{
-          position: 'relative',
+          p: 1.5,
           borderRadius: 2,
-          pr: '96px',
-
-          transition: 'background .15s ease, box-shadow .15s ease',
-          '&:hover': {
-            background: 'rgba(155, 77, 224, 0.35)', // hover tím mạnh hơn phần dưới
-          },
-
-          '&:hover .thumb-play': {
-            transform: 'translate(-50%, -50%) scale(1.35)',
-            filter: 'drop-shadow(0 0 14px rgba(155,77,224,1))'
-          }
+          background: 'rgba(155, 77, 224, 0.28)',
+          border: '1px solid rgba(155,77,224,0.55)',
         }}
       >
-        <ListItemAvatar sx={{ mr: 1.5 }}>
-          <Box sx={{ position: 'relative', width: 48, height: 48 }}>
-            <Avatar
-              variant="rounded"
-              src={currentTrack.imageUrl}
-              alt={currentTrack.title}
-              sx={{ width: 48, height: 48, borderRadius: 1 }}
-            />
-
-            <PlayArrowRoundedIcon
-              className="thumb-play"
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePlay(currentTrack);
-              }}
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%) scale(1.25)',
-                opacity: 1,
-                cursor: 'pointer',
-                fontSize: 32,
-                color: '#fff',
-                filter: 'drop-shadow(0 0 6px rgba(0,0,0,0.8))',
-                transition: 'all .15s ease'
-              }}
-            />
-          </Box>
-        </ListItemAvatar>
-
-        <ListItemText
-          primary={currentTrack.title}
-          secondary={currentTrack.artists}
-          primaryTypographyProps={{ noWrap: true, fontWeight: 800 }}
-          secondaryTypographyProps={{ noWrap: true }}
-        />
-
-        <Box
+        <ListItem
+          disableGutters
           sx={{
-            position: 'absolute',
-            top: '50%',
-            right: 8,
-            transform: 'translateY(-50%)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1
+            position: 'relative',
+            borderRadius: 2,
+            pr: 1,
+            transition: 'background .15s ease, padding-right .15s ease',
+            '&:hover': {
+              background: 'rgba(155, 77, 224, 0.35)',
+              pr: `${ACTION_WIDTH}px`,
+            },
+            '&:hover .thumb-play': {
+              transform: 'translate(-50%, -50%) scale(1.35)',
+              filter: 'drop-shadow(0 0 14px rgba(155,77,224,1))',
+            },
+            '&:hover .song-text': { maxWidth: `calc(100% - ${ACTION_WIDTH}px)` },
+            '&:hover .song-actions': { opacity: 1, visibility: 'visible' },
           }}
         >
-          <FavoriteButton size="small" aria-label="Yêu thích" />
-          <MoreButton size="small" aria-label="Thêm" />
-        </Box>
-      </ListItem>
-    </Paper>
+          <ListItemAvatar sx={{ mr: 1.5, minWidth: 0 }}>
+            <Box sx={{ position: 'relative', width: 48, height: 48 }}>
+              <Avatar
+                variant="rounded"
+                src={currentTrack.imageUrl}
+                alt={currentTrack.title}
+                sx={{ width: 48, height: 48, borderRadius: 1 }}
+              />
+              <PlayArrowRoundedIcon
+                className="thumb-play"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePlay(currentTrack);
+                }}
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%) scale(1.25)',
+                  opacity: 1,
+                  cursor: 'pointer',
+                  fontSize: 32,
+                  color: '#fff',
+                  transition: 'all .15s ease',
+                }}
+              />
+            </Box>
+          </ListItemAvatar>
+
+          <Box
+            className="song-text"
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              maxWidth: '100%',
+              transition: 'max-width .15s ease',
+            }}
+          >
+            <Typography noWrap fontWeight={800} color={theme.palette.text.primary}>
+              {currentTrack.title}
+            </Typography>
+            <Typography noWrap color={theme.palette.text.secondary}>
+              {currentTrack.artists}
+            </Typography>
+          </Box>
+
+          <Box
+            className="song-actions"
+            onClick={(e) => e.stopPropagation()}
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              right: 0,
+              transform: 'translateY(-50%)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              width: ACTION_WIDTH,
+              justifyContent: 'flex-end',
+              opacity: 0,
+              visibility: 'hidden',
+              transition: 'opacity .15s ease',
+            }}
+          >
+            <FavoriteButton size="small" aria-label="Yêu thích" />
+            <MoreButton size="small" aria-label="Thêm" />
+          </Box>
+        </ListItem>
+      </Paper>
+    </Box>
   );
 };
 
