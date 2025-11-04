@@ -70,8 +70,6 @@ function MainLayoutContent({ children }) {
         {isSidebarRightVisible && <SidebarRight />}
       </Box>
       
-      <Footer />
-      
       {currentPlayingSrc && (
         <Box sx={{
           position: 'fixed',
