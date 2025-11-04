@@ -2,6 +2,7 @@ import { createTheme } from '@mui/material/styles';
 
 const darkTheme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
       main: '#556cd6',
     },
@@ -14,7 +15,10 @@ const darkTheme = createTheme({
     background: {
       default: '#121212',
     },
-    mode: 'dark',
+    text: {
+      primary: '#ffffff',
+      secondary: '#ffffff',
+    },
   },
   typography: {
     fontFamily: [
@@ -92,6 +96,7 @@ const darkTheme = createTheme({
 
 const lightTheme = createTheme({
   palette: {
+    mode: 'light',
     primary: {
       main: '#556cd6',
     },
@@ -104,7 +109,10 @@ const lightTheme = createTheme({
     background: {
       default: '#fff',
     },
-    mode: 'light',
+    text: {
+      primary: '#000000',
+      secondary: '#000000',
+    },
   },
   typography: {
     fontFamily: [
