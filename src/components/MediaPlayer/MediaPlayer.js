@@ -4,6 +4,8 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import PlaybackControls from '../Button/Specific/PlaybackControls';
+import CurrentSongCard from '../Card/CurrentSongCard';
+import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
 
 const MediaPlayer = () => {
   const { currentPlayingSrc, mediaPlayerKey } = useMediaPlayer();
@@ -101,14 +103,22 @@ const MediaPlayer = () => {
   return (
     <Box sx={{
       width: '100%',
-      maxWidth: 1000,
+      maxWidth: 1200,
       margin: 'auto',
       p: 2,
       bgcolor: 'background.paper',
       borderRadius: 2,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
     }}>
+      <CurrentSongCard 
+        songImage={cmcmp3Logo} 
+        songTitle="cmcmp3" 
+        songAuthor="this is a song" 
+      />
       <audio ref={audioRef} src={currentPlayingSrc} preload="metadata" />
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ flexGrow: 1, justifyContent: 'center' }}>
         <PlaybackControls
           isPlaying={isPlaying}
           isShuffleActive={isShuffleActive}
