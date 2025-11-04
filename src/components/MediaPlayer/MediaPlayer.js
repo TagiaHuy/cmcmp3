@@ -1,10 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Box, IconButton, Slider, Typography, Stack } from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
+import PlaybackControls from '../Button/Specific/PlaybackControls';
 
 const MediaPlayer = () => {
   const { currentPlayingSrc, mediaPlayerKey } = useMediaPlayer();
@@ -13,6 +12,8 @@ const MediaPlayer = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.5);
+  const [isShuffleActive, setIsShuffleActive] = useState(false);
+  const [isRepeatActive, setIsRepeatActive] = useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -71,6 +72,26 @@ const MediaPlayer = () => {
     setVolume(newValue);
   };
 
+  const handlePrevious = () => {
+    console.log('Previous track');
+    // Implement logic for previous track
+  };
+
+  const handleNext = () => {
+    console.log('Next track');
+    // Implement logic for next track
+  };
+
+  const handleShuffle = () => {
+    setIsShuffleActive(!isShuffleActive);
+    console.log('Shuffle toggled', !isShuffleActive);
+  };
+
+  const handleRepeat = () => {
+    setIsRepeatActive(!isRepeatActive);
+    console.log('Repeat toggled', !isRepeatActive);
+  };
+
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -88,9 +109,16 @@ const MediaPlayer = () => {
     }}>
       <audio ref={audioRef} src={currentPlayingSrc} preload="metadata" />
       <Stack direction="row" alignItems="center" spacing={1}>
-        <IconButton onClick={handlePlayPause}>
-          {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-        </IconButton>
+        <PlaybackControls
+          isPlaying={isPlaying}
+          isShuffleActive={isShuffleActive}
+          isRepeatActive={isRepeatActive}
+          handlePlayPause={handlePlayPause}
+          handlePrevious={handlePrevious}
+          handleNext={handleNext}
+          handleShuffle={handleShuffle}
+          handleRepeat={handleRepeat}
+        />
         <Typography variant="body2">{formatTime(currentTime)}</Typography>
         <Slider
           aria-label="time-indicator"
