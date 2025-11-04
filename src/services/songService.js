@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080'; // Assuming your backend runs on port 3001
+import API_BASE_URL from '../config';
 
 export const getAllSongs = async () => {
   try {
