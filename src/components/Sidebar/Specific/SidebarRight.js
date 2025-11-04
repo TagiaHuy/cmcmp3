@@ -1,16 +1,14 @@
 import React from 'react';
-import Sidebar from '../Sidebar';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
-
-const items = [
-  { text: 'All mail', icon: <InboxIcon /> },
-  { text: 'Trash', icon: <MailIcon /> },
-  { text: 'Spam', icon: <InboxIcon /> },
-];
+import { Box } from '@mui/material';
+import NowPlaying from './NowPlaying';
 
 function SidebarRight() {
-  return <Sidebar anchor="right" items={items} />;
+  return (
+    <Box sx={{ p: 2, height: '100%', overflowY: 'auto' }}>
+      <NowPlaying />
+      {/* Các thành phần khác của sidebar phải có thể được thêm vào đây trong tương lai */}
+    </Box>
+  );
 }
 
 export default SidebarRight;
