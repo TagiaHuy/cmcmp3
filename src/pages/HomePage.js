@@ -1,5 +1,5 @@
 import BannerCarousel from '../components/Carousel/BannerCarousel';
-import React, { useEffect } from 'react';  
+import React, { useEffect, useState } from 'react';  
 import RecommendCardContainer from '../components/Carousel/RecommendCardContainer';
 import song1 from '../assets/slaygirl.jpg';  
 import banner from '../assets/anh-ech-meme.jpg';  
@@ -9,78 +9,8 @@ import { Box } from '@mui/material';
 import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';                           
 import RecentlyPlayed from '../components/Card/RecentlyPlayed';
 import Top100Section from "../components/Card/Top100Section";
+import { getAllSongs } from '../services/songService'; // Import the song service
 
-
-const dummyPlaylists = [
-  {
-    title: 'Top Hits 2023',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Chill Vibes',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Workout Mix',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-    
-  },
-  {
-    title: 'Focus Music',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Road Trip Jams',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Top Hits 2025',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Chill Vibes',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Workout Mix',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Focus Music',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Road Trip Jams',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-
-    {
-    title: 'Đỉnh cao trending',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-];
 
 const sampleBanners = [
   {
@@ -156,14 +86,28 @@ const dummyRecommendations = [
 
 const HomePage = () => {
   const { handlePlay } = useMediaPlayer();
+  const [songs, setSongs] = useState([]); // State to store fetched songs
 
   useEffect(() => {
     console.log('HomePage: received handlePlay from context', handlePlay);
+    const fetchSongs = async () => {
+      const fetchedSongs = await getAllSongs();
+      // Map fetched songs to the format expected by PlaylistCarousel
+      const formattedSongs = fetchedSongs.map(song => ({
+        title: song.title,
+        artists: song.artist, // Assuming 'artist' from API maps to 'artists' in component
+        imageUrl: song1, // Placeholder image, replace with actual image from API if available
+        mediaSrc: `http://localhost:8080/api/songs/stream/${song.id}`  , // Construct stream URL
+      }));
+      setSongs(formattedSongs);
+    };
+
+    fetchSongs();
   }, [handlePlay]);
 
   return (
     <Box sx={{ p: 3 }}>
-      <PlaylistCarousel playlists={dummyPlaylists} onPlay={handlePlay} />
+      <PlaylistCarousel playlists={songs} onPlay={handlePlay} />
       <RecentlyPlayed />
       <BannerCarousel banners={sampleBanners} />
       <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
