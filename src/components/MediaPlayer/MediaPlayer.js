@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Box, IconButton, Slider, Typography, Stack } from '@mui/material';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import QueueMusicIcon from '@mui/icons-material/QueueMusic'; // Import the icon
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
@@ -10,7 +11,7 @@ import MoreButton from '../Button/Specific/MoreButton';
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
 
 const MediaPlayer = () => {
-  const { currentPlayingSrc, mediaPlayerKey } = useMediaPlayer();
+  const { currentPlayingSrc, mediaPlayerKey, isSidebarRightVisible, toggleSidebarRight } = useMediaPlayer();
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -210,8 +211,21 @@ const MediaPlayer = () => {
             },
           }}
         />
-      </Box>
-    </Box>
+        <IconButton 
+          onClick={toggleSidebarRight} 
+          color={isSidebarRightVisible ? 'primary' : 'default'} 
+          sx={{
+            mr: 2,
+            transition: 'transform 0.2s ease-in-out, background-color 0.2s ease-in-out',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.2)', // More visible hover effect
+              transform: 'scale(1.1)', // Scale up on hover
+            },
+          }}
+        >
+          <QueueMusicIcon />
+        </IconButton>
+      </Box>    </Box>
   );
 };
 
