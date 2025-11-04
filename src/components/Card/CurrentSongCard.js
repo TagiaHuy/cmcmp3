@@ -1,4 +1,4 @@
-import React from 'react';
+                                                                                                        import React from 'react';
 import { Box, Typography } from '@mui/material';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
@@ -8,7 +8,7 @@ const CurrentSongCard = ({ songImage, songTitle, songAuthor }) => {
     <Box sx={{
       display: 'flex',
       alignItems: 'center',
-      bgcolor: 'background.paper',
+      bgcolor: (theme) => theme.palette.mode === 'dark' ? theme.body.background : 'background.paper',
       borderRadius: 1,
       p: 1,
       width: 250,
@@ -28,8 +28,6 @@ const CurrentSongCard = ({ songImage, songTitle, songAuthor }) => {
         <Typography variant="subtitle2" noWrap>{songTitle}</Typography>
         <Typography variant="caption" color="text.secondary" noWrap>{songAuthor}</Typography>
       </Box>
-      <FavoriteButton />
-      <MoreButton />
     </Box>
   );
 };

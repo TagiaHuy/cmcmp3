@@ -5,6 +5,8 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
+import FavoriteButton from '../Button/Specific/FavoriteButton';
+import MoreButton from '../Button/Specific/MoreButton';
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
 
 const MediaPlayer = () => {
@@ -103,22 +105,27 @@ const MediaPlayer = () => {
   return (
     <Box sx={{
       width: '100%',
-      maxWidth: 1200,
-      margin: 'auto',
       p: 2,
-      bgcolor: 'background.paper',
+      bgcolor: (theme) => theme.palette.mode === 'dark' ? theme.body.background : 'background.paper',
       borderRadius: 2,
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between'
+      justifyContent: 'space-between', // Use space-between
+      minHeight: 10
     }}>
-      <CurrentSongCard 
-        songImage={cmcmp3Logo} 
-        songTitle="cmcmp3" 
-        songAuthor="this is a song" 
-      />
-      <audio ref={audioRef} src={currentPlayingSrc} preload="metadata" />
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ flexGrow: 1, justifyContent: 'center' }}>
+      {/* Left Section with fixed width */}
+      <Box sx={{ width: '25%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+        <CurrentSongCard
+          songImage={cmcmp3Logo}
+          songTitle="cmcmp3"
+          songAuthor="this is a song"
+        />
+        <FavoriteButton />
+        <MoreButton />
+      </Box>
+
+      {/* Middle Section that grows */}
+      <Stack sx={{ flexGrow: 1, alignItems: 'center', px: 2 }}>
         <PlaybackControls
           isPlaying={isPlaying}
           isShuffleActive={isShuffleActive}
@@ -129,39 +136,46 @@ const MediaPlayer = () => {
           handleShuffle={handleShuffle}
           handleRepeat={handleRepeat}
         />
-        <Typography variant="body2">{formatTime(currentTime)}</Typography>
-        <Slider
-          aria-label="time-indicator"
-          size="small"
-          value={currentTime}
-          min={0}
-          step={1}
-          max={duration}
-          onChange={handleSeek}
-          sx={{
-            color: 'text.primary',
-            height: 4,
-            '& .MuiSlider-thumb': {
-              width: 8,
-              height: 8,
-              transition: '0.3s cubic-bezier(.47,1.64,.43,.85)',
-              '&::before': {
-                boxShadow: '0 2px 12px 0 rgba(0,0,0,0.4)',
+        <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+          <audio ref={audioRef} src={currentPlayingSrc} preload="metadata" />
+          <Typography variant="body2">{formatTime(currentTime)}</Typography>
+          <Slider
+            aria-label="time-indicator"
+            size="small"
+            value={currentTime}
+            min={0}
+            step={1}
+            max={duration}
+            onChange={handleSeek}
+            sx={{
+              color: 'text.primary',
+              height: 4,
+              '& .MuiSlider-thumb': {
+                width: 8,
+                height: 8,
+                transition: '0.3s cubic-bezier(.47,1.64,.43,.85)',
+                '&::before': {
+                  boxShadow: '0 2px 12px 0 rgba(0,0,0,0.4)',
+                },
+                '&:hover, &.Mui-focusVisible': {
+                  boxShadow: `0px 0px 0px 8px ${'rgb(255 255 255 / 16%)'}`,
+                },
+                '&.Mui-active': {
+                  width: 20,
+                  height: 20,
+                },
               },
-              '&:hover, &.Mui-focusVisible': {
-                boxShadow: `0px 0px 0px 8px ${'rgb(255 255 255 / 16%)'}`, // theme.palette.action.active
+              '& .MuiSlider-rail': {
+                opacity: 0.28,
               },
-              '&.Mui-active': {
-                width: 20,
-                height: 20,
-              },
-            },
-            '& .MuiSlider-rail': {
-              opacity: 0.28,
-            },
-          }}
-        />
-        <Typography variant="body2">{formatTime(duration)}</Typography>
+            }}
+          />
+          <Typography variant="body2">{formatTime(duration)}</Typography>
+        </Stack>
+      </Stack>
+
+      {/* Right Section with fixed width */}
+      <Box sx={{ width: '25%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
         <IconButton onClick={() => setVolume(volume === 0 ? 0.5 : 0)}>
           {volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}
         </IconButton>
@@ -184,7 +198,7 @@ const MediaPlayer = () => {
                 boxShadow: '0 2px 12px 0 rgba(0,0,0,0.4)',
               },
               '&:hover, &.Mui-focusVisible': {
-                boxShadow: `0px 0px 0px 8px ${'rgb(255 255 255 / 16%)'}`, // theme.palette.action.active
+                boxShadow: `0px 0px 0px 8px ${'rgb(255 255 255 / 16%)'}`,
               },
               '&.Mui-active': {
                 width: 20,
@@ -196,7 +210,7 @@ const MediaPlayer = () => {
             },
           }}
         />
-      </Stack>
+      </Box>
     </Box>
   );
 };
