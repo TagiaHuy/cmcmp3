@@ -16,6 +16,7 @@ const BasePlayableImage = ({
   isHovered,
   onMouseEnter,
   onMouseLeave,
+  hidePlayButtonBorder = false,
 }) => {
   const handlePlayClick = (e) => {
     e.stopPropagation();
@@ -69,7 +70,7 @@ const BasePlayableImage = ({
             cursor: "pointer",
 
             background: "rgba(255,255,255,0.08)",       // nền trong suốt nhẹ
-            border: "3px solid rgba(255,255,255,0.95)", // viền trắng đậm
+            border: hidePlayButtonBorder ? "none" : "3px solid rgba(255,255,255,0.95)", // viền trắng đậm
 
             transition: "transform .18s ease",
             zIndex: 3,

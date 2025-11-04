@@ -42,6 +42,7 @@ function RecommendCard({ mediaSrc, imageSrc, title, subtitle, onPlay }) {
         onPlay={handleCardClick}
         size={50}
         isHovered={isHovered}
+        hidePlayButtonBorder='true'
       >
         <img src={imageSrc} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </BasePlayableImage>
