@@ -211,8 +211,21 @@ const MediaPlayer = () => {
             },
           }}
         />
-      </Box>
-    </Box>
+        <IconButton 
+          onClick={toggleSidebarRight} 
+          color={isSidebarRightVisible ? 'primary' : 'default'} 
+          sx={{
+            mr: 2,
+            transition: 'transform 0.2s ease-in-out, background-color 0.2s ease-in-out',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.2)', // More visible hover effect
+              transform: 'scale(1.1)', // Scale up on hover
+            },
+          }}
+        >
+          <QueueMusicIcon />
+        </IconButton>
+      </Box>    </Box>
   );
 };
 
