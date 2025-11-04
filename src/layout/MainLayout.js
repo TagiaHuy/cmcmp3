@@ -37,8 +37,6 @@ function MainLayoutContent({ children }) {
         <SidebarRight />
       </Box>
       
-      <Footer />
-      
       {currentPlayingSrc && (
         <Box sx={{
           position: 'fixed',
