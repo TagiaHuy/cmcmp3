@@ -1,86 +1,15 @@
+import React from 'react';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import BannerCarousel from '../components/Carousel/BannerCarousel';
-import React, { useEffect } from 'react';  
 import RecommendCardContainer from '../components/Carousel/RecommendCardContainer';
+import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';
+import RecentlyPlayed from '../components/Card/RecentlyPlayed';
+import Top100Section from "../components/Card/Top100Section";
+import { useMediaPlayer } from '../context/MediaPlayerContext';
+import useSongs from '../hooks/useSongs'; // Import the custom hook
 import song1 from '../assets/slaygirl.jpg';  
 import banner from '../assets/anh-ech-meme.jpg';  
 import sampleMusic from '../assets/Yas.mp3'; // Assuming sample.mp3 is in assets
-import { useMediaPlayer } from '../context/MediaPlayerContext';
-import { Box } from '@mui/material';             
-import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';                           
-import RecentlyPlayed from '../components/Card/RecentlyPlayed';
-import Top100Section from "../components/Card/Top100Section";
-
-
-const dummyPlaylists = [
-  {
-    title: 'Top Hits 2023',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Chill Vibes',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Workout Mix',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-    
-  },
-  {
-    title: 'Focus Music',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Road Trip Jams',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Top Hits 2025',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Chill Vibes',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Workout Mix',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Focus Music',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-  {
-    title: 'Road Trip Jams',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-
-    {
-    title: 'Đỉnh cao trending',
-    artists: 'Various Artists',
-    imageUrl: song1,
-    mediaSrc: sampleMusic,
-  },
-];
 
 const sampleBanners = [
   {
@@ -156,14 +85,19 @@ const dummyRecommendations = [
 
 const HomePage = () => {
   const { handlePlay } = useMediaPlayer();
+  const { songs, loading, error } = useSongs(); // Use the custom hook
 
-  useEffect(() => {
-    console.log('HomePage: received handlePlay from context', handlePlay);
-  }, [handlePlay]);
+  if (loading) {
+    return <CircularProgress />;
+  }
+
+  if (error) {
+    return <Typography color="error">Error fetching songs.</Typography>;
+  }
 
   return (
     <Box sx={{ p: 3 }}>
-      <PlaylistCarousel playlists={dummyPlaylists} onPlay={handlePlay} />
+      <PlaylistCarousel playlists={songs} onPlay={handlePlay} />
       <RecentlyPlayed />
       <BannerCarousel banners={sampleBanners} />
       <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
