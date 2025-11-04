@@ -1,16 +1,15 @@
+import React from 'react';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import BannerCarousel from '../components/Carousel/BannerCarousel';
-import React, { useEffect, useState } from 'react';  
 import RecommendCardContainer from '../components/Carousel/RecommendCardContainer';
+import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';
+import RecentlyPlayed from '../components/Card/RecentlyPlayed';
+import Top100Section from "../components/Card/Top100Section";
+import { useMediaPlayer } from '../context/MediaPlayerContext';
+import useSongs from '../hooks/useSongs'; // Import the custom hook
 import song1 from '../assets/slaygirl.jpg';  
 import banner from '../assets/anh-ech-meme.jpg';  
 import sampleMusic from '../assets/Yas.mp3'; // Assuming sample.mp3 is in assets
-import { useMediaPlayer } from '../context/MediaPlayerContext';
-import { Box } from '@mui/material';             
-import PlaylistCarousel from '../components/Carousel/PlaylistCarousel';                           
-import RecentlyPlayed from '../components/Card/RecentlyPlayed';
-import Top100Section from "../components/Card/Top100Section";
-import { getAllSongs } from '../services/songService'; // Import the song service
-
 
 const sampleBanners = [
   {
@@ -86,24 +85,15 @@ const dummyRecommendations = [
 
 const HomePage = () => {
   const { handlePlay } = useMediaPlayer();
-  const [songs, setSongs] = useState([]); // State to store fetched songs
+  const { songs, loading, error } = useSongs(); // Use the custom hook
 
-  useEffect(() => {
-    console.log('HomePage: received handlePlay from context', handlePlay);
-    const fetchSongs = async () => {
-      const fetchedSongs = await getAllSongs();
-      // Map fetched songs to the format expected by PlaylistCarousel
-      const formattedSongs = fetchedSongs.map(song => ({
-        title: song.title,
-        artists: song.artist, // Assuming 'artist' from API maps to 'artists' in component
-        imageUrl: song1, // Placeholder image, replace with actual image from API if available
-        mediaSrc: `http://localhost:8080/api/songs/stream/${song.id}`  , // Construct stream URL
-      }));
-      setSongs(formattedSongs);
-    };
+  if (loading) {
+    return <CircularProgress />;
+  }
 
-    fetchSongs();
-  }, [handlePlay]);
+  if (error) {
+    return <Typography color="error">Error fetching songs.</Typography>;
+  }
 
   return (
     <Box sx={{ p: 3 }}>
