@@ -35,9 +35,10 @@ export default function RecentlyPlayed() {
         </Typography>
         <Link
           to="/recently-played"
+          className="see-all-link"
           style={{ textDecoration: 'none', color: theme.palette.text.secondary, fontSize: '0.875rem' }}
         >
-          Tất cả
+          TẤT CẢ &gt;
         </Link>
       </Box>
 
