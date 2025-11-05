@@ -101,7 +101,7 @@ const HomePage = () => {
       <PlaylistCarousel playlists={songs} onPlay={handlePlay} />
       <RecentlyPlayed />
       <BannerCarousel banners={sampleBanners} />
-      <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
+      <RecommendCardContainer recommendations={songs} onPlay={handlePlay} />
       <Top100Section />
       <Box sx={{ overflowX: "hidden" }}>
         <BXHNewReleaseSection />
