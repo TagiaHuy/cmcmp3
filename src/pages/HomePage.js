@@ -10,6 +10,7 @@ import useSongs from '../hooks/useSongs'; // Import the custom hook
 import song1 from '../assets/slaygirl.jpg';  
 import banner from '../assets/anh-ech-meme.jpg';  
 import sampleMusic from '../assets/Yas.mp3'; // Assuming sample.mp3 is in assets
+import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
 
 const sampleBanners = [
   {
@@ -102,6 +103,9 @@ const HomePage = () => {
       <BannerCarousel banners={sampleBanners} />
       <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
       <Top100Section />
+      <Box sx={{ overflowX: "hidden" }}>
+        <BXHNewReleaseSection />
+      </Box>
     </Box>
   );
 };
