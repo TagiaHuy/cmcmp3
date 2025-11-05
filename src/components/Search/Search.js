@@ -41,7 +41,6 @@ function Search() {
           </InputAdornment>
         ),
         placeholder: "Tìm kiếm bài hát, nghệ sĩ, lời bài hát...",
-        disableUnderline: true,
       }}
     />
   );
