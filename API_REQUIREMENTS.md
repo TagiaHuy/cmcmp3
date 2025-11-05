@@ -197,7 +197,7 @@ This document outlines the API endpoints required for the CMCMP3 music streaming
 *   **Response Body**: 
     ```json
     {
-        "message": "Song added to recently played successfully."
+        "message": "Song added to recently played successfully.   "
     }
     ```
 
