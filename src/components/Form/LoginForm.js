@@ -1,22 +1,35 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Divider, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Box, TextField, Button, Divider, Typography, Alert } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleGoogleLogin = () => {
     console.log("Simulating Google Login...");
+    // Sẽ được triển khai sau
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Login submitted with:", { email, password });
+    setError('');
+    try {
+      await login(email, password);
+      navigate('/'); // Chuyển hướng về trang chủ sau khi đăng nhập thành công
+    } catch (err) {
+      setError(err.message || 'Email hoặc mật khẩu không đúng.');
+    }
   };
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       <TextField
         margin="normal"
         required

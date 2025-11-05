@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppBar, Toolbar, Box } from '@mui/material';
+import { AppBar, Toolbar, Box, Typography, Button } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import Search from '../components/Search/Search';
 import UpgradeButton from '../components/Button/Specific/UpgradeButton';
@@ -7,8 +7,11 @@ import SettingButton from '../components/Button/Specific/SettingButton';
 import UserAccountButton from '../components/Button/Specific/UserAccountButton';
 import Navigation from '../components/Navigation/Navigation';
 import ThemeToggleButton from '../components/Button/Specific/ThemeToggleButton';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 function Header() {
+  const { isAuthenticated, user, logout } = useAuth(); // Sử dụng auth context
+
   return (
     <AppBar
       position="sticky"
@@ -27,7 +30,18 @@ function Header() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <UpgradeButton />
           <SettingButton />
-          <UserAccountButton />
+          {isAuthenticated && user ? (
+            <>
+              <Typography sx={{ color: (theme) => theme.palette.text.primary }}>
+                Chào, {user.displayName}
+              </Typography>
+              <Button variant="contained" onClick={logout}>
+                Đăng xuất
+              </Button>
+            </>
+          ) : (
+            <UserAccountButton />
+          )}
           <ThemeToggleButton />
         </Box>
       </Toolbar>
