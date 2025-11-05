@@ -57,11 +57,13 @@ const dataTop100 = [
 ];
 
 // ===== Card con (dùng useState theo từng item) =====
+const PLAY_DIAMETER = 42;
+const BTN_BOX  = 44;
+const GAP_PX   = 16;
+const TWEAK_Y  = -38;
+
 function Top100Card({ item, onPlay, onFavorite }) {
   const [isHovered, setIsHovered] = React.useState(false);
-
-  // đường kính nút Play trong BasePlayableImage (điều chỉnh nếu bạn đổi size)
-  const PLAY_DIAMETER = 54; // px
 
   const handlePlay = () =>
     onPlay?.({
@@ -75,70 +77,78 @@ function Top100Card({ item, onPlay, onFavorite }) {
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      sx={{ cursor: "pointer" }}
+      sx={{
+        width: 160,
+        position: 'relative',
+        borderRadius: 2,
+        overflow: 'hidden',
+        cursor: "pointer",
+        transition: "transform .25s",
+        "&:hover": { transform: "translateY(-3px)" },
+      }}
     >
-      {/* Thumb + nút Play ở giữa */}
+      <BasePlayableImage mediaSrc={item.mediaSrc} onPlay={handlePlay} size={160} isHovered={isHovered}>
+        <img
+          src={item.cover}
+          alt={item.title}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: 8 }}
+        />
+      </BasePlayableImage>
+
       <Box
         sx={{
-          borderRadius: 2,
-          overflow: "hidden",
-          position: "relative",
-          transition: "transform .25s",
-          "&:hover": { transform: "translateY(-3px)" },
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: isHovered ? 1 : 0,
+          transition: 'opacity .25s',
+          pointerEvents: 'none',
+          zIndex: 5,
+          lineHeight: 0,
         }}
-        onClick={handlePlay}
       >
-        <BasePlayableImage
-          mediaSrc={item.mediaSrc}
-          onPlay={handlePlay}
-          size={200}
-          isHovered={isHovered}
-        >
-          <img
-            src={item.cover}
-            alt={item.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-          />
-        </BasePlayableImage>
-
-        {/* ❤️  [khoảng trống bằng đường kính nút ▶]  ⋯  — canh giữa theo chiều ngang */}
         <Box
           sx={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: isHovered ? 1 : 0,
-            transition: "opacity .2s",
-            pointerEvents: "none",     // tránh che click nút ▶
-            zIndex: 3,                 // nổi trên ảnh nhưng không che play (vì pointerEvents: none)
+            display: 'flex',
+            alignItems: 'center',
+            columnGap: `${GAP_PX}px`,
+            transform: `translateY(${TWEAK_Y}px)`,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {/* ❤️ */}
-            <Box
-              onClick={(e) => { e.stopPropagation(); onFavorite?.(item); }}
-              sx={{ pointerEvents: "auto" }}
-            >
-              <FavoriteButton visible={isHovered} />
-            </Box>
+          <Box
+            sx={{
+              width: BTN_BOX,
+              height: BTN_BOX,
+              display: 'grid',
+              placeItems: 'center',
+              pointerEvents: 'auto',
+              cursor: 'pointer',
+            }}
+            onClick={(e) => { e.stopPropagation(); onFavorite?.(item); }}
+          >
+            <FavoriteButton visible={isHovered} />
+          </Box>
 
-            {/* spacer = đường kính nút play để 3 nút nằm trên 1 đường thẳng */}
-            <Box sx={{ width: PLAY_DIAMETER, height: PLAY_DIAMETER, pointerEvents: "none" }} />
+          <Box sx={{ width: PLAY_DIAMETER, height: PLAY_DIAMETER, pointerEvents: 'none' }} />
 
-            {/* ⋯ */}
-            <Box
-              onClick={(e) => { e.stopPropagation(); console.log("More:", item.id); }}
-              sx={{ pointerEvents: "auto" }}
-            >
-              <MoreButton visible={isHovered} />
-            </Box>
+          <Box
+            sx={{
+              width: BTN_BOX,
+              height: BTN_BOX,
+              display: 'grid',
+              placeItems: 'center',
+              pointerEvents: 'auto',
+              cursor: 'pointer',
+            }}
+            onClick={(e) => { e.stopPropagation(); console.log("More:", item.id); }}
+          >
+            <MoreButton visible={isHovered} />
           </Box>
         </Box>
       </Box>
 
-      {/* Meta */}
       <Box sx={{ px: 1, py: 1.25 }}>
         <Typography
           variant="subtitle1"
