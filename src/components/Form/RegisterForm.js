@@ -1,70 +1,67 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Divider, Typography, InputAdornment, IconButton, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Box, TextField, Button, Divider, Typography, Alert } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
-import SendIcon from '@mui/icons-material/Send';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
+    displayName: '',
     email: '',
-    gender: '',
     password: '',
     confirmPassword: '',
-    otp: ''
   });
-  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  const handleSendOtp = () => {
-    if (!formData.email) {
-      alert('Vui lòng nhập email trước khi xác thực.');
-      return;
-    }
-    console.log(`Simulating sending OTP to ${formData.email}`);
-    setIsOtpSent(true);
-  };
-
   const handleGoogleLogin = () => {
     console.log("Simulating Google Login...");
+    // Sẽ được triển khai sau
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError('');
+    setSuccess('');
+
     if (formData.password !== formData.confirmPassword) {
-      alert("Mật khẩu không khớp!");
+      setError("Mật khẩu không khớp!");
       return;
     }
-    console.log("Registration submitted with:", formData);
+
+    try {
+      const data = await register(formData.displayName, formData.email, formData.password);
+      setSuccess(data.message + ' Bạn sẽ được chuyển đến trang đăng nhập.');
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000); // Chuyển hướng sau 3 giây
+    } catch (err) {
+      setError(err.message || 'Đã xảy ra lỗi. Vui lòng thử lại.');
+    }
   };
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3, width: '100%' }}>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
       <TextField
         margin="normal"
         required
         fullWidth
-        id="fullName"
-        label="Họ và Tên"
-        name="fullName"
+        id="displayName"
+        label="Tên hiển thị"
+        name="displayName"
         autoComplete="name"
-        value={formData.fullName}
+        value={formData.displayName}
         onChange={handleChange}
-      />
-      <TextField
-        margin="normal"
-        required
-        fullWidth
-        id="phone"
-        label="Số điện thoại"
-        name="phone"
-        autoComplete="tel"
-        value={formData.phone}
-        onChange={handleChange}
+        autoFocus
       />
       <TextField
         margin="normal"
@@ -76,48 +73,7 @@ const RegisterForm = () => {
         autoComplete="email"
         value={formData.email}
         onChange={handleChange}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <Button
-                variant="text"
-                onClick={handleSendOtp}
-                disabled={isOtpSent}
-                startIcon={<SendIcon />}
-              >
-                Xác thực
-              </Button>
-            </InputAdornment>
-          ),
-        }}
       />
-      {isOtpSent && (
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="otp"
-          label="Mã xác thực OTP"
-          name="otp"
-          value={formData.otp}
-          onChange={handleChange}
-        />
-      )}
-      <FormControl fullWidth margin="normal" required>
-        <InputLabel id="gender-label">Giới tính</InputLabel>
-        <Select
-          labelId="gender-label"
-          id="gender"
-          name="gender"
-          value={formData.gender}
-          label="Giới tính"
-          onChange={handleChange}
-        >
-          <MenuItem value={'male'}>Nam</MenuItem>
-          <MenuItem value={'female'}>Nữ</MenuItem>
-          <MenuItem value={'other'}>Khác</MenuItem>
-        </Select>
-      </FormControl>
       <TextField
         margin="normal"
         required
@@ -139,8 +95,7 @@ const RegisterForm = () => {
         id="confirmPassword"
         value={formData.confirmPassword}
         onChange={handleChange}
-      />
-      <Button
+      />      <Button
         type="submit"
         fullWidth
         variant="contained"
