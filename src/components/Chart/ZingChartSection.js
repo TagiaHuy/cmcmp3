@@ -1,8 +1,8 @@
 // src/components/Chart/ZingChartSection.jsx
 import React, { useMemo } from "react";
-import { Box, Paper, Typography, Button, Stack, Skeleton, IconButton } from "@mui/material";
+import { Box, Paper, Typography, Button, Stack, Skeleton, IconButton, Tooltip as MuiTooltip, Avatar } from "@mui/material";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer, ReferenceLine
 } from "recharts";
 import { useTheme, alpha } from "@mui/material/styles";
 import useZingChart from "../../hooks/useZingChart";
@@ -13,10 +13,10 @@ import { useMediaPlayer } from "../../context/MediaPlayerContext";
 function RankNumber({ rank }) {
   const gradient =
     rank === 1
-      ? "linear-gradient(90deg,#4facfe,#38f9d7)"      // 1: xanh dương -> xanh neon
+      ? "linear-gradient(90deg,#4facfe,#38f9d7)"
       : rank === 2
-      ? "linear-gradient(90deg,#43e97b,#fef9a7)"      // 2: xanh lá -> vàng
-      : "linear-gradient(90deg,#fa709a,#fee140)";     // 3: đỏ -> hồng
+      ? "linear-gradient(90deg,#43e97b,#fef9a7)"
+      : "linear-gradient(90deg,#fa709a,#fee140)";
 
   return (
     <Typography
@@ -54,7 +54,7 @@ function TopItem({ item, onPlay }) {
       sx={{
         p: 1.2,
         borderRadius: 1.5,
-        bgcolor: "rgba(255,255,255,0.06)",              // nền tím mờ giống Zing
+        bgcolor: "rgba(255,255,255,0.06)",
         cursor: "pointer",
         transition: "transform .12s ease, background .12s ease",
         "&:hover": { transform: "translateY(-1px)", bgcolor: "rgba(255,255,255,0.12)" },
@@ -95,7 +95,7 @@ function TopItem({ item, onPlay }) {
             transform: "translate(-50%,-50%) scale(.9)",
             opacity: 0,
             transition: "all .18s ease",
-            bgcolor: "transparent",    // không có vòng tròn đen
+            bgcolor: "transparent",
             color: "#fff",
             "&:hover": { color: "#fff" },
             boxShadow: "none",
@@ -118,16 +118,28 @@ function TopItem({ item, onPlay }) {
   );
 }
 
-function CustomTooltip({ active, payload, label }) {
+/* --- Tooltip hiển thị theo tên bài hát Top 3 --- */
+function SongTooltip({ active, payload, label, series }) {
   if (!active || !payload?.length) return null;
-  const hit = payload[0]?.payload;
+  const rows = [...payload].sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+
   return (
-    <Paper elevation={3} sx={{ p: 1, borderRadius: 1.5 }}>
-      <Typography variant="caption">{label}</Typography>
-      <Stack spacing={0.5} sx={{ mt: .5 }}>
-        <Typography variant="body2">VN: {hit?.vn ?? 0}%</Typography>
-        <Typography variant="body2">US-UK: {hit?.usuk ?? 0}%</Typography>
-        <Typography variant="body2">K-POP: {hit?.kpop ?? 0}%</Typography>
+    <Paper elevation={3} sx={{ p: 1, borderRadius: 1.5, minWidth: 220 }}>
+      <Typography variant="caption">⏱ {label}</Typography>
+      <Stack spacing={0.6} sx={{ mt: .6 }}>
+        {rows.map((p) => {
+          const key = p.dataKey; // 'vn' | 'usuk' | 'kpop'
+          const meta = series?.[key] || {};
+          return (
+            <Stack key={key} direction="row" spacing={1} alignItems="center">
+              {meta.cover ? <Avatar src={meta.cover} sx={{ width: 22, height: 22 }} /> : null}
+              <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }} noWrap>
+                {meta.name || key}
+              </Typography>
+              <Typography variant="body2">{p.value ?? 0}%</Typography>
+            </Stack>
+          );
+        })}
       </Stack>
     </Paper>
   );
@@ -167,21 +179,32 @@ export default function ZingChartSection() {
     kpop: kpop[i] ?? 0,
   }));
 
+  // Top 3 từ BE → dùng làm nhãn + ảnh
   const top3 = Array.isArray(data?.top3) ? data.top3 : [];
+
+  const series = {
+    vn:   { name: top3[0]?.title || "Top 1", cover: top3[0]?.cover },
+    usuk: { name: top3[1]?.title || "Top 2", cover: top3[1]?.cover },
+    kpop: { name: top3[2]?.title || "Top 3", cover: top3[2]?.cover },
+  };
 
   // Chuẩn hoá object truyền vào MediaPlayer
   const onPlayTop = (item) => {
+    if (!item) return;
     handlePlay?.({
       id: item.id ?? `zingchart-${item.rank}`,
       title: item.title,
       artists: item.artists,
       imageUrl: item.cover,
-      mediaSrc: item.mediaSrc, // cần có để phát nhạc
+      mediaSrc: item.mediaSrc,
       percent: item.percent,
       rank: item.rank,
       source: "zingchart",
     });
   };
+
+  // thời điểm hiện tại (nếu BE có lastUpdated)
+  const lastTime = tl[tl.length - 1];
 
   return (
     <Box sx={{ display: "grid", gap: 2 }}>
@@ -196,18 +219,62 @@ export default function ZingChartSection() {
         <Stack direction="row" spacing={2}>
           {/* Left: Top 3 */}
           <Box sx={{ width: 340 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 900,
-                mb: 1,
-                background: "linear-gradient(90deg,#ff9933,#bb33ff)", // gradient #zingchart
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              #zingchart
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 900,
+                  mb: 1,
+                  background: "linear-gradient(90deg,#ff9933,#bb33ff)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                #zingchart
+              </Typography>
+
+              {/* Nút Play phát bài TOP 1 */}
+              <MuiTooltip title="Phát Top 1 #zingchart" arrow>
+                <span>
+                  <IconButton
+                    onClick={() => onPlayTop(top3[0])}
+                    size="small"
+                    disabled={!top3?.[0]}
+                    sx={{
+                      mb: 1,
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      color: "#fff",
+                      background: "linear-gradient(45deg, #7C4DFF, #FF4081)",
+                      boxShadow: "0 4px 10px rgba(0,0,0,.25)",
+                      transition: "all .18s ease",
+                      "&:hover": {
+                        filter: "brightness(1.07)",
+                        boxShadow: "0 6px 14px rgba(0,0,0,.32)",
+                        transform: "scale(1.08)",
+                      },
+                      position: "relative",
+                      "&::after": {
+                        content: '""',
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: "inherit",
+                        animation: "pulse 1.8s ease infinite",
+                        boxShadow: "0 0 0 0 rgba(255,255,255,.35)",
+                      },
+                      "@keyframes pulse": {
+                        "0%":   { boxShadow: "0 0 0 0 rgba(255,255,255,.35)" },
+                        "70%":  { boxShadow: "0 0 0 10px rgba(255,255,255,0)" },
+                        "100%": { boxShadow: "0 0 0 0 rgba(255,255,255,0)" },
+                      },
+                    }}
+                  >
+                    <PlayArrowRoundedIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                </span>
+              </MuiTooltip>
+            </Box>
 
             <Stack spacing={1.1}>
               {top3.map((item) => (
@@ -226,11 +293,24 @@ export default function ZingChartSection() {
               <LineChart data={chartData} margin={{ left: 8, right: 16, top: 10, bottom: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.15} />
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} unit="%" />
-                <Tooltip content={<CustomTooltip />} />
-                <Line type="monotone" dataKey="vn"   stroke={colors.vn}   dot={{ r: 3 }} strokeWidth={2} activeDot={{ r: 5 }} />
-                <Line type="monotone" dataKey="usuk" stroke={colors.usuk} dot={{ r: 3 }} strokeWidth={2} activeDot={{ r: 5 }} />
-                <Line type="monotone" dataKey="kpop" stroke={colors.kpop} dot={{ r: 3 }} strokeWidth={2} activeDot={{ r: 5 }} />
+                <YAxis tick={{ fontSize: 12 }} unit="%" domain={[0, 100]} />
+
+                {/* Tooltip hiển thị theo tên bài hát + ảnh */}
+                <ReTooltip content={<SongTooltip series={series} />} />
+
+                {/* Vạch dọc thời điểm hiện tại */}
+                {lastTime && (
+                  <ReferenceLine
+                    x={lastTime}
+                    stroke={alpha(colors.usuk, 0.6)}
+                    strokeDasharray="4 4"
+                  />
+                )}
+
+                {/* Tắt animation cho mượt */}
+                <Line name={series.vn.name}   type="monotone" dataKey="vn"   stroke={colors.vn}   dot={{ r: 2 }} activeDot={{ r: 4 }} strokeWidth={2} isAnimationActive={false} />
+                <Line name={series.usuk.name} type="monotone" dataKey="usuk" stroke={colors.usuk} dot={{ r: 2 }} activeDot={{ r: 4 }} strokeWidth={2} isAnimationActive={false} />
+                <Line name={series.kpop.name} type="monotone" dataKey="kpop" stroke={colors.kpop} dot={{ r: 2 }} activeDot={{ r: 4 }} strokeWidth={2} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </Box>
