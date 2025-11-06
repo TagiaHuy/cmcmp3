@@ -4,9 +4,7 @@ import API_BASE_URL from "../config";
 
 const API_URL = `${API_BASE_URL}/api/auth`;
 
-/**
- * Đăng ký tài khoản
- */
+/** Đăng ký tài khoản */
 export const register = async (displayName, email, password, signal) => {
   const res = await fetch(`${API_URL}/register`, {
     method: "POST",
@@ -29,9 +27,7 @@ export const register = async (displayName, email, password, signal) => {
   return data; // { token, user } hoặc payload BE trả
 };
 
-/**
- * Đăng nhập
- */
+/** Đăng nhập */
 export const login = async (email, password, signal) => {
   const res = await fetch(`${API_URL}/login`, {
     method: "POST",
@@ -48,22 +44,18 @@ export const login = async (email, password, signal) => {
   if (!res.ok) {
     const msg =
       (data && (data.message || data.error)) ||
-      (res.status === 401
-        ? "Sai email hoặc mật khẩu (401)"
-        : `HTTP ${res.status}`);
+      (res.status === 401 ? "Sai email hoặc mật khẩu (401)" : `HTTP ${res.status}`);
     throw new Error(msg);
   }
   return data; // { token, user } …
 };
 
-/**
- * Lấy thông tin user hiện tại (cần Bearer token)
- */
+/** Lấy thông tin user hiện tại (cần Bearer token) */
 export const getUserMe = async (token, signal) => {
-  const res = await fetch(`${API_BASE_URL}/api/user/me`, {
+  const res = await fetch(`${API_BASE_URL}/api/me`, { // <<< sửa đúng endpoint
     method: "GET",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token}`, // gửi kèm token
       Accept: "application/json",
     },
     signal,
@@ -81,5 +73,5 @@ export const getUserMe = async (token, signal) => {
         : `HTTP ${res.status}`);
     throw new Error(msg);
   }
-  return data;
+  return data; // { id, email, ... } hoặc { user: {...} }
 };
