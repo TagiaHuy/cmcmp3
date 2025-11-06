@@ -75,8 +75,7 @@ const LoginForm = () => {
   const helperTextProps = { sx: { color: 'error.main', fontSize: '14px', fontWeight: 600 } };
 
   const handleGoogleLogin = () => {
-    console.log('Simulating Google Login...');
-    // TODO: triển khai sau
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
   return (

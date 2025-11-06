@@ -103,7 +103,7 @@ const RegisterForm = () => {
   };
 
   const handleGoogleLogin = () => {
-    console.log('Simulating Google Login...');
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
   const errorFieldSx = {
