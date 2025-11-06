@@ -8,27 +8,33 @@ import Top100Section from "../components/Card/Top100Section";
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 import useSongs from '../hooks/useSongs'; // Import the custom hook
 import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
-import PlaylistCard from '../components/Card/PlaylistCard';
+import PlaylistView from '../components/Card/PlaylistView';
 import { useParams } from 'react-router-dom';
-import useSong from '../hooks/useSong'; // Custom hook to fetch a single song
+import useSong from '../hooks/useSong';
+import usePlaylists from '../hooks/usePlaylists';
+import PlaylistCard from '../components/Card/PlaylistCard';
 
 const TestPage = () => {
   const { handlePlay } = useMediaPlayer();
-  const { songId } = useParams(); // Get songId from URL params
-  const { song, loading, error } = useSong(songId); // Use the custom hook
-
-  if (loading) {
-    return <CircularProgress />;
-  }
-
-  if (error) {
-    return <Typography color="error">Error fetching songs.</Typography>;
-  }
+  const { songId } = useParams();
+  const { song, loading: songLoading, error: songError } = useSong(songId);
+  const { playlists, loading: playlistsLoading, error: playlistsError } = usePlaylists();
 
   return (
     <Box sx={{ p: 3 }}>
-        <h1>Test</h1>
-      <PlaylistCard playlist={song} onPlay={handlePlay} />
+      <h1>Test Page</h1>
+
+      <hr />
+
+    
+      <hr />
+
+      <h2>Public Playlists</h2>
+      {playlistsLoading && <CircularProgress />}
+      {playlistsError && <Typography color="error">Error fetching playlists: {playlistsError.message}</Typography>}
+      {playlists.map((playlist) => (
+        <PlaylistView key={playlist.id} playlist={playlist} />
+      ))}
     </Box>
   );
 };
