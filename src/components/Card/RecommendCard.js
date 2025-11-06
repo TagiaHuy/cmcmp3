@@ -4,7 +4,7 @@ import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 
-function RecommendCard({ mediaSrc, imageSrc, title, subtitle, onPlay }) {
+function RecommendCard({ mediaSrc, imageUrl, title, subtitle, onPlay }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleCardClick = () => {
@@ -12,7 +12,7 @@ function RecommendCard({ mediaSrc, imageSrc, title, subtitle, onPlay }) {
       onPlay({
         title,
         artists: subtitle,
-        imageUrl: imageSrc,
+        imageUrl: imageUrl,
         mediaSrc,
       });
     }
@@ -44,7 +44,7 @@ function RecommendCard({ mediaSrc, imageSrc, title, subtitle, onPlay }) {
         isHovered={isHovered}
         hidePlayButtonBorder='true'
       >
-        <img src={imageSrc} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={imageUrl} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </BasePlayableImage>
       
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
