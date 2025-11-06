@@ -53,6 +53,7 @@ function MainLayoutContent({ children }) {
         flexGrow: 1, 
         overflow: 'hidden',
         transition: 'grid-template-columns 0.3s ease-in-out',
+        '--player-h': currentPlayingSrc ? '100px' : '0px',
       }}>
         <SidebarLeft />
         <Box
@@ -60,7 +61,8 @@ function MainLayoutContent({ children }) {
           sx={{
             backgroundColor: (theme) => theme.body.background,
             paddingBottom: currentPlayingSrc ? '100px' : '24px',
-            overflowY: 'auto',
+            overflowY: 'scroll',
+            scrollbarGutter: 'stable both-edges',
           }}
         >
           <Header />
