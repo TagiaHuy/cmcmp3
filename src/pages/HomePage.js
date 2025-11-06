@@ -26,7 +26,7 @@ const dummyRecommendations = [
   {
     title: 'Daily Mix 2',
     subtitle: 'John Doe, Jane Doe',
-    imageSrc: song1,
+    imageSrc: 'https://i.pinimg.com/736x/2c/82/35/2c8235cb3a50d5e738b131535d72316c.jpg',
     mediaSrc: sampleMusic,
   },
   {
@@ -144,7 +144,7 @@ const HomePage = () => {
       <PlaylistCarousel playlists={songs} onPlay={handlePlay} />
       <RecentlyPlayed />
       <BannerCarousel banners={sampleBanners} />
-      <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
+      <RecommendCardContainer recommendations={songs} onPlay={handlePlay} />
       <Top100Section />
       <Box sx={{ overflowX: "hidden" }}>
         <BXHNewReleaseSection />
