@@ -11,6 +11,8 @@ import song1 from '../assets/slaygirl.jpg';
 import banner from '../assets/anh-ech-meme.jpg';  
 import sampleMusic from '../assets/Yas.mp3'; // Assuming sample.mp3 is in assets
 import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
+import ZingChartSection from '../components/Chart/ZingChartSection'; 
+
 
 const sampleBanners = [
   {
@@ -105,6 +107,7 @@ const HomePage = () => {
       <Top100Section />
       <Box sx={{ overflowX: "hidden" }}>
         <BXHNewReleaseSection />
+        <ZingChartSection />
       </Box>
     </Box>
   );
