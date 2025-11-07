@@ -11,7 +11,8 @@ import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
 import useSong from '../hooks/useSong';
 import usePlaylists from '../hooks/usePlaylists';
 import PlaylistView from '../components/Card/PlaylistView';
-
+import { search } from '../services/searchService';
+import useSearch from '../hooks/useSearch';
 const TestPage = () => {
   const { handlePlay } = useMediaPlayer();
 
@@ -23,8 +24,9 @@ const TestPage = () => {
   const l3 = playlists.find(p => p.id === 'l3');
   const l4 = playlists.find(p => p.id === 'l4');
   const l5 = playlists.find(p => p.id === 'l5');
-  console.log('TestPage playlists:', playlists);
-  console.log('TestPage l1 songs:', l1);
+
+  const {results} = useSearch('am');
+  console.log(results);
   return (
     <Box sx={{ p: 3 }}>
     <PlaylistView playlist={l1} banners={playlists.map(p => ({ ...p, title: p.name }))} />

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { getAllSongs } from '../services/songService';
-import song1 from '../assets/slaygirl.jpg'; // Placeholder image
 import API_BASE_URL from '../config';
 
 const useSongs = () => {
