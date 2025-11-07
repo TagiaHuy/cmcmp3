@@ -148,6 +148,7 @@ const HomePage = () => {
       <Top100Section />
       <Box sx={{ overflowX: "hidden" }}>
         <BXHNewReleaseSection />
+        <ZingChartSection />
       </Box>
     </Box>
   );
