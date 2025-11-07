@@ -11,6 +11,7 @@ import song1 from '../assets/slaygirl.jpg';
 import banner from '../assets/anh-ech-meme.jpg';  
 import sampleMusic from '../assets/Yas.mp3'; // Assuming sample.mp3 is in assets
 import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
+import Amthambenem from '../assets/Am-tham-ben-em.mp3';
 
 const sampleBanners = [
   {
@@ -25,7 +26,7 @@ const dummyRecommendations = [
   {
     title: 'Daily Mix 2',
     subtitle: 'John Doe, Jane Doe',
-    imageSrc: song1,
+    imageSrc: 'https://i.pinimg.com/736x/2c/82/35/2c8235cb3a50d5e738b131535d72316c.jpg',
     mediaSrc: sampleMusic,
   },
   {
@@ -143,10 +144,11 @@ const HomePage = () => {
       <PlaylistCarousel playlists={songs} onPlay={handlePlay} />
       <RecentlyPlayed />
       <BannerCarousel banners={sampleBanners} />
-      <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
+      <RecommendCardContainer recommendations={songs} onPlay={handlePlay} />
       <Top100Section />
       <Box sx={{ overflowX: "hidden" }}>
         <BXHNewReleaseSection />
+        <ZingChartSection />
       </Box>
     </Box>
   );

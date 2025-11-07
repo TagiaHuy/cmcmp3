@@ -14,7 +14,7 @@ function RecommendCardContainer({ recommendations, onPlay }) {
             <RecommendCard
               title={item.title}
               subtitle={item.subtitle}
-              imageSrc={item.imageSrc}
+              imageUrl={item.imageUrl}
               mediaSrc={item.mediaSrc}
               onPlay={onPlay}
             />

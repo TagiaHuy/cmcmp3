@@ -104,6 +104,10 @@ export const AuthProvider = ({ children }) => {
       login,
       register,
       logout,
+      handleSocialLogin: (token) => {
+        setToken(token);
+        localStorage.setItem("token", token);
+      },
       // Optional: cho phép chỗ khác cập nhật user sau khi edit profile
       setUser,
     }),
