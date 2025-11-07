@@ -1,38 +1,58 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getSongById } from '../services/songService';
 import API_BASE_URL from '../config';
 
 const useSongsByIds = (songIds) => {
-  const [songs, setSongs] = useState([]);
+  const [songs, setSongs]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError]   = useState(null);
+
+  // Chuẩn hóa đầu vào + loại trùng (ổn định)
+  const uniqueIds = useMemo(() => {
+    return Array.isArray(songIds) ? Array.from(new Set(songIds)) : [];
+  }, [songIds]);
+
+  // Khóa ổn định để trigger effect
+  const idsKey = useMemo(() => uniqueIds.join(','), [uniqueIds]);
 
   useEffect(() => {
-    if (!songIds || songIds.length === 0) {
-      setLoading(false);
+    let cancelled = false;
+
+    // Không có id → reset
+    if (!idsKey) {
       setSongs([]);
-      return;
+      setLoading(false);
+      setError(null);
+      return () => { cancelled = true; };
     }
 
-    const fetchSongs = async () => {
+    (async () => {
       try {
         setLoading(true);
-        const songPromises = songIds.map(id => getSongById(id));
-        const fetchedSongs = await Promise.all(songPromises);
-        const formattedSongs = fetchedSongs.filter(Boolean).map(song => ({
-          ...song,
-          mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`
-        }));
-        setSongs(formattedSongs);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+        setError(null);
 
-    fetchSongs();
-  }, [songIds]);
+        const results = await Promise.allSettled(
+          uniqueIds.map(id => getSongById(id))
+        );
+
+        const data = results
+          .filter(r => r.status === 'fulfilled' && r.value)
+          .map(r => r.value)
+          .map(song => ({
+            ...song,
+            mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`,
+          }));
+
+        if (!cancelled) setSongs(data);
+      } catch (e) {
+        if (!cancelled) setError(e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [idsKey]); // ✅ CHỈ idsKey, KHÔNG spread mảng vào đây
 
   return { songs, loading, error };
 };

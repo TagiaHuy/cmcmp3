@@ -2,8 +2,9 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Box, IconButton, Slider, Typography, Stack } from '@mui/material';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
-import QueueMusicIcon from '@mui/icons-material/QueueMusic'; // Import the icon
+import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
+import { useMediaActions } from '../../hooks/useMediaActions';
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
@@ -11,221 +12,181 @@ import MoreButton from '../Button/Specific/MoreButton';
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
 
 const MediaPlayer = () => {
-  const { currentPlayingSrc, mediaPlayerKey, isSidebarRightVisible, toggleSidebarRight } = useMediaPlayer();
+  const {
+    currentPlayingSrc,
+    currentTrack,
+    isSidebarRightVisible,
+    toggleSidebarRight,
+    handleEnded, // xử lý hết bài theo repeat/shuffle trong context
+  } = useMediaPlayer();
+
+  const {
+    prev,
+    next,
+    isShuffling,
+    repeatMode,
+    toggleShuffle,
+    cycleRepeatMode,
+  } = useMediaActions();
+
   const audioRef = useRef(null);
+
+  // UI (local)
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.5);
-  const [isShuffleActive, setIsShuffleActive] = useState(false);
-  const [isRepeatActive, setIsRepeatActive] = useState(false);
 
+  // Gắn listeners khi src đổi
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !currentPlayingSrc) return;
 
-    const setAudioData = () => {
-      setDuration(audio.duration);
-      setCurrentTime(audio.currentTime);
-      audio.play(); // Autoplay when new source is loaded
-      setIsPlaying(true); // Set playing state to true
+    if (!audio || !currentPlayingSrc) {
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setDuration(0);
+      return;
+    }
+
+    const onLoaded = () => {
+      const d = Number.isFinite(audio.duration) ? audio.duration : 0;
+      setDuration(d);
+      setCurrentTime(audio.currentTime || 0);
+      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
     };
+    const onTime = () => setCurrentTime(audio.currentTime || 0);
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
 
-    const setAudioTime = () => setCurrentTime(audio.currentTime);
-    const togglePlay = () => setIsPlaying(!audio.paused);
-
-    audio.addEventListener('loadeddata', setAudioData);
-    audio.addEventListener('timeupdate', setAudioTime);
-    audio.addEventListener('play', togglePlay);
-    audio.addEventListener('pause', togglePlay);
+    audio.addEventListener('loadedmetadata', onLoaded);
+    audio.addEventListener('timeupdate', onTime);
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
 
     return () => {
-      audio.removeEventListener('loadeddata', setAudioData);
-      audio.removeEventListener('timeupdate', setAudioTime);
-      audio.removeEventListener('play', togglePlay);
-      audio.removeEventListener('pause', togglePlay);
+      audio.removeEventListener('loadedmetadata', onLoaded);
+      audio.removeEventListener('timeupdate', onTime);
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
     };
-  }, [currentPlayingSrc, mediaPlayerKey]); // Depend on currentPlayingSrc and mediaPlayerKey
+  }, [currentPlayingSrc]);
 
+  // Sync volume
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
+    if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
+  // Play/Pause
   const handlePlayPause = () => {
-    const audio = audioRef.current;
-    if (audio) {
-      if (isPlaying) {
-        audio.pause();
-      } else {
-        audio.play();
-      }
-      setIsPlaying(!isPlaying);
+    const a = audioRef.current;
+    if (!a) return;
+    a.paused ? a.play() : a.pause();
+  };
+
+  // Seek
+  const handleSeek = (_e, v) => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.currentTime = v;
+    setCurrentTime(v);
+  };
+
+  // Mute toggle
+  const toggleMute = () => setVolume(v => (v === 0 ? 0.5 : 0));
+
+  // Khi audio kết thúc
+  const onEnded = () => {
+    if (repeatMode === 'one' && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+      return;
     }
+    handleEnded();
   };
 
-  const handleSeek = (event, newValue) => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.currentTime = newValue;
-      setCurrentTime(newValue);
-    }
-  };
+  const safeDuration = Number.isFinite(duration) ? duration : 0;
+  const safeCurrent = Math.min(Number.isFinite(currentTime) ? currentTime : 0, safeDuration);
 
-  const handleVolumeChange = (event, newValue) => {
-    setVolume(newValue);
-  };
-
-  const handlePrevious = () => {
-    console.log('Previous track');
-    // Implement logic for previous track
-  };
-
-  const handleNext = () => {
-    console.log('Next track');
-    // Implement logic for next track
-  };
-
-  const handleShuffle = () => {
-    setIsShuffleActive(!isShuffleActive);
-    console.log('Shuffle toggled', !isShuffleActive);
-  };
-
-  const handleRepeat = () => {
-    setIsRepeatActive(!isRepeatActive);
-    console.log('Repeat toggled', !isRepeatActive);
-  };
-
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  const format = (t) => {
+    if (!Number.isFinite(t) || t <= 0) return '0:00';
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
   return (
-    <Box sx={{
-      width: '100%',
-      p: 2,
-      bgcolor: (theme) => theme.palette.mode === 'dark' ? theme.body.background : 'background.paper',
-      borderRadius: 2,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between', // Use space-between
-      minHeight: 10
-    }}>
-      {/* Left Section with fixed width */}
-      <Box sx={{ width: '25%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+    <Box sx={{ width: '100%', p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* LEFT */}
+      <Box sx={{ width: '25%', display: 'flex', alignItems: 'center', gap: 1.2 }}>
         <CurrentSongCard
-          songImage={cmcmp3Logo}
-          songTitle="cmcmp3"
-          songAuthor="this is a song"
+          songImage={currentTrack?.imageUrl || cmcmp3Logo}
+          songTitle={currentTrack?.title || 'No song playing'}
+          songAuthor={currentTrack?.artists || 'Unknown'}
         />
         <FavoriteButton />
         <MoreButton />
       </Box>
 
-      {/* Middle Section that grows */}
+      {/* MIDDLE */}
       <Stack sx={{ flexGrow: 1, alignItems: 'center', px: 2 }}>
         <PlaybackControls
           isPlaying={isPlaying}
-          isShuffleActive={isShuffleActive}
-          isRepeatActive={isRepeatActive}
+          repeatMode={repeatMode}
+          isShuffleActive={isShuffling}
           handlePlayPause={handlePlayPause}
-          handlePrevious={handlePrevious}
-          handleNext={handleNext}
-          handleShuffle={handleShuffle}
-          handleRepeat={handleRepeat}
+          handlePrevious={prev}
+          handleNext={next}
+          handleShuffle={toggleShuffle}
+          handleRepeat={cycleRepeatMode}
         />
+
         <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-          <audio ref={audioRef} src={currentPlayingSrc} preload="metadata" />
-          <Typography variant="body2">{formatTime(currentTime)}</Typography>
-          <Slider
-            aria-label="time-indicator"
-            size="small"
-            value={currentTime}
-            min={0}
-            step={1}
-            max={duration}
-            onChange={handleSeek}
-            sx={{
-              color: 'text.primary',
-              height: 4,
-              '& .MuiSlider-thumb': {
-                width: 8,
-                height: 8,
-                transition: '0.3s cubic-bezier(.47,1.64,.43,.85)',
-                '&::before': {
-                  boxShadow: '0 2px 12px 0 rgba(0,0,0,0.4)',
-                },
-                '&:hover, &.Mui-focusVisible': {
-                  boxShadow: `0px 0px 0px 8px ${'rgb(255 255 255 / 16%)'}`,
-                },
-                '&.Mui-active': {
-                  width: 20,
-                  height: 20,
-                },
-              },
-              '& .MuiSlider-rail': {
-                opacity: 0.28,
-              },
-            }}
+          {/* ❗ KHÔNG đặt key; React bind src qua prop */}
+          <audio
+            ref={audioRef}
+            src={currentPlayingSrc || undefined}
+            preload="metadata"
+            onEnded={onEnded}
           />
-          <Typography variant="body2">{formatTime(duration)}</Typography>
+
+          {/* thời gian hiện tại — tự đổi trắng/đen theo theme */}
+          <Typography variant="body2" sx={{ color: (t) => t.palette.text.primary }}>
+            {format(safeCurrent)}
+          </Typography>
+
+          <Slider
+            value={safeCurrent}
+            min={0}
+            max={safeDuration}
+            step={1}
+            onChange={handleSeek}
+          />
+
+          {/* tổng thời gian — tự đổi trắng/đen theo theme */}
+          <Typography variant="body2" sx={{ color: (t) => t.palette.text.primary }}>
+            {format(safeDuration)}
+          </Typography>
         </Stack>
       </Stack>
 
-      {/* Right Section with fixed width */}
-      <Box sx={{ width: '25%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-        <IconButton onClick={() => setVolume(volume === 0 ? 0.5 : 0)}>
+      {/* RIGHT */}
+      <Box sx={{ width: '25%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', pr: 3 }}>
+        <IconButton onClick={toggleMute}>
           {volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}
         </IconButton>
         <Slider
-          aria-label="Volume"
-          size="small"
           value={volume}
           min={0}
-          step={0.01}
           max={1}
-          onChange={handleVolumeChange}
-          sx={{
-            color: 'text.primary',
-            width: 100,
-            '& .MuiSlider-thumb': {
-              width: 8,
-              height: 8,
-              transition: '0.3s cubic-bezier(.47,1.64,.43,.85)',
-              '&::before': {
-                boxShadow: '0 2px 12px 0 rgba(0,0,0,0.4)',
-              },
-              '&:hover, &.Mui-focusVisible': {
-                boxShadow: `0px 0px 0px 8px ${'rgb(255 255 255 / 16%)'}`,
-              },
-              '&.Mui-active': {
-                width: 20,
-                height: 20,
-              },
-            },
-            '& .MuiSlider-rail': {
-              opacity: 0.28,
-            },
-          }}
+          step={0.01}
+          onChange={(_e, v) => setVolume(v)}
+          sx={{ width: 100 }}
         />
-        <IconButton 
-          onClick={toggleSidebarRight} 
-          color={isSidebarRightVisible ? 'primary' : 'default'} 
-          sx={{
-            mr: 2,
-            transition: 'transform 0.2s ease-in-out, background-color 0.2s ease-in-out',
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.2)', // More visible hover effect
-              transform: 'scale(1.1)', // Scale up on hover
-            },
-          }}
-        >
+        <IconButton onClick={toggleSidebarRight} color={isSidebarRightVisible ? 'primary' : 'default'}>
           <QueueMusicIcon />
         </IconButton>
-      </Box>    </Box>
+      </Box>
+    </Box>
   );
 };
 

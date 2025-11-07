@@ -11,31 +11,21 @@ import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
 import HowToRegRoundedIcon from "@mui/icons-material/HowToRegRounded";
 import { useAuth } from "../../context/AuthContext";
 
-// Style tròn 36x36: tự đổi màu theo theme (đồng bộ 2 nút bên cạnh)
+// Style tròn 36x36
 const circleBtnSx = (t) => {
   const isDark = t.palette.mode === "dark";
-
   return {
     width: 36,
     height: 36,
     borderRadius: "50%",
     p: 0,
-    // NỀN
-    bgcolor: isDark
-      ? alpha(t.palette.common.white, 0.06)   // Dark: tím đậm/white alpha
-      : alpha(t.palette.common.black, 0.06),  // Light: xám nhạt/black alpha
-    // ICON
-    color: isDark
-      ? alpha(t.palette.common.white, 0.92)
-      : t.palette.grey[800],
-    // VIỀN MỜ BÊN TRONG (giống 2 nút kia)
+    bgcolor: isDark ? alpha(t.palette.common.white, 0.06) : alpha(t.palette.common.black, 0.06),
+    color: isDark ? alpha(t.palette.common.white, 0.92) : t.palette.grey[800],
     boxShadow: isDark
       ? "inset 0 0 0 1px rgba(255,255,255,0.06)"
       : "inset 0 0 0 1px rgba(0,0,0,0.06)",
     "&:hover": {
-      bgcolor: isDark
-        ? alpha(t.palette.common.white, 0.10)
-        : alpha(t.palette.common.black, 0.10),
+      bgcolor: isDark ? alpha(t.palette.common.white, 0.10) : alpha(t.palette.common.black, 0.10),
     },
     "& .MuiSvgIcon-root": { fontSize: 20 },
     transition: "background-color .15s ease, box-shadow .15s ease",
@@ -76,29 +66,48 @@ export default function UserAvatarMenu() {
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         PaperProps={{ sx: { minWidth: 220, borderRadius: 2, mt: 1 } }}
       >
-        {isAuthenticated ? (
-          <>
-            <MenuItem component={RouterLink} to="/profile" onClick={handleClose}>
-              <ListItemIcon><PersonRoundedIcon fontSize="small" /></ListItemIcon>
-              <ListItemText primary="Hồ sơ cá nhân" secondary={user?.email} />
-            </MenuItem>
-            <MenuItem onClick={() => { handleClose(); logout(); }}>
-              <ListItemIcon><LogoutRoundedIcon fontSize="small" /></ListItemIcon>
-              <ListItemText primary="Đăng xuất" />
-            </MenuItem>
-          </>
-        ) : (
-          <>
-            <MenuItem component={RouterLink} to="/login" onClick={handleClose}>
-              <ListItemIcon><LoginRoundedIcon fontSize="small" /></ListItemIcon>
-              <ListItemText primary="Đăng nhập" />
-            </MenuItem>
-            <MenuItem component={RouterLink} to="/register" onClick={handleClose}>
-              <ListItemIcon><HowToRegRoundedIcon fontSize="small" /></ListItemIcon>
-              <ListItemText primary="Đăng ký" />
-            </MenuItem>
-          </>
-        )}
+        {isAuthenticated
+          ? [
+              <MenuItem
+                key="profile"
+                component={RouterLink}
+                to="/profile"
+                onClick={handleClose}
+              >
+                <ListItemIcon><PersonRoundedIcon fontSize="small" /></ListItemIcon>
+                <ListItemText primary="Hồ sơ cá nhân" secondary={user?.email} />
+              </MenuItem>,
+              <MenuItem
+                key="logout"
+                onClick={() => {
+                  handleClose();
+                  logout();
+                }}
+              >
+                <ListItemIcon><LogoutRoundedIcon fontSize="small" /></ListItemIcon>
+                <ListItemText primary="Đăng xuất" />
+              </MenuItem>,
+            ]
+          : [
+              <MenuItem
+                key="login"
+                component={RouterLink}
+                to="/login"
+                onClick={handleClose}
+              >
+                <ListItemIcon><LoginRoundedIcon fontSize="small" /></ListItemIcon>
+                <ListItemText primary="Đăng nhập" />
+              </MenuItem>,
+              <MenuItem
+                key="register"
+                component={RouterLink}
+                to="/register"
+                onClick={handleClose}
+              >
+                <ListItemIcon><HowToRegRoundedIcon fontSize="small" /></ListItemIcon>
+                <ListItemText primary="Đăng ký" />
+              </MenuItem>,
+            ]}
       </Menu>
     </>
   );
