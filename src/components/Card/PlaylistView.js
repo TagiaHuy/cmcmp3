@@ -27,15 +27,12 @@ const PlaylistView = ({ playlist, banners }) => {
 
   return (
     <Box sx={{ mb: 4 }}>
-      <Typography variant="h5">{playlist.name}</Typography>
-      <Typography variant="body1" color="text.secondary">{playlist.description}</Typography>
-      
       {(() => {
         switch (playlist.id) {
           case 'l1':
             return (
               <>
-                <PlaylistCarousel title="Songs" playlists={songs} onPlay={handlePlay} />
+                <PlaylistCarousel playlists={songs} onPlay={handlePlay} />
                 <BannerCarousel banners={banners} />
                 <RecentlyPlayed />
               </>

@@ -20,14 +20,10 @@ const HomePage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <PlaylistCarousel playlists={songs} onPlay={handlePlay} />
-      <RecentlyPlayed />
-      <BannerCarousel banners={sampleBanners} />
-      <RecommendCardContainer recommendations={dummyRecommendations} onPlay={handlePlay} />
-      <Top100Section />
-      <Box sx={{ overflowX: "hidden" }}>
-        <BXHNewReleaseSection />
-      </Box>
+      <PlaylistView playlist={l1} banners={playlists.map(p => ({ ...p, title: p.name }))} />
+      <PlaylistView playlist={l2} />
+      <playlistView playlist={l3} />
+      <PlaylistView playlist={l4} />
     </Box>
   );
 };
