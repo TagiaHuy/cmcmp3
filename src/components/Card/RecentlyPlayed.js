@@ -3,21 +3,19 @@ import React from 'react';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import { Box, Typography, Grid } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 // Đồng bộ với Top100 / Base
 import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 
-const CARD_W = 160;   // rộng mỗi ô
-const IMG_H  = 160;   // kích thước thumbnail (vuông)
-
+const IMG_H = 160;           // kích thước thumbnail (vuông)
 const PLAY_DIAMETER = 42;
 
-const BTN_BOX  = 44;
-const GAP_PX   = 16; // khoảng cách giữa 3 nút
-const TWEAK_Y  = -22; // nắn nhẹ vị trí theo trục Y để triệt tiêu lệch thị giác
+const BTN_BOX = 44;
+const GAP_PX  = 16;          // khoảng cách giữa 3 nút
+const TWEAK_Y = -22;         // nắn nhẹ vị trí theo trục Y để triệt tiêu lệch thị giác
 
 export default function RecentlyPlayed() {
   const { recentlyPlayed, handlePlay, addToLibrary } = useMediaPlayer();
@@ -29,31 +27,60 @@ export default function RecentlyPlayed() {
   return (
     <Box sx={{ my: 4, ml: 11, mr: 11 }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="h5" sx={{ color: theme.palette.text.primary }}>
           Nghe gần đây
         </Typography>
         <Link
           to="/recently-played"
-          className="see-all-link"
-          style={{ textDecoration: 'none', color: theme.palette.text.secondary, fontSize: '0.875rem' }}
+          style={{ textDecoration: 'none', color: theme.palette.text.secondary, fontSize: '0.875rem', opacity: 0.85 }}
         >
           TẤT CẢ &gt;
         </Link>
       </Box>
 
-      {/* Danh sách */}
-      <Grid container spacing={3} wrap="wrap">
+      {/* ✅ 6 thẻ luôn cùng 1 hàng, giãn/thu mượt theo bề ngang content
+          - Không xuống dòng (nowrap)
+          - Khoảng cách auto giãn bằng space-between
+          - Nếu không đủ chỗ: bật scroll ngang mảnh để giữ đúng 6 thẻ/1 hàng */}
+      <Box
+        sx={{
+          position: 'relative',
+          display: 'flex',
+          flexWrap: 'nowrap',                 // ❗ Không cho xuống dòng
+          justifyContent: 'space-between',    // ✅ Giãn khoảng cách mượt
+          gap: 3,                             
+          transition: 'gap .3s ease',         // mượt khi layout thay đổi
+          willChange: 'gap',
+          // Nếu không đủ bề ngang cho 6×160 + gaps -> cho phép scroll ngang
+          overflowX: 'auto',
+          scrollbarWidth: 'thin',
+          '&::-webkit-scrollbar': { height: 6 },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(127,127,127,.35)',
+            borderRadius: 4,
+          },
+          // Giới hạn tối thiểu để cố gắng không cần scroll khi có thể
+          minWidth: 'min(100%, 6 * 160px + 5 * 24px)', // 24px ≈ theme.spacing(3)
+        }}
+      >
         {visiblePlaylists.map((track, idx) => (
-          <Grid item key={idx} sx={{ width: CARD_W }}>
+          <Box
+            key={idx}
+            sx={{
+              width: 160,
+              flex: '0 0 160px',               // ✅ cố định thẻ 160px
+              transition: 'transform .3s ease',
+            }}
+          >
             <RecentlyPlayedItem
               track={track}
               onPlay={() => handlePlay(track)}
               onFavorite={() => addToLibrary?.(track)}
             />
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 }
@@ -64,7 +91,7 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite }) {
 
   return (
     <Box
-      sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden' }}
+      sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', cursor: 'pointer' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -87,7 +114,7 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite }) {
           justifyContent: 'center',
           opacity: isHovered ? 1 : 0,
           transition: 'opacity .25s',
-          pointerEvents: 'none',      // để click được nút ▶ ở giữa
+          pointerEvents: 'none', // để click được nút ▶ ở giữa
           zIndex: 5,
           lineHeight: 0,
         }}
