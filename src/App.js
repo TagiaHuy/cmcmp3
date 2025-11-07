@@ -12,7 +12,17 @@ import { useAuth } from './context/AuthContext';
 
 function App() {
   const theme = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, handleSocialLogin } = useAuth();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      handleSocialLogin(token);
+      // Xóa token khỏi URL để làm sạch
+      window.history.replaceState({}, document.title, "/");
+    }
+  }, [handleSocialLogin]);
 
   useEffect(() => {
     document.body.style.backgroundColor = theme.body.background;
