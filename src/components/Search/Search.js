@@ -2,40 +2,36 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchResult from './SearchResult';
+import useSearch from '../../hooks/useSearch';
 
 function Search() {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [results, setResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const inputRef = useRef(null); // Tham chiếu đến TextField
+  const inputRef = useRef(null);
 
+  // Hook search
+  const { results: searchResults } = useSearch(searchTerm);
+
+  // Debounce input
   useEffect(() => {
-  const delayDebounce = setTimeout(() => {
-    if (searchTerm) {
-      setResults([
-        { title: `Result for "${searchTerm}" 1` },
-        { title: `Result for "${searchTerm}" 2` },
-      ]);
-      setAnchorEl(inputRef.current);
-    } else {
-      setResults([]);
-      setAnchorEl(null);
-    }
-
-    // Trì hoãn focus để tránh xung đột với Popover
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
+    const debounce = setTimeout(() => {
+      if (searchTerm.trim()) {
+        setAnchorEl(inputRef.current);
+      } else {
+        setAnchorEl(null);
       }
-    }, 100);
-  }, 500);
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+    }, 200);
 
-  return () => clearTimeout(delayDebounce);
-}, [searchTerm]);
-
-
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
+    return () => clearTimeout(debounce);
+  }, [searchTerm]);
+  
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const handleClose = () => {
@@ -84,11 +80,12 @@ function Search() {
           ),
         }}
       />
+
       <SearchResult
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         handleClose={handleClose}
-        results={results}
+        results={searchResults}  // dùng trực tiếp từ hook
       />
     </div>
   );

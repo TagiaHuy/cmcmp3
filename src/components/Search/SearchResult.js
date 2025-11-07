@@ -7,7 +7,13 @@ function SearchResult({ anchorEl, open, handleClose, results }) {
       anchorEl={anchorEl}
       open={open}
       onClose={handleClose}
-      disableAutoFocusItem
+      
+      // ✅ TẮT HOÀN TOÀN CHẾ ĐỘ FOCUS CỦA MENU
+      disableAutoFocusItem={true}
+      disableAutoFocus={true}
+      disableEnforceFocus={true}
+      disableRestoreFocus={true}
+
       PaperProps={{
         sx: {
           backgroundColor: (theme) => theme.Button.background,

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { search } from '../services/searchService';
 import API_BASE_URL from '../config';
@@ -9,35 +8,49 @@ const useSearch = (query) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!query) {
+    // Khi query rỗng → reset kết quả
+    if (!query || query.trim() === "") {
       setResults([]);
       return;
     }
 
+    let isCancelled = false;
+
     const fetchSearch = async () => {
       try {
         setLoading(true);
+
         const searchResults = await search(query);
 
+        if (!searchResults?.songs) return;
+
         const formattedResults = searchResults.songs.map(song => ({
+          id: song.id,
           title: song.title,
           artists: song.artist,
           imageUrl: song.imageUrl,
           mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`,
         }));
 
-        setResults(formattedResults);
+        // Chỉ update nếu effect chưa bị cleanup
+        if (!isCancelled) {
+          setResults(formattedResults);
+        }
+
       } catch (err) {
-        setError(err);
+        if (!isCancelled) setError(err);
       } finally {
-        setLoading(false);
+        if (!isCancelled) setLoading(false);
       }
     };
-    const debounceFetch = setTimeout(() => {
-        fetchSearch();
-    }, 500);
 
-    return () => clearTimeout(debounceFetch);
+    // ✅ Debounce 500ms
+    const debounceTimer = setTimeout(fetchSearch, 100);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(debounceTimer);
+    };
   }, [query]);
 
   return { results, loading, error };
