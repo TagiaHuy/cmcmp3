@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import RecentlyPlayedPage from './pages/RecentlyPlayedPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import TestPage from './pages/TestPage';
 import { useAuth } from './context/AuthContext';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
     <MainLayout>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/test" element={<TestPage />} />
         <Route path="/recently-played" element={<RecentlyPlayedPage />} />
         
         {/* Nếu đã đăng nhập, chuyển hướng khỏi trang login/register */}
