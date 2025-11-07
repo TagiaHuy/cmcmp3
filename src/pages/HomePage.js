@@ -3,6 +3,8 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 import PlaylistView from '../components/Card/PlaylistView';
 import usePlaylists from '../hooks/usePlaylists';
+import ZingChartSection from '../components/Chart/ZingChartSection';
+
 const HomePage = () => {
   const { handlePlay } = useMediaPlayer();
   const { playlists, loading, error } = usePlaylists();
@@ -24,6 +26,7 @@ const HomePage = () => {
       <PlaylistView playlist={l2} />
       <playlistView playlist={l3} />
       <PlaylistView playlist={l4} />
+      <ZingChartSection />
     </Box>
   );
 };
