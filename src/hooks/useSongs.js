@@ -16,7 +16,7 @@ const useSongs = () => {
         const formattedSongs = fetchedSongs.map(song => ({
           title: song.title,
           artists: song.artist,
-          imageUrl: song1, // Placeholder image
+          imageUrl: song.imageUrl, // Placeholder image
           mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`,
         }));
         setSongs(formattedSongs);
