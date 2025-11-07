@@ -22,7 +22,7 @@ function App() {
     <MainLayout>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/test/:songId" element={<TestPage />} />
+        <Route path="/test" element={<TestPage />} />
         <Route path="/recently-played" element={<RecentlyPlayedPage />} />
         
         {/* Nếu đã đăng nhập, chuyển hướng khỏi trang login/register */}

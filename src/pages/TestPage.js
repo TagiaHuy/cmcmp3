@@ -8,33 +8,29 @@ import Top100Section from "../components/Card/Top100Section";
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 import useSongs from '../hooks/useSongs'; // Import the custom hook
 import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
-import PlaylistView from '../components/Card/PlaylistView';
-import { useParams } from 'react-router-dom';
 import useSong from '../hooks/useSong';
 import usePlaylists from '../hooks/usePlaylists';
-import PlaylistCard from '../components/Card/PlaylistCard';
+import PlaylistView from '../components/Card/PlaylistView';
 
 const TestPage = () => {
   const { handlePlay } = useMediaPlayer();
-  const { songId } = useParams();
-  const { song, loading: songLoading, error: songError } = useSong(songId);
-  const { playlists, loading: playlistsLoading, error: playlistsError } = usePlaylists();
 
+  const songId = 's1'; // Example song ID
+  const { song, loading: songLoading, error: songError } = useSong(songId);
+  const { playlists } = usePlaylists();
+  const l1 = playlists.find(p => p.id === 'l1');
+  const l2 = playlists.find(p => p.id === 'l2');
+  const l3 = playlists.find(p => p.id === 'l3');
+  const l4 = playlists.find(p => p.id === 'l4');
+  const l5 = playlists.find(p => p.id === 'l5');
+  console.log('TestPage playlists:', playlists);
+  console.log('TestPage l1 songs:', l1);
   return (
     <Box sx={{ p: 3 }}>
-      <h1>Test Page</h1>
-
-      <hr />
-
-    
-      <hr />
-
-      <h2>Public Playlists</h2>
-      {playlistsLoading && <CircularProgress />}
-      {playlistsError && <Typography color="error">Error fetching playlists: {playlistsError.message}</Typography>}
-      {playlists.map((playlist) => (
-        <PlaylistView key={playlist.id} playlist={playlist} />
-      ))}
+    <PlaylistView playlist={l1} banners={playlists.map(p => ({ ...p, title: p.name }))} />
+    <PlaylistView playlist={l2} />
+    <playlistView playlist={l3} />
+    <PlaylistView playlist={l4} />
     </Box>
   );
 };
