@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 
-function RecommendCard({ mediaSrc, imageUrl, title, subtitle, onPlay }) {
+function RecommendCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
 
-  const handleCardClick = () => {
+  const handlePlayClick = (e) => {
+    // e.stopPropagation(); // Ngăn card click event
     if (onPlay) {
       onPlay({
+        id,
         title,
         artists: subtitle,
         imageUrl: imageUrl,
         mediaSrc,
       });
     }
+  };
+
+  const handleCardClick = () => {
+    navigate(`/songs/${id}`);
   };
 
   return (
@@ -35,11 +43,12 @@ function RecommendCard({ mediaSrc, imageUrl, title, subtitle, onPlay }) {
         gap: 2,
         cursor: 'pointer',
         transition: 'background-color 0.3s ease',
+        ...sx,
       }}
     >
       <BasePlayableImage
         mediaSrc={mediaSrc}
-        onPlay={handleCardClick}
+        onPlay={handlePlayClick}
         size={50}
         isHovered={isHovered}
         hidePlayButtonBorder='true'
