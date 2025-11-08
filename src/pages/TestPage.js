@@ -13,6 +13,7 @@ import usePlaylists from '../hooks/usePlaylists';
 import PlaylistView from '../components/Card/PlaylistView';
 import { search } from '../services/searchService';
 import useSearch from '../hooks/useSearch';
+import useArtistSongs from '../hooks/useArtistSongs';
 const TestPage = () => {
   const { handlePlay } = useMediaPlayer();
 
@@ -25,7 +26,7 @@ const TestPage = () => {
   const l4 = playlists.find(p => p.id === 'l4');
   const l5 = playlists.find(p => p.id === 'l5');
 
-  const {results} = useSearch('am');
+  const results = useArtistSongs('1');
   console.log(results);
   return (
     <Box sx={{ p: 3 }}>

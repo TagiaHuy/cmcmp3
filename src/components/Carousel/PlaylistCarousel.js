@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, IconButton, Grid } from '@mui/material';
-import PlaylistCard from '../Card/PlaylistCard';
+import TopCard from '../Card/TopCard';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
@@ -43,7 +43,7 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
       <Grid container spacing={5} justifyContent="center">
         {visiblePlaylists.map((playlist, index) => (
           <Grid item key={index} xs={12 / columns}>
-            <PlaylistCard
+            <TopCard
               playlist={playlist}
               onPlay={onPlay}
             />

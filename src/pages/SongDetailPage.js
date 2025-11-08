@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import useSong from '../hooks/useSong';
 import SongDetailCard from '../components/Card/SongDetailCard';
+import SongList from '../components/SongList/SongList';
 
 const SongDetailPage = () => {
   const { songId } = useParams();
@@ -24,7 +25,14 @@ const SongDetailPage = () => {
     return <Typography>Song not found.</Typography>;
   }
 
-  return <SongDetailCard song={song} />;
+  return (
+    <Box display={'flex'} flexDirection="row" sx={{ p: 3 }}>
+      <SongDetailCard song={song} />
+      <Box>
+        <SongList songIds={[songId]} />
+      </Box>
+    </Box>
+  );
 };
 
 export default SongDetailPage;

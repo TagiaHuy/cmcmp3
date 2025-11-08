@@ -1,7 +1,9 @@
 import React from 'react';
 import { Menu, MenuItem } from '@mui/material';
-import InternalLinkMenuItem from '../MenuItem/InternalLinkMenuItem';
-import RecommendCard from '../Card/RecommendCard';
+import ResultCard from '../Card/ResultCard';
+import ArtistResultCard from '../Card/ArtistResultCard';
+import PlaylistResultCard from '../Card/PlaylistResultCard';
+
 function SearchResult({ anchorEl, open, handleClose, results, handlePlay }) {
   return (
     <Menu
@@ -9,7 +11,6 @@ function SearchResult({ anchorEl, open, handleClose, results, handlePlay }) {
       open={open}
       onClose={handleClose}
       
-      // ✅ TẮT HOÀN TOÀN CHẾ ĐỘ FOCUS CỦA MENU
       disableAutoFocusItem={true}
       disableAutoFocus={true}
       disableEnforceFocus={true}
@@ -27,12 +28,29 @@ function SearchResult({ anchorEl, open, handleClose, results, handlePlay }) {
       transformOrigin={{ vertical: 'top', horizontal: 'left' }}
     >
       {results && results.length > 0 ? (
-        results.map((result, index) => (
-          // <MenuItem key={index} onClick={handleClose}>
-          //   {result.title}
-          // </MenuItem>
-          <RecommendCard sx={{width: 430}} id={result.id} mediaSrc={result.mediaSrc} imageUrl={result.imageUrl} title={result.title} subtitle={result.artists} onPlay={handlePlay} />
-        ))
+        results.map((result, index) => {
+          switch (result.type) {
+            case 'song':
+              return (
+                <ResultCard
+                  key={index}
+                  sx={{ width: 430 }}
+                  id={result.id}
+                  mediaSrc={result.mediaSrc}
+                  imageUrl={result.imageUrl}
+                  title={result.title}
+                  subtitle={result.artists}
+                  onPlay={handlePlay}
+                />
+              );
+            case 'artist':
+              return <ArtistResultCard key={index} artist={result} sx={{ width: 430 }} />;
+            case 'playlist':
+              return <PlaylistResultCard key={index} playlist={result} sx={{ width: 430 }} />;
+            default:
+              return null;
+          }
+        })
       ) : (
         <MenuItem disabled>No results found</MenuItem>
       )}
