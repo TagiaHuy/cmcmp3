@@ -31,7 +31,7 @@ function SearchResult({ anchorEl, open, handleClose, results, handlePlay }) {
           // <MenuItem key={index} onClick={handleClose}>
           //   {result.title}
           // </MenuItem>
-          <RecommendCard sx={{width: 430}} mediaSrc={result.mediaSrc} imageUrl={result.imageUrl} title={result.title} subtitle={result.artists} onPlay={handlePlay} />
+          <RecommendCard sx={{width: 430}} id={result.id} mediaSrc={result.mediaSrc} imageUrl={result.imageUrl} title={result.title} subtitle={result.artists} onPlay={handlePlay} />
         ))
       ) : (
         <MenuItem disabled>No results found</MenuItem>

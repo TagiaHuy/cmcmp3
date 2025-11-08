@@ -18,8 +18,14 @@ const useSong = (songId) => {
         setLoading(true);
         const fetchedSong = await getSongById(songId);
         if (fetchedSong) {
-          const mediaSrc = `${API_BASE_URL}/api/songs/stream/${fetchedSong.id}`;
-          setSong({ ...fetchedSong, mediaSrc });
+          const formattedSong = {
+            id: fetchedSong.id,
+            title: fetchedSong.title,
+            artists: fetchedSong.artist,
+            imageUrl: fetchedSong.imageUrl,
+            mediaSrc: `${API_BASE_URL}/api/songs/stream/${fetchedSong.id}`,
+          };
+          setSong(formattedSong);
         } else {
           setSong(null);
         }
