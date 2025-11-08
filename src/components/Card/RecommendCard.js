@@ -4,7 +4,7 @@ import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 
-function RecommendCard({ mediaSrc, imageUrl, title, subtitle, onPlay }) {
+function RecommendCard({ mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleCardClick = () => {
@@ -35,6 +35,7 @@ function RecommendCard({ mediaSrc, imageUrl, title, subtitle, onPlay }) {
         gap: 2,
         cursor: 'pointer',
         transition: 'background-color 0.3s ease',
+        ...sx,
       }}
     >
       <BasePlayableImage

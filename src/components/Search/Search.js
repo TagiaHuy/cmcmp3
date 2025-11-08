@@ -3,7 +3,7 @@ import { TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchResult from './SearchResult';
 import useSearch from '../../hooks/useSearch';
-
+import { useMediaPlayer } from '../../context/MediaPlayerContext';
 function Search() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,6 +37,8 @@ function Search() {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const {handlePlay} =  useMediaPlayer();
 
   return (
     <div>
@@ -85,7 +87,8 @@ function Search() {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         handleClose={handleClose}
-        results={searchResults}  // dùng trực tiếp từ hook
+        results={searchResults} 
+        handlePlay={handlePlay} // dùng trực tiếp từ hook
       />
     </div>
   );
