@@ -19,7 +19,7 @@ const PlaybackControls = ({
 }) => {
   return (
     <div className="playback-controls">
-      <IconButton aria-label="shuffle" onClick={handleShuffle} color={isShuffleActive ? "primary" : "inherit"}>
+      <IconButton aria-label="shuffle" onClick={handleShuffle} color={isShuffleActive ? "primary" : "background"}>
         <ShuffleIcon />
       </IconButton>
 
@@ -35,7 +35,7 @@ const PlaybackControls = ({
         <SkipNextIcon />
       </IconButton>
 
-      <IconButton aria-label="repeat" onClick={handleRepeat} color={isRepeatActive ? "primary" : "inherit"}>
+      <IconButton aria-label="repeat" onClick={handleRepeat} color={isRepeatActive ? "primary" : "background"}>
         <RepeatIcon />
       </IconButton>
     </div>
