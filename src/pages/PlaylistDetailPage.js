@@ -8,7 +8,7 @@ import PlaylistDetailCard from '../components/Card/PlaylistDetailCard';
 const PlaylistDetailPage = () => {
   const { playlistId } = useParams();
   const { playlist, loading, error } = usePlaylist(playlistId);
-
+  console.log(playlist);
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -22,9 +22,9 @@ const PlaylistDetailPage = () => {
   }
 
   return (
-    <Box display={'flex'} flexDirection="row" sx={{ p: 3 }}>
+    <Box display={'flex'} flexDirection="row" sx={{ p: 3, width: '100%'}}>
       <PlaylistDetailCard playlist={playlist} />
-      <Box>
+      <Box sx={{width: '100%'}}>
         <SongList songIds={playlist.songs} />
       </Box>
     </Box>

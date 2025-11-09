@@ -24,6 +24,11 @@ const useSong = (songId) => {
             artists: fetchedSong.artist,
             imageUrl: fetchedSong.imageUrl,
             mediaSrc: `${API_BASE_URL}/api/songs/stream/${fetchedSong.id}`,
+            listenCount: fetchedSong.listenCount,
+            likeCount: fetchedSong.likeCount,
+            description: fetchedSong.description,
+            label: fetchedSong.label,
+            createdAt: fetchedSong.createdAt,
           };
           setSong(formattedSong);
         } else {
