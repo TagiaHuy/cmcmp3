@@ -28,7 +28,7 @@ const SongDetailPage = () => {
   return (
     <Box display={'flex'} flexDirection="row" sx={{ p: 3 }}>
       <SongDetailCard song={song} />
-      <Box>
+      <Box sx={{width: '100%'}}>
         <SongList songIds={[songId]} />
       </Box>
     </Box>

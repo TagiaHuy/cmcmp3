@@ -31,7 +31,7 @@ const ArtistDetailPage = () => {
   return (
     <Box display={'flex'} flexDirection="row" sx={{ p: 3 }}>
       <ArtistDetailCard artist={artist} />
-      <Box>
+      <Box sx={{width: '100%'}}>
         <SongList songIds={songIds} />
       </Box>
     </Box>
