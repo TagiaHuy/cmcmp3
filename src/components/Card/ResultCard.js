@@ -5,7 +5,7 @@ import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 
-function PlaylistCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
+function ResultCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
@@ -62,11 +62,11 @@ function PlaylistCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: 88, justifyContent: 'flex-end' }}>
-        <FavoriteButton />
-        <MoreButton />
+        <FavoriteButton visible={isHovered} />
+        <MoreButton visible={isHovered} />
       </Box>
     </Box>
   );
 }
 
-export default PlaylistCard;
+export default ResultCard;

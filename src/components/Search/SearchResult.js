@@ -1,43 +1,60 @@
 import React from 'react';
+import { Menu, MenuItem } from '@mui/material';
+import ResultCard from '../Card/ResultCard';
+import ArtistResultCard from '../Card/ArtistResultCard';
+import PlaylistResultCard from '../Card/PlaylistResultCard';
 
-function SearchResult({ results }) {
-  if (!results || (!results.songs.length && !results.artists.length && !results.playlists.length)) {
-    return null;
-  }
-
+function SearchResult({ anchorEl, open, handleClose, results, handlePlay }) {
   return (
-    <div style={{ position: 'absolute', top: '50px', width: '500px', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '8px', zIndex: 1000 }}>
-      {results.songs.length > 0 && (
-        <div>
-          <h3 style={{ padding: '10px', margin: 0, borderBottom: '1px solid #eee' }}>Songs</h3>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {results.songs.map((song) => (
-              <li key={song.id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>{song.title} by {song.artist}</li>
-            ))}
-          </ul>
-        </div>
+    <Menu
+      anchorEl={anchorEl}
+      open={open}
+      onClose={handleClose}
+      
+      disableAutoFocusItem={true}
+      disableAutoFocus={true}
+      disableEnforceFocus={true}
+      disableRestoreFocus={true}
+
+      PaperProps={{
+        sx: {
+          backgroundColor: (theme) => theme.Button.background,
+          borderRadius: '12px',
+          width: 450,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+        },
+      }}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+    >
+      {results && results.length > 0 ? (
+        results.map((result, index) => {
+          switch (result.type) {
+            case 'song':
+              return (
+                <ResultCard
+                  key={index}
+                  sx={{ width: 430 }}
+                  id={result.id}
+                  mediaSrc={result.mediaSrc}
+                  imageUrl={result.imageUrl}
+                  title={result.title}
+                  subtitle={result.artists}
+                  onPlay={handlePlay}
+                />
+              );
+            case 'artist':
+              return <ArtistResultCard key={index} artist={result} sx={{ width: 430 }} />;
+            case 'playlist':
+              return <PlaylistResultCard key={index} playlist={result} sx={{ width: 430 }} />;
+            default:
+              return null;
+          }
+        })
+      ) : (
+        <MenuItem disabled>No results found</MenuItem>
       )}
-      {results.artists.length > 0 && (
-        <div>
-          <h3 style={{ padding: '10px', margin: 0, borderBottom: '1px solid #eee' }}>Artists</h3>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {results.artists.map((artist) => (
-              <li key={artist.id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>{artist.name}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {results.playlists.length > 0 && (
-        <div>
-          <h3 style={{ padding: '10px', margin: 0, borderBottom: '1px solid #eee' }}>Playlists</h3>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {results.playlists.map((playlist) => (
-              <li key={playlist.id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>{playlist.name}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    </Menu>
   );
 }
 

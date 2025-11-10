@@ -7,7 +7,11 @@ import HomePage from './pages/HomePage';
 import RecentlyPlayedPage from './pages/RecentlyPlayedPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import TestPage from './pages/TestPage';
 import { useAuth } from './context/AuthContext';
+import SongDetailPage from './pages/SongDetailPage';
+import ArtistDetailPage from './pages/ArtistDetailPage';
+import PlaylistDetailPage from './pages/PlaylistDetailPage';
 
 function App() {
   const theme = useTheme();
@@ -31,7 +35,11 @@ function App() {
     <MainLayout>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/test" element={<TestPage />} />
         <Route path="/recently-played" element={<RecentlyPlayedPage />} />
+        <Route path="/songs/:songId" element={<SongDetailPage />} />
+        <Route path="/artist/:artistId" element={<ArtistDetailPage />} />
+        <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
         
         {/* Nếu đã đăng nhập, chuyển hướng khỏi trang login/register */}
         <Route 

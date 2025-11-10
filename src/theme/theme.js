@@ -17,7 +17,7 @@ const darkTheme = createTheme({
     },
     text: {
       primary: '#ffffff',
-      secondary: '#ffffff',
+      secondary: '#ccccccff',
     },
   },
   typography: {
