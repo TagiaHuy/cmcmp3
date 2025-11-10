@@ -52,7 +52,7 @@ export const login = async (email, password, signal) => {
 
 /** Lấy thông tin user hiện tại (cần Bearer token) */
 export const getUserMe = async (token, signal) => {
-  const res = await fetch(`${API_BASE_URL}/api/me`, { // <<< sửa đúng endpoint
+  const res = await fetch(`${API_BASE_URL}/api/user/me`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`, // gửi kèm token
