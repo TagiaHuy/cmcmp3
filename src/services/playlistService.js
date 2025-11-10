@@ -62,15 +62,18 @@ export const getPlaylistById = async (id, signal) => {
 /**
  * ✅ Lấy TOP playlist sắp xếp theo lượt nghe giảm dần
  * Không cần token
- * GET /api/playlists/top?limit=8
+ * GET /api/playlists?sort=listenCount,desc&limit=8
  */
 export const getTopPlaylists = async (limit = 8, signal) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/playlists/top?limit=${limit}`, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-      signal,
-    });
+    const res = await fetch(
+      `${API_BASE_URL}/api/playlists?sort=listenCount,desc&limit=${limit}`,
+      {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal,
+      }
+    );
 
     const data = await safeJson(res);
 
@@ -87,19 +90,59 @@ export const getTopPlaylists = async (limit = 8, signal) => {
 };
 
 /**
- * PLACEHOLDER: Lấy TOP playlist sắp xếp theo ngày tạo/phát hành giảm dần
+ * ✅ Lấy TOP playlist sắp xếp theo ngày tạo/phát hành giảm dần
+ * GET /api/playlists?sort=createdAt,desc&limit=8
  */
 export const getPlaylistsByReleaseDate = async (limit = 8, signal) => {
-  console.warn('getPlaylistsByReleaseDate is a placeholder and does not fetch real data yet.');
-  // const res = await fetch(`${API_BASE_URL}/api/playlists/newest?limit=${limit}`, { ... });
-  return Promise.resolve([]);
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/playlists?sort=createdAt,desc&limit=${limit}`,
+      {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal,
+      }
+    );
+
+    const data = await safeJson(res);
+
+    if (!res.ok) {
+      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('Error fetching TOP newest playlists:', error);
+    return [];
+  }
 };
 
 /**
- * PLACEHOLDER: Lấy TOP playlist sắp xếp theo lượt thích giảm dần
+ * ✅ Lấy TOP playlist sắp xếp theo lượt thích giảm dần
+ * GET /api/playlists?sort=likeCount,desc&limit=8
  */
 export const getPlaylistsByLikes = async (limit = 8, signal) => {
-  console.warn('getPlaylistsByLikes is a placeholder and does not fetch real data yet.');
-  // const res = await fetch(`${API_BASE_URL}/api/playlists/most-liked?limit=${limit}`, { ... });
-  return Promise.resolve([]);
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/playlists?sort=likeCount,desc&limit=${limit}`,
+      {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal,
+      }
+    );
+
+    const data = await safeJson(res);
+
+    if (!res.ok) {
+      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('Error fetching TOP most-liked playlists:', error);
+    return [];
+  }
 };
