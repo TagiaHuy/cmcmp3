@@ -55,7 +55,7 @@ export const getUserMe = async (token, signal) => {
   const res = await fetch(`${API_BASE_URL}/api/user/me`, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${token}`, // gửi kèm token
+      Authorization: `Bearer ${token}`, 
       Accept: "application/json",
     },
     signal,
