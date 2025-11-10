@@ -87,7 +87,7 @@ export const getSongsByArtist = async (artistId, signal) => {
  */
 export const getTopSongs = async (limit = 10, signal) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/songs/top?limit=${limit}`, {
+    const res = await fetch(`${API_BASE_URL}/api/songs?sort=listenCount,desc&limit=${limit}`, {
       method: "GET",
       headers: {
         Accept: "application/json"
@@ -120,7 +120,7 @@ export const getTopSongs = async (limit = 10, signal) => {
  */
 export const getSongsByReleaseDate = async (limit = 9, signal) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/songs/top/new-releases?limit=${limit}`, {
+    const res = await fetch(`${API_BASE_URL}/api/songs?sort=createdAt,desc&limit=${limit}`, {
       method: "GET",
       headers: {
         Accept: "application/json"
@@ -151,7 +151,7 @@ export const getSongsByReleaseDate = async (limit = 9, signal) => {
  */
 export const getSongsByLikes = async (limit = 9, signal) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/songs/top/most-liked?limit=${limit}`, {
+    const res = await fetch(`${API_BASE_URL}/api/songs?sort=likeCount,desc&limit=${limit}`, {
       method: "GET",
       headers: {
         Accept: "application/json"
