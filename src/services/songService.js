@@ -102,10 +102,36 @@ export const getTopSongs = async (limit = 10, signal) => {
       throw new Error(msg);
     }
 
-    return Array.isArray(data) ? data : [];
+    const songs = Array.isArray(data) ? data : [];
+
+    // Add mediaSrc to each song
+    return songs.map(song => ({
+      ...song,
+      mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`,
+    }));
+    
   } catch (error) {
-    console.error("Error fetching TOP songs:", error);
     return [];
   }
 };
+
+/**
+ * PLACEHOLDER: Lấy TOP bài hát sắp xếp theo ngày phát hành giảm dần
+ */
+export const getSongsByReleaseDate = async (limit = 9, signal) => {
+  console.warn("getSongsByReleaseDate is a placeholder and does not fetch real data yet.");
+  // const res = await fetch(`${API_BASE_URL}/api/songs/newest?limit=${limit}`, { ... });
+  return Promise.resolve([]);
+};
+
+/**
+ * PLACEHOLDER: Lấy TOP bài hát sắp xếp theo lượt thích giảm dần
+ */
+export const getSongsByLikes = async (limit = 9, signal) => {
+  console.warn("getSongsByLikes is a placeholder and does not fetch real data yet.");
+  // const res = await fetch(`${API_BASE_URL}/api/songs/most-liked?limit=${limit}`, { ... });
+  return Promise.resolve([]);
+};
+
+
 

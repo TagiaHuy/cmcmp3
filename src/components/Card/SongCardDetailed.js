@@ -20,6 +20,7 @@ function SongCardDetailed({ song }) {
   const { handlePlay } = useMediaPlayer();
 
   const onPlay = () => {
+    console.log(`Attempting to play song: ${song?.title}`);
     if (song) {
       handlePlay(song);
     }
@@ -90,6 +91,7 @@ function SongCardDetailed({ song }) {
         sx={{ position: 'absolute', top: 15, left: 15, zIndex: 2 }}
         onPlay={onPlay}
         song={song}
+        mediaSrc={song.mediaSrc} // Pass the mediaSrc prop
       />
 
       <Box sx={{ marginLeft: '160px', zIndex: 3, paddingBottom: 3, position: 'relative' }}>
