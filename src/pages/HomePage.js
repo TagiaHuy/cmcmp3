@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useMediaPlayer } from '../context/MediaPlayerContext';
-
 import PlaylistView from '../components/Card/PlaylistView';
 import usePlaylists from '../hooks/usePlaylists';
 import ZingChartSection from '../components/Chart/ZingChartSection';
@@ -21,8 +20,17 @@ const HomePage = () => {
   useEffect(() => {
     const ac = new AbortController();
     (async () => {
-      const data = await getTopPlaylists(8, ac.signal);
-      setTopPlaylists(data);
+      try {
+        const data = await getTopPlaylists(8, ac.signal);
+        setTopPlaylists(data);
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          // This is expected on unmount in strict mode, do nothing.
+          return;
+        }
+        // Handle other errors if needed
+        console.error("Failed to fetch top playlists", err);
+      }
     })();
     return () => ac.abort();
   }, []);

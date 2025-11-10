@@ -1,4 +1,4 @@
-import React from 'react';
+    import React from 'react';
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 import { Box, Typography, Grid } from '@mui/material';
 import PlaylistCard from '../components/Card/PlaylistCard';

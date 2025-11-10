@@ -251,7 +251,7 @@ const RegisterForm = () => {
           '&:hover': { backgroundPosition: 'right center' }
         }}
       >
-        Đăng ký với Google
+        Đăng nhập với Google
       </Button>
     </Box>
   );
