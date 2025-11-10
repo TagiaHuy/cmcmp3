@@ -76,7 +76,36 @@ export const getSongsByArtist = async (artistId, signal) => {
 
     return data || [];
   } catch (error) {
-    console.error(`Error fetching songs for artist with ID ${artistId}:`, error);
     return [];
   }
 };
+
+/**
+ * ✅ Lấy TOP bài hát sắp xếp theo lượt nghe giảm dần
+ * Không cần token
+ * GET /api/songs/top?limit=10
+ */
+export const getTopSongs = async (limit = 10, signal) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/top?limit=${limit}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json"
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+
+    if (!res.ok) {
+      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error fetching TOP songs:", error);
+    return [];
+  }
+};
+
