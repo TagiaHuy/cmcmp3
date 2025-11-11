@@ -6,8 +6,14 @@ const PlayableImage = ({ imageUrl, title, size = 130, borderRadius = '4px', sx, 
   const [isHovered, setIsHovered] = useState(false);
 
   const handlePlayClick = () => {
-    if (onPlay && playlist) {
-      onPlay(playlist);
+    if (onPlay) {
+      if (playlist) {
+        // Existing logic for playlists
+        onPlay(playlist);
+      } else {
+        // New logic for components that pass a pre-configured onPlay handler
+        onPlay();
+      }
     }
   };
 

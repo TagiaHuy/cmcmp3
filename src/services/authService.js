@@ -52,10 +52,10 @@ export const login = async (email, password, signal) => {
 
 /** Lấy thông tin user hiện tại (cần Bearer token) */
 export const getUserMe = async (token, signal) => {
-  const res = await fetch(`${API_BASE_URL}/api/me`, { // <<< sửa đúng endpoint
+  const res = await fetch(`${API_BASE_URL}/api/me`, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${token}`, // gửi kèm token
+      Authorization: `Bearer ${token}`, 
       Accept: "application/json",
     },
     signal,
@@ -74,4 +74,47 @@ export const getUserMe = async (token, signal) => {
     throw new Error(msg);
   }
   return data; // { id, email, ... } hoặc { user: {...} }
+};
+
+/** Cập nhật thông tin user (cần Bearer token) */
+export const updateUserProfile = async (token, profileData, signal) => {
+  const res = await fetch(`${API_BASE_URL}/api/me`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(profileData),
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
+/** Cập nhật avatar user (cần Bearer token) */
+export const updateUserAvatar = async (token, formData, signal) => {
+  const res = await fetch(`${API_BASE_URL}/api/me/avatar`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+    body: formData, // FormData sẽ tự động set Content-Type là multipart/form-data
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
 };
