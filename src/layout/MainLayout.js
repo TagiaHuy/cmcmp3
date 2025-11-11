@@ -52,7 +52,9 @@ function MainLayoutContent({ children }) {
           sx={{
             backgroundColor: (theme) => theme.body.background,
             paddingBottom: currentPlayingSrc ? '100px' : '24px',
+            px: 3, // Add horizontal padding here
             overflowY: 'scroll',
+            overflowX: 'hidden',
             scrollbarGutter: 'stable both-edges',
           }}
         >
