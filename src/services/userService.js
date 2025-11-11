@@ -3,7 +3,7 @@ import { safeJson } from "../utils/http";
 import { authHeader } from "../utils/auth";
 
 export async function getAllUsers(page = 0, size = 10, signal) {
-  const res = await fetch(`${API_BASE_URL}/api/admin/users?page=${page}&size=${size}`, {
+  const res = await fetch(`${API_BASE_URL}/api/user?page=${page}&size=${size}`, {
     method: "GET",
     headers: {
       ...authHeader(),               // ⬅ BẮT BUỘC PHẢI CÓ DÒNG NÀY
