@@ -67,10 +67,13 @@ export const getPlaylistById = async (id, signal) => {
 export const getTopPlaylists = async (limit = 8, signal) => {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/api/playlists?sort=listenCount,desc&limit=${limit}`,
+      `${API_BASE_URL}/api/playlists/top?limit=${limit}`,
       {
         method: 'GET',
-        headers: { Accept: 'application/json' },
+        headers: {
+          ...authHeader(),
+          Accept: 'application/json'
+        },
         signal,
       }
     );
@@ -93,13 +96,16 @@ export const getTopPlaylists = async (limit = 8, signal) => {
  * ✅ Lấy TOP playlist sắp xếp theo ngày tạo/phát hành giảm dần
  * GET /api/playlists?sort=createdAt,desc&limit=8
  */
-export const getPlaylistsByReleaseDate = async (limit = 8, signal) => {
+export const getNewestPlaylists = async (limit = 8, signal) => {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/api/playlists?sort=createdAt,desc&limit=${limit}`,
+      `${API_BASE_URL}/api/playlists/top/new?limit=${limit}`,
       {
         method: 'GET',
-        headers: { Accept: 'application/json' },
+        headers: {
+          ...authHeader(),
+          Accept: 'application/json'
+        },
         signal,
       }
     );
@@ -118,31 +124,4 @@ export const getPlaylistsByReleaseDate = async (limit = 8, signal) => {
   }
 };
 
-/**
- * ✅ Lấy TOP playlist sắp xếp theo lượt thích giảm dần
- * GET /api/playlists?sort=likeCount,desc&limit=8
- */
-export const getPlaylistsByLikes = async (limit = 8, signal) => {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/playlists?sort=likeCount,desc&limit=${limit}`,
-      {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        signal,
-      }
-    );
 
-    const data = await safeJson(res);
-
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error('Error fetching TOP most-liked playlists:', error);
-    return [];
-  }
-};
