@@ -187,5 +187,28 @@ export const getSongsByLikes = async (limit = 9, signal) => {
   }
 };
 
+/**
+ * Lấy danh sách các bài hát đã tải lên của người dùng hiện tại
+ */
+export const getUploadedSongs = async (signal) => {
+  const res = await fetch(`${API_BASE_URL}/api/songs/uploaded`, {
+    method: "GET",
+    headers: {
+      ...authHeader(),
+      Accept: "application/json",
+    },
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg = data?.message || data?.error || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+
+  return data;
+};
+
 
 

@@ -1,11 +1,36 @@
-import React, { useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import UploadSongForm from '../Form/UploadSongForm';
-import SongList from '../SongList/SongList'; // Assuming you have a SongList component
+import SongList from '../SongList/SongList';
+import { getUploadedSongs } from '../../services/songService';
 
 const UploadedSongs = () => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [uploadedSongs, setUploadedSongs] = useState([]); // This will hold the uploaded songs
+  const [songs, setSongs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchUploadedSongs = useCallback(async (signal) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const uploadedSongs = await getUploadedSongs(signal);
+      setSongs(uploadedSongs || []);
+    } catch (e) {
+      if (e?.name !== 'AbortError') {
+        setError('Không thể tải danh sách bài hát đã tải lên.');
+        console.error(e);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchUploadedSongs(ac.signal);
+    return () => ac.abort();
+  }, [fetchUploadedSongs]);
 
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -13,8 +38,30 @@ const UploadedSongs = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    // Here you might want to refresh the list of uploaded songs
+    // Refresh the list after upload
+    const ac = new AbortController();
+    fetchUploadedSongs(ac.signal);
   };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+          <CircularProgress />
+        </Box>
+      );
+    }
+
+    if (error) {
+      return <Typography color="error" sx={{ textAlign: 'center', py: 5 }}>{error}</Typography>;
+    }
+    
+    if (songs.length === 0) {
+      return <Typography sx={{ textAlign: 'center', py: 5 }}>Bạn chưa có bài hát nào được tải lên.</Typography>;
+    }
+
+    return <SongList songs={songs} />;
+  }
 
   return (
     <Box>
@@ -26,13 +73,7 @@ const UploadedSongs = () => {
 
       <UploadSongForm open={modalOpen} handleClose={handleCloseModal} />
 
-      {uploadedSongs.length > 0 ? (
-        <SongList songs={uploadedSongs} />
-      ) : (
-        <Typography sx={{ textAlign: 'center', py: 5 }}>
-          Bạn chưa có bài hát nào được tải lên.
-        </Typography>
-      )}
+      {renderContent()}
     </Box>
   );
 };

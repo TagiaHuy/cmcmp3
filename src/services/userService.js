@@ -24,7 +24,7 @@ export async function getAllUsers(page = 0, size = 10, signal) {
 }
 
 export async function getFavoriteSongs(signal) {
-  const res = await fetch(`${API_BASE_URL}/api/me/favorites`, {
+  const res = await fetch(`${API_BASE_URL}/api/songs/favorites`, {
     method: "GET",
     headers: {
       ...authHeader(),
