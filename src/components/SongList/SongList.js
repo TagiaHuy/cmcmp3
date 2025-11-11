@@ -31,7 +31,7 @@ const SongListRenderer = ({ songs, onPlay, currentTrack }) => {
 
 // This is the main component that decides whether to fetch songs or use the ones passed in.
 const SongList = ({ songIds, songs: songsFromProps }) => {
-  const { handlePlay, currentTrack } = useMediaPlayer();
+  const { handlePlay, loadQueue, currentTrack } = useMediaPlayer(); // Import loadQueue
   
   // Always call hooks at the top level.
   const { songs: fetchedSongs, loading, error } = useSongsByIds(songIds);
@@ -54,7 +54,11 @@ const SongList = ({ songIds, songs: songsFromProps }) => {
     }
   }
 
-  return <SongListRenderer songs={songsToRender} onPlay={handlePlay} currentTrack={currentTrack} />;
+  const handlePlaySongList = (song, index) => {
+    loadQueue(songsToRender, index); // Load entire list and start from clicked song
+  };
+
+  return <SongListRenderer songs={songsToRender} onPlay={handlePlaySongList} currentTrack={currentTrack} />;
 };
 
 export default SongList;

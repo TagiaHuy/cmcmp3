@@ -9,7 +9,7 @@ import { useMediaPlayer } from '../../context/MediaPlayerContext';
 export default function TopPlaylistsSection() {
   const [rawPlaylists, setRawPlaylists] = useState([]);
   const [sortBy, setSortBy] = useState('listens'); // 'listens' | 'releaseDate' | 'likes'
-  const { handlePlay } = useMediaPlayer();
+  const { handlePlay, loadQueue } = useMediaPlayer(); // Import loadQueue
   const theme = useTheme();
   const headerColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
 
@@ -75,6 +75,11 @@ export default function TopPlaylistsSection() {
     return arr;
   }, [normalized, sortBy]);
 
+  const handlePlayPlaylist = (playlist) => {
+    if (!Array.isArray(playlist?.songs) || playlist.songs.length === 0) return;
+    loadQueue(playlist.songs, 0); // Load entire playlist and start from the first song
+  };
+
   return (
     <Box sx={{ my: 5, ml: 11, mr: 11 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -103,7 +108,7 @@ export default function TopPlaylistsSection() {
 
       {sorted.length > 0 ? (
         // ép carousel remount khi đổi sort để cập nhật thứ tự
-        <PlaylistCarousel key={sortBy} playlists={sorted} onPlay={handlePlay} columns={3} />
+        <PlaylistCarousel key={sortBy} playlists={sorted} onPlay={handlePlayPlaylist} columns={3} />
       ) : (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 130 }}>
           <Typography color="text.secondary">Đang chờ dữ liệu từ backend...</Typography>

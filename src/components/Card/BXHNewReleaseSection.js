@@ -169,34 +169,36 @@ export default function BXHNewReleaseSection() {
   const headerColor = theme.palette.mode === "dark" ? "#fff" : "#000";
   const linkColor = theme.palette.mode === "dark" ? "#fff" : "#000";
 
-  const { handlePlay, addToLibrary } = useMediaPlayer();
+  const { handlePlay, addToLibrary, loadQueue } = useMediaPlayer();
 
   // ✅ Giống Top100: hỗ trợ context và fallback
-  const playViaContextOrFallback = (payload) => {
-    if (typeof handlePlay === "function") {
-      return handlePlay({
-        title: payload.title,
-        artists: payload.artists,
-        imageUrl: payload.imageUrl,
-        audioUrl: payload.mediaSrc,
-        mediaSrc: payload.mediaSrc,
-      });
+  const handlePlayItem = (payload) => {
+    if (!payload || !payload.mediaSrc) {
+      console.warn("Thiếu mediaSrc:", payload);
+      return;
     }
 
-    // Fallback nếu context chưa có
-    if (payload?.mediaSrc) {
-      if (!window.__audioSingleton) {
-        window.__audioSingleton = new Audio();
-        window.__audioSingleton.preload = "auto";
-      }
-      const audio = window.__audioSingleton;
-      audio.pause();
-      audio.src = payload.mediaSrc;
-      audio.load();
-      audio.play().catch((e) => console.warn("Không phát được audio:", e));
-    } else {
-      console.warn("Thiếu mediaSrc:", payload);
-    }
+    const songToPlay = {
+      id: payload.id,
+      title: payload.title,
+      artists: payload.artists,
+      imageUrl: payload.cover,
+      mediaSrc: payload.mediaSrc,
+      source: "bxh-new-release", // Add source for context
+    };
+
+    // Find the index of the clicked song within the dataBXH array
+    const startIndex = dataBXH.findIndex(item => item.id === payload.id);
+
+    // Load the entire dataBXH list into the queue and start playing from the clicked song
+    loadQueue(dataBXH.map(item => ({
+      id: item.id,
+      title: item.title,
+      artists: item.artists,
+      imageUrl: item.cover,
+      mediaSrc: item.mediaSrc,
+      source: "bxh-new-release",
+    })), startIndex !== -1 ? startIndex : 0);
   };
 
   const favoriteViaContextOrLocal = (item) => {
@@ -275,7 +277,7 @@ export default function BXHNewReleaseSection() {
             <Box key={item.id} sx={{ flex: "0 0 auto", width: 250 }}>
               <BXHCard
                 item={item}
-                onPlay={playViaContextOrFallback}
+                onPlay={handlePlayItem}
                 onFavorite={favoriteViaContextOrLocal}
               />
             </Box>

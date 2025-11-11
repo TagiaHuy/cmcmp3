@@ -188,34 +188,36 @@ export default function Top100Section() {
   const linkColor   = theme.palette.mode === "dark" ? "#fff" : "#000";
 
   // Player context (chuẩn)
-  const { handlePlay, addToLibrary } = useMediaPlayer();
+  const { handlePlay, addToLibrary, loadQueue } = useMediaPlayer();
 
   // Fallback phát nhạc nếu context chưa wired
-  const playViaContextOrFallback = (payload) => {
-    // Ưu tiên context
-    if (typeof handlePlay === "function") {
-      return handlePlay({
-        title: payload.title,
-        artists: payload.artists,
-        imageUrl: payload.imageUrl,
-        audioUrl: payload.mediaSrc, // map sang field audioUrl cho player hiện có
-        mediaSrc: payload.mediaSrc,
-      });
-    }
-    // Fallback: phát trực tiếp
-    if (payload?.mediaSrc) {
-      if (!window.__audioSingleton) {
-        window.__audioSingleton = new Audio();
-        window.__audioSingleton.preload = "auto";
-      }
-      const audio = window.__audioSingleton;
-      audio.pause();
-      audio.src = payload.mediaSrc;
-      audio.load();
-      audio.play().catch((e) => console.warn("Không phát được audio:", e));
-    } else {
+  const handlePlayItem = (payload) => {
+    if (!payload || !payload.mediaSrc) {
       console.warn("Thiếu mediaSrc:", payload);
+      return;
     }
+
+    const songToPlay = {
+      title: payload.title,
+      artists: payload.subtitle, // Assuming subtitle maps to artists
+      imageUrl: payload.cover,
+      mediaSrc: payload.mediaSrc,
+      id: payload.id, // Ensure ID is passed
+      source: "top100", // Add source for context
+    };
+
+    // Find the index of the clicked song within the dataTop100 array
+    const startIndex = dataTop100.findIndex(item => item.id === payload.id);
+
+    // Load the entire dataTop100 list into the queue and start playing from the clicked song
+    loadQueue(dataTop100.map(item => ({
+      id: item.id,
+      title: item.title,
+      artists: item.subtitle,
+      imageUrl: item.cover,
+      mediaSrc: item.mediaSrc,
+      source: "top100",
+    })), startIndex !== -1 ? startIndex : 0);
   };
 
   const favoriteViaContextOrLocal = (item) => {
@@ -262,7 +264,7 @@ export default function Top100Section() {
           <Top100Card
             key={item.id}
             item={item}
-            onPlay={playViaContextOrFallback}
+            onPlay={handlePlayItem}
             onFavorite={favoriteViaContextOrLocal}
           />
         ))}

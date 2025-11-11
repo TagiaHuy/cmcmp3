@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import BaseCard from './BaseCard';
 import PlayableImage from './PlayableImage';
-import { useMediaPlayer } from '../../context/MediaPlayerContext';
+// import { useMediaPlayer } from '../../context/MediaPlayerContext'; // Removed direct use
 
 const FALLBACK_BG =
   "data:image/svg+xml;utf8," +
@@ -16,13 +16,13 @@ const FALLBACK_BG =
      </svg>`
   );
 
-function SongCardDetailed({ song }) {
-  const { handlePlay } = useMediaPlayer();
+function SongCardDetailed({ song, onPlay }) { // Accept onPlay prop
+  // const { handlePlay } = useMediaPlayer(); // Removed direct use
 
-  const onPlay = () => {
+  const handlePlayClick = () => { // Renamed for clarity
     console.log(`Attempting to play song: ${song?.title}`);
-    if (song) {
-      handlePlay(song);
+    if (song && onPlay) {
+      onPlay(song); // Call the onPlay prop from parent
     }
   };
 
@@ -89,7 +89,7 @@ function SongCardDetailed({ song }) {
         title={title}
         size={130} // Match the default size
         sx={{ position: 'absolute', top: 15, left: 15, zIndex: 2 }}
-        onPlay={onPlay}
+        onPlay={handlePlayClick} // Pass the local handler
         song={song}
         mediaSrc={song.mediaSrc} // Pass the mediaSrc prop
       />

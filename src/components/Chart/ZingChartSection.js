@@ -149,7 +149,7 @@ function SongTooltip({ active, payload, label, series }) {
 export default function ZingChartSection() {
   const { loading, data, tiles } = useZingChart();
   const theme = useTheme();
-  const { handlePlay } = useMediaPlayer();
+  const { handlePlay, loadQueue } = useMediaPlayer();
 
   const colors = useMemo(() => ({
     vn:   theme.palette.mode === "dark" ? "#73B5FF" : "#1976d2",
@@ -191,7 +191,8 @@ export default function ZingChartSection() {
   // Chuẩn hoá object truyền vào MediaPlayer
   const onPlayTop = (item) => {
     if (!item) return;
-    handlePlay?.({
+
+    const songToPlay = {
       id: item.id ?? `zingchart-${item.rank}`,
       title: item.title,
       artists: item.artists,
@@ -200,7 +201,22 @@ export default function ZingChartSection() {
       percent: item.percent,
       rank: item.rank,
       source: "zingchart",
-    });
+    };
+
+    // Find the index of the clicked song within the top3 array
+    const startIndex = top3.findIndex(s => s.id === item.id || s.rank === item.rank);
+
+    // Load the entire top3 list into the queue and start playing from the clicked song
+    loadQueue(top3.map(s => ({
+      id: s.id ?? `zingchart-${s.rank}`,
+      title: s.title,
+      artists: s.artists,
+      imageUrl: s.cover,
+      mediaSrc: s.mediaSrc,
+      percent: s.percent,
+      rank: s.rank,
+      source: "zingchart",
+    })), startIndex !== -1 ? startIndex : 0);
   };
 
   // thời điểm hiện tại (nếu BE có lastUpdated)

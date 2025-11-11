@@ -177,5 +177,19 @@ export const getSongsByLikes = async (limit = 9, signal) => {
   }
 };
 
-
-
+/**
+ * Lấy danh sách bài hát theo mảng IDs
+ */
+export const getSongsByIds = async (ids, signal) => {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return [];
+  }
+  try {
+    const songPromises = ids.map(id => getSongById(id, signal).catch(() => null));
+    const songs = await Promise.all(songPromises);
+    return songs.filter(Boolean); // Filter out any nulls from failed fetches
+  } catch (error) {
+    console.error("Error fetching songs by IDs:", error);
+    return [];
+  }
+};

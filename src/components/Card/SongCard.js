@@ -1,14 +1,14 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Box } from '@mui/material';
-import { useMediaPlayer } from '../../context/MediaPlayerContext';
+// import { useMediaPlayer } from '../../context/MediaPlayerContext'; // Removed direct use
 import PlayableImage from './PlayableImage'; // Re-using the playable image component
 
-const SongCard = ({ song }) => {
-  const { handlePlay } = useMediaPlayer();
+const SongCard = ({ song, onPlay }) => { // Accept onPlay prop
+  // const { handlePlay } = useMediaPlayer(); // Removed direct use
 
-  const onPlay = () => {
-    if (song) {
-      handlePlay(song);
+  const handlePlayClick = () => { // Renamed for clarity
+    if (song && onPlay) {
+      onPlay(song); // Call the onPlay prop from parent
     }
   };
 
@@ -28,7 +28,7 @@ const SongCard = ({ song }) => {
         <PlayableImage
           imageUrl={song.imageUrl}
           title={song.title}
-          onPlay={onPlay}
+          onPlay={handlePlayClick} // Pass the local handler
           size={180}
         >
           <CardMedia

@@ -23,21 +23,6 @@ export const MediaPlayerProvider = ({ children }) => {
   const [isShuffling, setIsShuffling] = useState(false);
   const [repeatMode, setRepeatMode] = useState('none'); // 'none' | 'one' | 'all'
 
-  // --- Init recently played from localStorage ---
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('recentlyPlayed')) || [];
-      setRecentlyPlayed(stored);
-    } catch {
-      setRecentlyPlayed([]);
-    }
-  }, []);
-
-  // --- Sync src khi đổi track (KHÔNG tăng key, KHÔNG remount) ---
-  useEffect(() => {
-    setCurrentPlayingSrc(currentTrack?.mediaSrc || null);
-  }, [currentTrack]);
-
   // ===== Helpers =====
   const safeIndex = useCallback((i, len) => {
     if (!len) return 0;
@@ -58,6 +43,26 @@ export const MediaPlayerProvider = ({ children }) => {
     return idx;
   }, []);
 
+  // --- Init recently played from localStorage ---
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('recentlyPlayed')) || [];
+      setRecentlyPlayed(stored);
+    } catch {
+      setRecentlyPlayed([]);
+    }
+  }, []);
+
+  // --- Sync currentTrack khi đổi currentIndex hoặc queue ---
+  useEffect(() => {
+    setCurrentTrack(queue[currentIndex] || null);
+  }, [currentIndex, queue]);
+
+  // --- Sync src khi đổi track (KHÔNG tăng key, KHÔNG remount) ---
+  useEffect(() => {
+    setCurrentPlayingSrc(currentTrack?.mediaSrc || null);
+  }, [currentTrack]);
+
   // ===== API phát nhạc =====
 
   /** Phát 1 bài lẻ (không thay queue nếu đã có bài trong queue) */
@@ -71,11 +76,9 @@ export const MediaPlayerProvider = ({ children }) => {
         list.push(track);       // thêm vào cuối
         idx = list.length - 1;
       }
-      setCurrentIndex(idx);
+      setCurrentIndex(idx); // This will trigger the useEffect to set currentTrack
       return list;
     });
-
-    setCurrentTrack(track);
 
     // Recently played (unique + limit 10)
     setRecentlyPlayed(prev => {
@@ -105,29 +108,26 @@ export const MediaPlayerProvider = ({ children }) => {
     const list = Array.isArray(songs) ? songs : [];
     setQueue(list);
     const idx = safeIndex(startIndex, list.length);
-    setCurrentIndex(idx);
-    setCurrentTrack(list[idx] || null);
+    setCurrentIndex(idx); // This will trigger the useEffect to set currentTrack
   }, [safeIndex]);
 
   /** Phát ngẫu nhiên 1 bài trong playlist & bật shuffle (KHÔNG reset bài nếu đã phát) */
   const playPlaylistRandom = useCallback((songs) => {
     const list = Array.isArray(songs) ? songs : [];
     if (!list.length) {
-      setQueue([]); setCurrentIndex(0); setCurrentTrack(null);
+      setQueue([]); setCurrentIndex(0); // This will trigger the useEffect to set currentTrack
       return;
     }
     const idx = Math.floor(Math.random() * list.length);
     setQueue(list);
-    setCurrentIndex(idx);
-    setCurrentTrack(list[idx]);
+    setCurrentIndex(idx); // This will trigger the useEffect to set currentTrack
     setIsShuffling(true);        // chỉ đổi cờ
-  }, []);
+  }, [queue]);
 
   /** Phát bài ở vị trí index trong queue (tiện cho sidebar queue) */
   const playAt = useCallback((index) => {
     setCurrentIndex(i => {
       const nextI = safeIndex(index, queue.length);
-      setCurrentTrack(queue[nextI] || null);
       return nextI;
     });
   }, [queue, safeIndex]);
@@ -136,7 +136,6 @@ export const MediaPlayerProvider = ({ children }) => {
   const prev = useCallback(() => {
     setCurrentIndex(i => {
       const nextI = safeIndex(i - 1, queue.length);
-      setCurrentTrack(queue[nextI] || null);
       return nextI;
     });
   }, [queue, safeIndex]);
@@ -153,7 +152,6 @@ export const MediaPlayerProvider = ({ children }) => {
         if (atLast) nextI = (repeatMode === 'all') ? 0 : i;
         else nextI = i + 1;
       }
-      setCurrentTrack(queue[nextI] || null);
       return nextI;
     });
   }, [queue, isShuffling, repeatMode, randomNextIndex]);

@@ -3,12 +3,14 @@ import { Box, Typography, Select, MenuItem } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { getTopSongs, getSongsByReleaseDate, getSongsByLikes } from "../../services/songService";
 import SongCarousel from "../Carousel/SongCarousel";
+import { useMediaPlayer } from "../../context/MediaPlayerContext"; // Import useMediaPlayer
 
 export default function TopSongsSection() {
   const [topSongs, setTopSongs] = useState([]);
   const [sortBy, setSortBy] = useState('listens'); // 'listens', 'releaseDate', 'likes'
   const theme = useTheme();
   const headerColor = theme.palette.mode === "dark" ? "#fff" : "#000";
+  const { loadQueue } = useMediaPlayer(); // Get loadQueue from context
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -34,6 +36,10 @@ export default function TopSongsSection() {
 
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
+  };
+
+  const handlePlaySongList = (song, index) => {
+    loadQueue(topSongs, index); // Load entire list and start from clicked song
   };
 
   return (
@@ -70,7 +76,7 @@ export default function TopSongsSection() {
 
       {/* Song Carousel */}
       {topSongs.length > 0 ? (
-        <SongCarousel songs={topSongs} columns={3} />
+        <SongCarousel songs={topSongs} columns={3} onPlay={handlePlaySongList} />
       ) : (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 130 }}>
             <Typography color="text.secondary">Đang chờ dữ liệu từ backend...</Typography>

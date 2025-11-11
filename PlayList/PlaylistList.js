@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Typography, CircularProgress, List } from '@mui/material';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { getPlaylistById } from '../../services/playlistService';
+import { getSongsByIds } from '../../services/songService'; // Import getSongsByIds
 import PlaylistListItem from './PlaylistListItem';
 
 /** Presentational – chỉ render danh sách */
@@ -21,7 +22,10 @@ const PlaylistListRenderer = ({ playlists, onPlay, onOpen }) => {
           key={pl.id}
           playlist={pl}
           index={index}
-          onPlay={() => onPlay?.(pl)}
+          onPlay={() => {
+            console.log('PlaylistListRenderer: Calling onPlay for playlist:', pl.id); // DEBUG
+            onPlay?.(pl);
+          }}
           onOpen={onOpen}
         />
       ))}
@@ -37,7 +41,7 @@ const PlaylistListRenderer = ({ playlists, onPlay, onOpen }) => {
  *  - onOpen?: (pl) => void
  */
 export default function PlaylistList({ playlistIds, playlists: playlistsFromProps, onOpen }) {
-  const { handlePlay } = useMediaPlayer(); // nếu bạn có playPlaylist thì thay bằng nó
+  const { handlePlay, loadQueue } = useMediaPlayer(); // if you have playPlaylist, replace it with that
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState(null);
   const [fetchedPlaylists, setFetchedPlaylists] = useState([]);
@@ -104,12 +108,27 @@ export default function PlaylistList({ playlistIds, playlists: playlistsFromProp
   }
 
   // Phát playlist: mặc định phát bài đầu tiên (tuỳ bạn thay bằng playPlaylist)
-  const handlePlayPlaylist = (pl) => {
-    const firstSong = Array.isArray(pl?.songs) ? pl.songs[0] : null;
-    if (!firstSong) return;
-    // Nếu songs là mảng song object → truyền thẳng
-    // Nếu songs là mảng id → bạn cần map/id->song trước khi handlePlay
-    handlePlay(firstSong);
+  const handlePlayPlaylist = async (pl) => { // Make async
+    if (!Array.isArray(pl?.songs) || pl.songs.length === 0) return;
+
+    // Assuming pl.songs contains song IDs, fetch full song objects
+    const firstSongItem = pl.songs[0];
+    let songsToLoad = [];
+
+    if (typeof firstSongItem === 'string') { // Assuming it's an array of IDs
+      try {
+        const fullSongs = await getSongsByIds(pl.songs);
+        songsToLoad = fullSongs;
+      } catch (error) {
+        console.error("handlePlayPlaylist: Error fetching full songs for playlist:", error);
+      }
+    } else { // Assuming it's already an array of full song objects
+      songsToLoad = pl.songs;
+    }
+
+    if (songsToLoad.length > 0) {
+      loadQueue(songsToLoad, 0); // Load entire playlist and start from the first song
+    }
   };
 
   return (

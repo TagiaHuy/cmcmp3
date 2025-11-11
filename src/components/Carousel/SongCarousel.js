@@ -4,7 +4,7 @@ import SongCardDetailed from '../Card/SongCardDetailed'; // Use the new detailed
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const SongCarousel = ({ title, songs, columns = 3 }) => { // Default columns set to 3
+const SongCarousel = ({ title, songs, columns = 3, onPlay }) => { // Accept onPlay prop
   const [startIndex, setStartIndex] = useState(0);
 
   const handleNext = () => {
@@ -41,9 +41,9 @@ const SongCarousel = ({ title, songs, columns = 3 }) => { // Default columns set
         <ChevronLeftIcon />
       </IconButton>
       <Grid container spacing={5} justifyContent="center">
-        {visibleSongs.map((song) => (
+        {visibleSongs.map((song, index) => ( // Add index for onPlay
           <Grid item key={song.id} xs={12 / columns}>
-            <SongCardDetailed song={song} />
+            <SongCardDetailed song={song} onPlay={(s) => onPlay(s, startIndex + index)} /> {/* Pass onPlay */}
           </Grid>
         ))}
       </Grid>

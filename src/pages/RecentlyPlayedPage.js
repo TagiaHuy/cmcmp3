@@ -5,8 +5,12 @@ import PlaylistCard from '../components/Card/PlaylistCard';
 import { useTheme } from '@mui/material/styles';
 
 const RecentlyPlayedPage = () => {
-  const { recentlyPlayed, handlePlay } = useMediaPlayer();
+  const { recentlyPlayed, loadQueue } = useMediaPlayer(); // Import loadQueue
   const theme = useTheme();
+
+  const handlePlayRecentlyPlayed = (item, index) => {
+    loadQueue(recentlyPlayed, index); // Load entire list and start from clicked item
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -17,7 +21,7 @@ const RecentlyPlayedPage = () => {
         <Grid container spacing={3}>
           {recentlyPlayed.map((playlist, index) => (
             <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-              <PlaylistCard playlist={playlist} onPlay={handlePlay} />
+              <PlaylistCard playlist={playlist} onPlay={(item) => handlePlayRecentlyPlayed(item, index)} />
             </Grid>
           ))}
         </Grid>

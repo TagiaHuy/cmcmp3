@@ -22,7 +22,10 @@ export default function PlaylistListItem({
       secondaryAction={
         <ListItemSecondaryAction>
           {onPlay && (
-            <IconButton edge="end" aria-label="play" onClick={() => onPlay(playlist)}>
+            <IconButton edge="end" aria-label="play" onClick={() => {
+              console.log('PlaylistListItem: Play button clicked for playlist:', playlist.id); // DEBUG
+              onPlay(playlist);
+            }}>
               <PlayArrowRoundedIcon />
             </IconButton>
           )}

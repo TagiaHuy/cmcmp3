@@ -10,6 +10,7 @@ const BasePlayableImage = ({
   children,
   onPlay,
   mediaSrc,
+  playlist, // Accept playlist prop
   size = 130,
   borderRadius = "8px",
   sx,
@@ -20,7 +21,7 @@ const BasePlayableImage = ({
 }) => {
   const handlePlayClick = (e) => {
     e.stopPropagation();
-    if (onPlay && mediaSrc) onPlay(mediaSrc);
+    if (onPlay && playlist) onPlay(playlist); // Pass the entire playlist object
   };
 
   return (
