@@ -33,7 +33,7 @@ const LibraryPage = () => {
   };
 
   return (
-    <Box sx={{ p: 3, width: '100%' }}>
+    <Box sx={{ p: 3, width: '100%', overflowX: 'hidden' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <Typography variant="h3" component="h1" gutterBottom sx={{ mr: 1, color: 'text.primary' }}>
           Thư viện của bạn
