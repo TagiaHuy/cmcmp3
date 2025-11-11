@@ -14,6 +14,7 @@ import SongDetailPage from './pages/SongDetailPage';
 import ArtistDetailPage from './pages/ArtistDetailPage';
 import PlaylistDetailPage from './pages/PlaylistDetailPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
+import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import { useAuth } from './context/AuthContext';
 
