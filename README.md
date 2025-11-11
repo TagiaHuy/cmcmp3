@@ -4,6 +4,7 @@ This is a React project bootstrapped with [Create React App](https://github.com/
 
 ## Folder Structure
 
+
 *   `src`: This directory contains all the source code for the application.
     *   `api`: This folder contains all the code related to API calls.
     *   `assets`: This folder contains all the static assets like images, fonts, etc.
