@@ -1,31 +1,53 @@
+// src/App.js
 import React, { useEffect } from 'react';
 import './App.css';
 import MainLayout from './layout/MainLayout';
 import { useTheme } from '@mui/material/styles';
 import { Routes, Route, Navigate } from 'react-router-dom';
+
 import HomePage from './pages/HomePage';
 import RecentlyPlayedPage from './pages/RecentlyPlayedPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import TestPage from './pages/TestPage';
-import { useAuth } from './context/AuthContext';
 import SongDetailPage from './pages/SongDetailPage';
 import ArtistDetailPage from './pages/ArtistDetailPage';
 import PlaylistDetailPage from './pages/PlaylistDetailPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import ProfilePage from './pages/ProfilePage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import { useAuth } from './context/AuthContext';
+
+/** Chặn trang công khai (login/register) nếu đã đăng nhập */
+const PublicOnlyRoute = ({ isAuthed, children }) =>
+  isAuthed ? <Navigate to="/" replace /> : children;
+
+/** Yêu cầu đăng nhập */
+const PrivateRoute = ({ isAuthed, children }) =>
+  isAuthed ? children : <Navigate to="/login" replace />;
+
+/** Yêu cầu quyền ADMIN */
+const AdminRoute = ({ isAdmin, children }) =>
+  isAdmin ? children : <Navigate to="/" replace />;
 
 function App() {
   const theme = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, isAdmin: isAdminFromCtx } = useAuth();
+
+  // Fallback xác định admin khi context chưa expose isAdmin
+  const roles = user?.roles || user?.authorities || [];
+  const computedIsAdmin =
+    Array.isArray(roles) && roles.some((r) => String(r).toUpperCase().includes('ADMIN'));
+  const isAdmin = typeof isAdminFromCtx === 'boolean' ? isAdminFromCtx : computedIsAdmin;
 
   useEffect(() => {
-    document.body.style.backgroundColor = theme.body.background;
+    document.body.style.backgroundColor = theme.body?.background ?? '#000';
   }, [theme]);
 
   return (
     <MainLayout>
       <Routes>
+        {/* Public */}
         <Route path="/" element={<HomePage />} />
         <Route path="/test" element={<TestPage />} />
         <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
@@ -33,26 +55,39 @@ function App() {
         <Route path="/songs/:songId" element={<SongDetailPage />} />
         <Route path="/artist/:artistId" element={<ArtistDetailPage />} />
         <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
-        
-        {/* Private Route for Profile Page */}
-        <Route 
-          path="/profile" 
-          element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} 
+
+        {/* Auth pages: chỉ hiển thị khi CHƯA đăng nhập */}
+        <Route
+          path="/login"
+          element={
+            <PublicOnlyRoute isAuthed={isAuthenticated}>
+              <LoginPage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicOnlyRoute isAuthed={isAuthenticated}>
+              <RegisterPage />
+            </PublicOnlyRoute>
+          }
         />
 
-        {/* Nếu đã đăng nhập, chuyển hướng khỏi trang login/register */}
-        <Route 
-          path="/login" 
-          element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />} 
-        />
-        <Route 
-          path="/register" 
-          element={isAuthenticated ? <Navigate to="/" /> : <RegisterPage />} 
+        {/* Admin (cần đăng nhập + quyền ADMIN) */}
+        <Route
+          path="/admin/users"
+          element={
+            <PrivateRoute isAuthed={isAuthenticated}>
+              <AdminRoute isAdmin={isAdmin}>
+                <AdminUsersPage />
+              </AdminRoute>
+            </PrivateRoute>
+          }
         />
 
-        {/* Thêm các private routes ở đây nếu cần */}
-        {/* Ví dụ: <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} /> */}
-
+        {/* 404 → về trang chủ */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </MainLayout>
   );
