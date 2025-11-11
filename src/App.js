@@ -13,6 +13,7 @@ import SongDetailPage from './pages/SongDetailPage';
 import ArtistDetailPage from './pages/ArtistDetailPage';
 import PlaylistDetailPage from './pages/PlaylistDetailPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   const theme = useTheme();
@@ -33,6 +34,12 @@ function App() {
         <Route path="/artist/:artistId" element={<ArtistDetailPage />} />
         <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
         
+        {/* Private Route for Profile Page */}
+        <Route 
+          path="/profile" 
+          element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />} 
+        />
+
         {/* Nếu đã đăng nhập, chuyển hướng khỏi trang login/register */}
         <Route 
           path="/login" 
