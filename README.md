@@ -2,6 +2,7 @@
 
 This is a React project bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+
 ## Folder Structure
 
 *   `src`: This directory contains all the source code for the application.
