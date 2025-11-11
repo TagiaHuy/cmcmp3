@@ -22,3 +22,23 @@ export async function getAllUsers(page = 0, size = 10, signal) {
 
   return data;
 }
+
+export async function getFavoriteSongs(signal) {
+  const res = await fetch(`${API_BASE_URL}/api/me/favorites`, {
+    method: "GET",
+    headers: {
+      ...authHeader(),
+      Accept: "application/json",
+    },
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg = data?.message || data?.error || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+
+  return data;
+}

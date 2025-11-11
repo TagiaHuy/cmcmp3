@@ -16,6 +16,7 @@ import PlaylistDetailPage from './pages/PlaylistDetailPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import LibraryPage from './pages/LibraryPage'; // New import
 import { useAuth } from './context/AuthContext';
 
 /** Chặn trang công khai (login/register) nếu đã đăng nhập */
@@ -80,6 +81,14 @@ function App() {
           element={
             <PrivateRoute isAuthed={isAuthenticated}>
               <ProfilePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/library"
+          element={
+            <PrivateRoute isAuthed={isAuthenticated}>
+              <LibraryPage />
             </PrivateRoute>
           }
         />
