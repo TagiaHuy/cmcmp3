@@ -3,9 +3,11 @@ import {
   Box, Paper, Typography, Table, TableHead, TableBody, TableRow, TableCell,
   TableContainer, CircularProgress, Alert, Pagination
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles'; // Import useTheme
 import { getAllUsers } from '../services/userService';
 
 export default function AdminUsersPage() {
+  const theme = useTheme(); // Get the current theme
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
@@ -39,7 +41,7 @@ export default function AdminUsersPage() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
+      <Typography variant="h5" fontWeight={700} sx={{ mb: 2, color: theme.palette.text.primary }}>
         Danh sách người dùng
       </Typography>
 
@@ -51,16 +53,16 @@ export default function AdminUsersPage() {
         <Alert severity="error">{err}</Alert>
       ) : (
         <>
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ backgroundColor: theme.body.background }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell width={80}>ID</TableCell>
-                  <TableCell>Tên hiển thị</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Số điện thoại</TableCell>
-                  <TableCell>Quyền</TableCell>
-                  <TableCell width={180}>Tạo lúc</TableCell>
+                  <TableCell width={80} sx={{ color: theme.palette.text.primary }}>ID</TableCell>
+                  <TableCell sx={{ color: theme.palette.text.primary }}>Tên hiển thị</TableCell>
+                  <TableCell sx={{ color: theme.palette.text.primary }}>Email</TableCell>
+                  <TableCell sx={{ color: theme.palette.text.primary }}>Số điện thoại</TableCell>
+                  <TableCell sx={{ color: theme.palette.text.primary }}>Quyền</TableCell>
+                  <TableCell width={180} sx={{ color: theme.palette.text.primary }}>Tạo lúc</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
