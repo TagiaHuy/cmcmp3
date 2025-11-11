@@ -74,6 +74,16 @@ function App() {
           }
         />
 
+        {/* Private pages: yêu cầu đăng nhập */}
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute isAuthed={isAuthenticated}>
+              <ProfilePage />
+            </PrivateRoute>
+          }
+        />
+
         {/* Admin (cần đăng nhập + quyền ADMIN) */}
         <Route
           path="/admin/users"
