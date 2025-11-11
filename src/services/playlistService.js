@@ -124,4 +124,36 @@ export const getNewestPlaylists = async (limit = 8, signal) => {
   }
 };
 
+/**
+ * Lấy TOP playlist sắp xếp theo lượt thích giảm dần
+ * GET /api/playlists/top/likes
+ */
+export const getPlaylistsByTopLikes = async (limit = 8, signal) => {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/playlists/top/likes?limit=${limit}`,
+      {
+        method: 'GET',
+        headers: {
+          ...authHeader(),
+          Accept: 'application/json'
+        },
+        signal,
+      }
+    );
+
+    const data = await safeJson(res);
+
+    if (!res.ok) {
+      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('Error fetching TOP liked playlists:', error);
+    return [];
+  }
+};
+
 
