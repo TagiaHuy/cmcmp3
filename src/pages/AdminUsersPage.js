@@ -62,7 +62,6 @@ export default function AdminUsersPage() {
                   <TableCell sx={{ color: theme.palette.text.primary }}>Email</TableCell>
                   <TableCell sx={{ color: theme.palette.text.primary }}>Số điện thoại</TableCell>
                   <TableCell sx={{ color: theme.palette.text.primary }}>Quyền</TableCell>
-                  <TableCell width={180} sx={{ color: theme.palette.text.primary }}>Tạo lúc</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -78,7 +77,6 @@ export default function AdminUsersPage() {
                       <TableCell>{u.email || '-'}</TableCell>
                       <TableCell>{u.phone || '-'}</TableCell>
                       <TableCell>{roles || '-'}</TableCell>
-                      <TableCell>{u.createdAt?.replace('T', ' ').slice(0, 19) || '-'}</TableCell>
                     </TableRow>
                   );
                 })}
