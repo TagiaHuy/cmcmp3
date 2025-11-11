@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Typography, Select, MenuItem } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { getTopPlaylists, getNewestPlaylists } from '../../services/playlistService';
+import { getTopPlaylists, getNewestPlaylists, getPlaylistsByTopLikes } from '../../services/playlistService';
 import PlaylistCarousel from '../Carousel/PlaylistCarousel';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 
@@ -22,6 +22,8 @@ export default function TopPlaylistsSection() {
           fetchedPlaylists = await getTopPlaylists(8, ac.signal);
         } else if (sortBy === 'newest') {
           fetchedPlaylists = await getNewestPlaylists(8, ac.signal);
+        } else if (sortBy === 'likes') {
+          fetchedPlaylists = await getPlaylistsByTopLikes(8, ac.signal);
         }
         setPlaylists(Array.isArray(fetchedPlaylists) ? fetchedPlaylists : []);
       } catch (e) {
@@ -58,6 +60,7 @@ export default function TopPlaylistsSection() {
         >
           <MenuItem value="listens">Lượt nghe</MenuItem>
           <MenuItem value="newest">Mới nhất</MenuItem>
+          <MenuItem value="likes">Lượt thích</MenuItem>
         </Select>
       </Box>
 
