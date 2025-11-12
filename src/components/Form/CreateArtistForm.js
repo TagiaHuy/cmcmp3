@@ -39,7 +39,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
     }
 
     try {
-      const response = await fetch('/api/artists', {
+      const response = await fetch('/api/artists/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

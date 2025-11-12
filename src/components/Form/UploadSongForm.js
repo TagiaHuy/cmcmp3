@@ -88,7 +88,7 @@ const UploadSongForm = ({ open, handleClose }) => {
         >
           <CloseIcon />
         </IconButton>
-        <Typography id="upload-song-modal-title" variant="h6" component="h2">
+        <Typography id="upload-song-modal-title" variant="h6" component="h2" color="primary.main">
           Tải lên bài hát mới
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
@@ -127,7 +127,7 @@ const UploadSongForm = ({ open, handleClose }) => {
               onChange={(e) => setSongFile(e.target.files[0])}
             />
           </Button>
-          {songFile && <Typography sx={{ mt: 1 }}>{songFile.name}</Typography>}
+          {songFile && <Typography sx={{ mt: 1 }} color="text.primary">{songFile.name}</Typography>}
           <Button
             variant="contained"
             component="label"
@@ -142,7 +142,7 @@ const UploadSongForm = ({ open, handleClose }) => {
               onChange={(e) => setImageFile(e.target.files[0])}
             />
           </Button>
-          {imageFile && <Typography sx={{ mt: 1 }}>{imageFile.name}</Typography>}
+          {imageFile && <Typography sx={{ mt: 1 }} color="text.primary">{imageFile.name}</Typography>}
           <Button
             type="submit"
             fullWidth

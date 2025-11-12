@@ -65,13 +65,14 @@ const ArtistsPage = () => {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
+        <Typography variant="h4" component="h1" color="primary.main">
           Nghệ sĩ
         </Typography>
-        {/* Button now visible to all users */}
-        <Button variant="contained" onClick={() => setIsModalOpen(true)}>
-          Tạo nghệ sĩ mới
-        </Button>
+        {isAdmin && ( // Wrap button with isAdmin check
+          <Button variant="contained" onClick={() => setIsModalOpen(true)}>
+            Tạo nghệ sĩ mới
+          </Button>
+        )}
       </Box>
 
       {renderContent()}

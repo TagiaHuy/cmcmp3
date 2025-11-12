@@ -44,7 +44,7 @@ const FavoriteSongs = () => {
   }
   
   if (songs.length === 0) {
-    return <Typography sx={{ textAlign: 'center', py: 5 }}>Bạn chưa có bài hát yêu thích nào.</Typography>;
+    return <Typography sx={{ textAlign: 'center', py: 5 }} color="text.primary">Bạn chưa có bài hát yêu thích nào.</Typography>;
   }
 
   return <SongList songs={songs} />;

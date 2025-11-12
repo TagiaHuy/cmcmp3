@@ -42,7 +42,7 @@ const ArtistListItem = ({ artist, index }) => {
         
         {/* Cột 1: STT */}
         <Box sx={{ width: 40, textAlign: 'center', mr: 2 }}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.primary">
             {index + 1}
           </Typography>
         </Box>
@@ -70,7 +70,7 @@ const ArtistListItem = ({ artist, index }) => {
             </Typography>
           }
           secondary={
-            <Typography variant="body2" color="text.secondary" noWrap>
+            <Typography variant="body2" color="text.primary" noWrap>
               Nghệ sĩ
             </Typography>
           }
