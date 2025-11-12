@@ -1,86 +1,94 @@
 // src/context/AuthContext.js
 import React, { createContext, useState, useEffect, useContext, useMemo } from "react";
-import {
-  register as apiRegister,
-  login as apiLogin,
-  getUserMe,
-} from "../services/authService";
+import { register as apiRegister, login as apiLogin, getUserMe } from "../services/authService";
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-  // Đọc token từ localStorage (nếu không có thì null)
-  const [token, setToken] = useState(() => localStorage.getItem("token") || null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);     // chặn render khi đang lấy user
-  const [error, setError] = useState(null);         // lưu message lỗi (nếu cần show)
+// helper: loại bỏ tiền tố "Bearer " nếu có
+const cleanToken = (t) => (t || "").replace(/^Bearer\s+/i, "").trim();
 
-  // Khi token thay đổi -> fetch /api/user/me
+export const AuthProvider = ({ children }) => {
+  const [token, setToken] = useState(() => {
+    const stored = localStorage.getItem("token");
+    return stored ? cleanToken(stored) : null;
+  });
+
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError]   = useState(null);
+
+  // Đồng bộ user từ /api/user/me khi có token
   useEffect(() => {
     const ac = new AbortController();
-
-    const run = async () => {
-      setLoading(true);
+    (async () => {
+      if (!token) { setLoading(false); return; }
       setError(null);
-
-      if (!token) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
       try {
-        const me = await getUserMe(token, ac.signal);
-        // BE có thể trả { id, email, ... } hoặc { user: {...} }
-        setUser(me?.user ?? me ?? null);
+        const me = await getUserMe(token, ac.signal); // token đã sạch
+        const userToSet = me?.user ?? me;
+        if (userToSet && Object.keys(userToSet).length > 0) {
+          setUser(userToSet);
+          localStorage.setItem("user", JSON.stringify(userToSet));
+        }
       } catch (e) {
-        console.error("[Auth] getUserMe failed:", e);
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem("token"); // token hết hạn/không hợp lệ
-        setError(e?.message || "Phiên đăng nhập đã hết hạn");
+        if (e.name !== "AbortError") {
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setError(e?.message || "Phiên đăng nhập đã hết hạn");
+        }
       } finally {
         setLoading(false);
       }
-    };
-
-    run();
+    })();
     return () => ac.abort();
   }, [token]);
 
-  // Đăng nhập
   const login = async (email, password) => {
     setError(null);
     const ac = new AbortController();
     try {
-      const data = await apiLogin(email, password, ac.signal);
-      // data có thể là {token, user} hoặc chỉ {token}
-      if (!data?.token) throw new Error("Phản hồi đăng nhập không có token");
-      setToken(data.token);
-      localStorage.setItem("token", data.token);
+      const loginData = await apiLogin(email, password, ac.signal);
+      if (!loginData?.token) throw new Error("Phản hồi đăng nhập không có token");
 
-      // Nếu BE trả user kèm theo, set luôn để UI mượt hơn
-      if (data.user) setUser(data.user);
-      // Nếu không, effect ở trên sẽ tự gọi /me để lấy
-      return data;
+      const raw   = loginData.token;
+      const clean = cleanToken(raw);               // ← làm sạch
+
+      const me = await getUserMe(clean, ac.signal);
+      const userToSet = me?.user ?? me;
+      if (!userToSet || Object.keys(userToSet).length === 0) {
+        throw new Error("Không thể lấy thông tin người dùng sau khi đăng nhập");
+      }
+
+      setToken(clean);
+      setUser(userToSet);
+      localStorage.setItem("token", clean);        // ← lưu token sạch
+      localStorage.setItem("user", JSON.stringify(userToSet));
+
+      return { token: clean, user: userToSet };
     } catch (e) {
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       setError(e?.message || "Đăng nhập thất bại");
       throw e;
     }
   };
 
-  // Đăng ký (không tự đăng nhập sau khi đăng ký; tùy bạn bật/tắt)
   const register = async (displayName, email, password) => {
     setError(null);
     const ac = new AbortController();
     try {
-      const data = await apiRegister(displayName, email, password, ac.signal);
-      // Nếu muốn tự đăng nhập sau khi đăng ký, bật 3 dòng dưới:
-      // if (data?.token) {
-      //   setToken(data.token);
-      //   localStorage.setItem("token", data.token);
-      // }
-      return data;
+      return await apiRegister(displayName, email, password, ac.signal);
     } catch (e) {
       setError(e?.message || "Đăng ký thất bại");
       throw e;
@@ -91,34 +99,47 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setError(null);
   };
 
-  const value = useMemo(
-    () => ({
-      user,
-      token,
-      loading,
-      error,
-      isAuthenticated: !!token,
-      login,
-      register,
-      logout,
-      handleSocialLogin: (token) => {
-        setToken(token);
-        localStorage.setItem("token", token);
-      },
-      // Optional: cho phép chỗ khác cập nhật user sau khi edit profile
-      setUser,
-    }),
-    [user, token, loading, error]
-  );
+  // ==== TÍNH isAdmin MẠNH MẼ ====
+  const isAdmin = useMemo(() => {
+    if (!user) return false;
+    const roleCandidates = [
+      ...(Array.isArray(user.roles) ? user.roles : []),
+      ...(Array.isArray(user.authorities) ? user.authorities : []),
+      ...(Array.isArray(user.roleList) ? user.roleList : []),
+    ];
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+    const roleStrs = roleCandidates
+      .map(r => (typeof r === "string" ? r : (r?.authority || r?.name || r?.role || r?.code || "")))
+      .map(s => String(s).toUpperCase());
+
+    if (roleStrs.some(s => s.includes("ADMIN"))) return true;
+
+    const uname = (user.username || user.email || "").toString().toLowerCase();
+    if (uname.startsWith("admin")) return true;
+
+    if (user.isAdmin === true) return true;
+
+    return false;
+  }, [user]);
+
+  const value = useMemo(() => ({
+    user, token, loading, error,
+    isAuthenticated: !!token,
+    isAdmin,
+    login, register, logout,
+    handleSocialLogin: (rawToken) => {
+      const clean = cleanToken(rawToken);          // ← sạch khi social login
+      setToken(clean);
+      localStorage.setItem("token", clean);
+    },
+    setUser,
+  }), [user, token, loading, error, isAdmin]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);

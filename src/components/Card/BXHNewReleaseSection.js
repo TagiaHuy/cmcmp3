@@ -3,8 +3,6 @@ import { Box, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 import BasePlayableImage from "./Base/BasePlayableImage";
-import FavoriteButton from "../Button/Specific/FavoriteButton";
-import MoreButton from "../Button/Specific/MoreButton";
 import { useMediaPlayer } from "../../context/MediaPlayerContext";
 import Amthambenem from "../../assets/Am-tham-ben-em.mp3";
 
@@ -111,8 +109,6 @@ function BXHCard({ item, onPlay, onFavorite }) {
               zIndex: 2,
             }}
           >
-            <FavoriteButton visible={true} onClick={() => onFavorite?.(item)} />
-            <MoreButton visible={true} />
           </Box>
         )}
       </Box>

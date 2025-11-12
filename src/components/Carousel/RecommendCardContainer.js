@@ -12,6 +12,7 @@ function RecommendCardContainer({ recommendations, onPlay }) {
         {recommendations.map((item, index) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
             <RecommendCard
+              id={item.id}
               title={item.title}
               subtitle={item.subtitle}
               imageUrl={item.imageUrl}

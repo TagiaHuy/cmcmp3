@@ -10,7 +10,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+const emailRegex = /^[^\s@]+@gmail\.com$/i;
 
 const RegisterForm = () => {
   const { register } = useAuth();
@@ -251,7 +251,7 @@ const RegisterForm = () => {
           '&:hover': { backgroundPosition: 'right center' }
         }}
       >
-        Đăng ký với Google
+        Đăng nhập với Google
       </Button>
     </Box>
   );
