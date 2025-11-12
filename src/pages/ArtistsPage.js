@@ -69,7 +69,7 @@ const ArtistsPage = () => {
           Nghệ sĩ
         </Typography>
         {isAdmin && ( // Wrap button with isAdmin check
-          <Button variant="contained" onClick={() => setIsModalOpen(true)}>
+          <Button variant="contained" color="primary" onClick={() => setIsModalOpen(true)}>
             Tạo nghệ sĩ mới
           </Button>
         )}

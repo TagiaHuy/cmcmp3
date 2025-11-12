@@ -83,7 +83,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
         >
           <CloseIcon />
         </IconButton>
-        <Typography id="create-artist-modal-title" variant="h6" component="h2">
+        <Typography id="create-artist-modal-title" variant="h6" component="h2" color="primary.main">
           Tạo nghệ sĩ mới
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
@@ -112,11 +112,12 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
               onChange={(e) => setImageFile(e.target.files[0])}
             />
           </Button>
-          {imageFile && <Typography sx={{ mt: 1 }}>{imageFile.name}</Typography>}
+          {imageFile && <Typography sx={{ mt: 1 }} color="text.primary">{imageFile.name}</Typography>}
           <Button
             type="submit"
             fullWidth
             variant="contained"
+            color="primary"
             sx={{ mt: 3, mb: 2 }}
           >
             Tạo nghệ sĩ
