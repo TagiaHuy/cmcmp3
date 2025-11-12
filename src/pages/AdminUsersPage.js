@@ -75,7 +75,7 @@ export default function AdminUsersPage() {
                       <TableCell>{u.id}</TableCell>
                       <TableCell>{u.displayName || u.username || '-'}</TableCell>
                       <TableCell>{u.email || '-'}</TableCell>
-                      <TableCell>{u.phone || '-'}</TableCell>
+                      <TableCell>{u.phoneNumber || '-'}</TableCell>
                       <TableCell>{roles || '-'}</TableCell>
                     </TableRow>
                   );
