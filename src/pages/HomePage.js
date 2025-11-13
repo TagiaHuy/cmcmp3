@@ -5,6 +5,8 @@ import ZingChartSection from '../components/Chart/ZingChartSection';
 import TopPlaylistsSection from '../components/Card/TopPlaylistsSection';
 import TopSongsSection from '../components/Card/TopSongsSection';
 import PlaylistView from '../components/Card/PlaylistView';
+import Top100Section from '../components/Card/Top100Section';
+import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
 
 const HomePage = () => {
   const { playlists, loading, error } = usePlaylists();
@@ -28,6 +30,9 @@ const HomePage = () => {
       <TopPlaylistsSection />
 
       <TopSongsSection />
+
+      <Top100Section />
+      <BXHNewReleaseSection />
 
       <PlaylistView playlist={l1} banners={playlists.map(p => ({ ...p, title: p.name }))} />
       <PlaylistView playlist={l2} />

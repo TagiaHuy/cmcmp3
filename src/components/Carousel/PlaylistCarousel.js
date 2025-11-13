@@ -42,7 +42,7 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
       </IconButton>
       <Grid container spacing={5} justifyContent="center">
         {visiblePlaylists.map((playlist, index) => (
-          <Grid item key={index} xs={12 / columns}>
+          <Grid key={index} xs={12 / columns}>
             <PlaylistCardSafe
               playlist={playlist}
               onPlay={onPlay}

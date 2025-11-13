@@ -16,6 +16,8 @@ import PlaylistDetailPage from './pages/PlaylistDetailPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import LibraryPage from './pages/LibraryPage'; // New import
+import ArtistsPage from './pages/ArtistsPage'; // New import for ArtistsPage
 import { useAuth } from './context/AuthContext';
 
 /** Chặn trang công khai (login/register) nếu đã đăng nhập */
@@ -55,6 +57,7 @@ function App() {
         <Route path="/songs/:songId" element={<SongDetailPage />} />
         <Route path="/artist/:artistId" element={<ArtistDetailPage />} />
         <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
+        <Route path="/artists" element={<ArtistsPage />} /> {/* Re-added route for ArtistsPage */}
 
         {/* Auth pages: chỉ hiển thị khi CHƯA đăng nhập */}
         <Route
@@ -71,6 +74,24 @@ function App() {
             <PublicOnlyRoute isAuthed={isAuthenticated}>
               <RegisterPage />
             </PublicOnlyRoute>
+          }
+        />
+
+        {/* Private pages: yêu cầu đăng nhập */}
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute isAuthed={isAuthenticated}>
+              <ProfilePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/library"
+          element={
+            <PrivateRoute isAuthed={isAuthenticated}>
+              <LibraryPage />
+            </PrivateRoute>
           }
         />
 

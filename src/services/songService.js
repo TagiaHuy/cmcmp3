@@ -6,12 +6,19 @@ import { authHeader } from '../utils/auth';  // thêm hàm lấy token
 /**
  * Lấy toàn bộ danh sách bài hát (yêu cầu JWT Bearer token)
  */
-export const getAllSongs = async (signal) => {
+export const getAllSongs = async (page = 0, size = 10, sortBy = 'createdAt', direction = 'desc', signal) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/songs`, {
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sortBy,
+      direction,
+    }).toString();
+
+    const res = await fetch(`${API_BASE_URL}/api/songs?${queryParams}`, {
       method: "GET",
       headers: {
-        ...authHeader(),              // ⬅️  GỬI TOKEN KÈM THEO
+        ...authHeader(),
         Accept: "application/json",
       },
       signal,
@@ -87,9 +94,10 @@ export const getSongsByArtist = async (artistId, signal) => {
  */
 export const getTopSongs = async (limit = 10, signal) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/songs?sort=listenCount,desc&limit=${limit}`, {
+    const res = await fetch(`${API_BASE_URL}/api/songs/top?limit=${limit}`, {
       method: "GET",
       headers: {
+        ...authHeader(),
         Accept: "application/json"
       },
       signal,
@@ -118,11 +126,12 @@ export const getTopSongs = async (limit = 10, signal) => {
 /**
  * Lấy TOP bài hát sắp xếp theo ngày phát hành giảm dần
  */
-export const getSongsByReleaseDate = async (limit = 9, signal) => {
+export const getNewestSongs = async (limit = 9, signal) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/songs?sort=createdAt,desc&limit=${limit}`, {
+    const res = await fetch(`${API_BASE_URL}/api/songs/top/new-releases?limit=${limit}`, {
       method: "GET",
       headers: {
+        ...authHeader(),
         Accept: "application/json"
       },
       signal,
@@ -151,9 +160,10 @@ export const getSongsByReleaseDate = async (limit = 9, signal) => {
  */
 export const getSongsByLikes = async (limit = 9, signal) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/songs?sort=likeCount,desc&limit=${limit}`, {
+    const res = await fetch(`${API_BASE_URL}/api/songs/top/most-liked?limit=${limit}`, {
       method: "GET",
       headers: {
+        ...authHeader(),
         Accept: "application/json"
       },
       signal,
@@ -175,6 +185,29 @@ export const getSongsByLikes = async (limit = 9, signal) => {
     console.error("Error fetching TOP most liked songs:", error);
     return [];
   }
+};
+
+/**
+ * Lấy danh sách các bài hát đã tải lên của người dùng hiện tại
+ */
+export const getUploadedSongs = async (signal) => {
+  const res = await fetch(`${API_BASE_URL}/api/songs/uploaded`, {
+    method: "GET",
+    headers: {
+      ...authHeader(),
+      Accept: "application/json",
+    },
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg = data?.message || data?.error || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+
+  return data;
 };
 
 

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography, Select, MenuItem } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { getTopSongs, getSongsByReleaseDate, getSongsByLikes } from "../../services/songService";
+import { getTopSongs, getNewestSongs, getSongsByLikes } from "../../services/songService";
 import SongCarousel from "../Carousel/SongCarousel";
 
 export default function TopSongsSection() {
   const [topSongs, setTopSongs] = useState([]);
-  const [sortBy, setSortBy] = useState('listens'); // 'listens', 'releaseDate', 'likes'
+  const [sortBy, setSortBy] = useState('listens'); // 'listens', 'newest', 'likes'
   const theme = useTheme();
   const headerColor = theme.palette.mode === "dark" ? "#fff" : "#000";
 
@@ -17,8 +17,8 @@ export default function TopSongsSection() {
         case 'listens':
           songs = await getTopSongs(9);
           break;
-        case 'releaseDate':
-          songs = await getSongsByReleaseDate(9);
+        case 'newest':
+          songs = await getNewestSongs(9);
           break;
         case 'likes':
           songs = await getSongsByLikes(9);
@@ -63,7 +63,7 @@ export default function TopSongsSection() {
           }}
         >
           <MenuItem value="listens">Lượt nghe</MenuItem>
-          <MenuItem value="releaseDate">Phát hành</MenuItem>
+          <MenuItem value="newest">Mới nhất</MenuItem>
           <MenuItem value="likes">Lượt thích</MenuItem>
         </Select>
       </Box>

@@ -51,6 +51,11 @@ const ProfilePage = () => {
     setError('');
     setSuccess('');
     try {
+      if (!token) {
+        setError('Không có token xác thực. Vui lòng đăng nhập lại.');
+        setLoading(false);
+        return;
+      }
       const updatedUser = await updateUserProfile(token, formData);
       setUser(updatedUser); // Update user in context
       setSuccess('Cập nhật thông tin thành công!');
@@ -76,6 +81,11 @@ const ProfilePage = () => {
     setError('');
     setSuccess('');
     try {
+      if (!token) {
+        setError('Không có token xác thực. Vui lòng đăng nhập lại.');
+        setLoading(false);
+        return;
+      }
       const updatedUser = await updateUserAvatar(token, avatarFormData);
       setUser(updatedUser); // Update user in context
       setSuccess('Cập nhật avatar thành công!');
@@ -86,7 +96,7 @@ const ProfilePage = () => {
     }
   };
 
-  const avatarSrc = user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : null;
+  const avatarSrc = user.avatarUrl ? `${API_BASE_URL}/images/${user.avatarUrl.split('/').pop()}` : null;
 
   return (
     <Box sx={{ padding: 4, display: 'flex', justifyContent: 'center' }}>

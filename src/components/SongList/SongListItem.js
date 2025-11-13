@@ -2,9 +2,7 @@ import React from 'react';
 import { 
   ListItem, 
   ListItemButton, 
-  ListItemAvatar, 
   ListItemText, 
-  Avatar, 
   Stack, 
   Typography 
 } from '@mui/material';
@@ -12,6 +10,7 @@ import GraphicEqIcon from '@mui/icons-material/GraphicEq'; // Icon hiển thị 
 import Box from '@mui/material/Box';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+import PlayableImage from '../Card/PlayableImage'; // Import the PlayableImage component
 
 const SongListItem = ({ song, index, onPlay, isPlaying }) => {
 
@@ -49,12 +48,18 @@ const SongListItem = ({ song, index, onPlay, isPlaying }) => {
         }
       }}
     >
-      <ListItemButton onClick={onPlay} sx={{ py: 1.5 }}>
+      <ListItemButton onClick={onPlay} sx={{ py: 1.5, pr: '150px' /* Add padding to avoid overlap with secondaryAction */ }}>
         
-        {/* Cột 1: STT / Icon Play / Icon Đang phát */}
-        <Box sx={{ width: 40, textAlign: 'center', mr: 2 }}>
+        {/* Cột 1: STT / Icon Đang phát */}
+        <Box sx={{ 
+          width: 40, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          mr: 2,
+        }}>
           {isPlaying ? (
-            <GraphicEqIcon color="primary" sx={{ animation: 'pulse 1s infinite' }} />
+            <GraphicEqIcon color="primary" />
           ) : (
             <Typography variant="body2" color="text.secondary">
               {index + 1}
@@ -62,15 +67,16 @@ const SongListItem = ({ song, index, onPlay, isPlaying }) => {
           )}
         </Box>
 
-        {/* Cột 2: Ảnh (Avatar) */}
-        <ListItemAvatar sx={{ minWidth: 0, mr: 2 }}>
-          <Avatar 
-            alt={song.title} 
-            src={song.imageUrl} 
-            variant="rounded" 
-            sx={{ width: 48, height: 48 }}
+        {/* Cột 2: Ảnh với nút Play khi hover */}
+        <Box sx={{ mr: 2 }}>
+          <PlayableImage
+            imageUrl={song.imageUrl}
+            title={song.title}
+            size={48}
+            borderRadius="4px"
+            onPlay={onPlay}
           />
-        </ListItemAvatar>
+        </Box>
 
         {/* Cột 3: Tên bài hát & Nghệ sĩ */}
         <ListItemText

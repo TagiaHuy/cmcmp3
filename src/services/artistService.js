@@ -33,3 +33,27 @@ export const getArtistById = async (artistId, signal) => {
     throw error; // Re-throw the error to be caught by the calling hook
   }
 };
+
+/**
+ * Lấy danh sách tất cả nghệ sĩ
+ * @param {AbortSignal} signal - Abort signal để cancel request
+ */
+export const getAllArtists = async (signal) => {
+  const res = await fetch(`${API_BASE_URL}/api/artists`, {
+    method: "GET",
+    headers: {
+      ...authHeader(),
+      Accept: "application/json",
+    },
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg = data?.message || data?.error || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+
+  return data;
+};

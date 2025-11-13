@@ -101,7 +101,7 @@ export const updateUserProfile = async (token, profileData, signal) => {
 /** Cập nhật avatar user (cần Bearer token) */
 export const updateUserAvatar = async (token, formData, signal) => {
   const res = await fetch(`${API_BASE_URL}/api/me/avatar`, {
-    method: 'PUT',
+    method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',

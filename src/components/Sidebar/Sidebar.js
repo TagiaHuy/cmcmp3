@@ -68,6 +68,7 @@ function Sidebar({ anchor, items, logoComponent, bottomPadding = 84 }) {
                 <ListItemButton
                   component={item.to ? RouterLink : 'button'}
                   to={item.to || undefined}
+                  onClick={item.onClick || undefined} // Add onClick handler here
                   selected={!!selected}
                 >
                   <ListItemIcon
