@@ -1,46 +1,94 @@
 // src/components/Section/TopPlaylistsSection.jsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Select, MenuItem } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { getTopPlaylists, getNewestPlaylists, getPlaylistsByTopLikes } from '../../services/playlistService';
+
+import {
+  getTopPlaylists,
+  getNewestPlaylists,
+  getPlaylistsByTopLikes
+} from '../../services/playlistService';
+
 import PlaylistCarousel from '../Carousel/PlaylistCarousel';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 
 export default function TopPlaylistsSection() {
   const [playlists, setPlaylists] = useState([]);
   const [sortBy, setSortBy] = useState('listens');
-  const { handlePlay } = useMediaPlayer();
+
+  const {
+    loadQueue,
+    handlePlay,
+    playPlaylistRandom,
+    normalizeArtists
+  } = useMediaPlayer();
+
   const theme = useTheme();
   const headerColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
 
+  // ============================
+  // Fetch playlist theo sort type
+  // ============================
   useEffect(() => {
     const ac = new AbortController();
-    const fetchPlaylists = async () => {
-      let fetchedPlaylists = [];
+
+    async function fetchPlaylists() {
       try {
+        let fetched = [];
+
         if (sortBy === 'listens') {
-          fetchedPlaylists = await getTopPlaylists(8, ac.signal);
+          fetched = await getTopPlaylists(8, ac.signal);
         } else if (sortBy === 'newest') {
-          fetchedPlaylists = await getNewestPlaylists(8, ac.signal);
+          fetched = await getNewestPlaylists(8, ac.signal);
         } else if (sortBy === 'likes') {
-          fetchedPlaylists = await getPlaylistsByTopLikes(8, ac.signal);
+          fetched = await getPlaylistsByTopLikes(8, ac.signal);
         }
-        setPlaylists(Array.isArray(fetchedPlaylists) ? fetchedPlaylists : []);
-      } catch (e) {
-        if (e?.name !== 'AbortError') {
-          console.error("Error fetching playlists:", e);
-          setPlaylists([]);
-        }
+
+        setPlaylists(Array.isArray(fetched) ? fetched : []);
+      } catch (err) {
+        if (err.name !== 'AbortError') console.error(err);
+        setPlaylists([]);
       }
-    };
+    }
 
     fetchPlaylists();
     return () => ac.abort();
   }, [sortBy]);
 
+  // ==========================================
+  // ⭐ Hàm play playlist (track đầu hoặc random)
+  // ==========================================
+  const handlePlayPlaylist = (playlist) => {
+    if (!playlist) return;
+
+    const songs = playlist.songs || playlist.trackList || [];
+
+    if (!Array.isArray(songs) || songs.length === 0) {
+      console.warn("Playlist không có bài hát:", playlist);
+      return;
+    }
+
+    // Chuẩn hóa track list
+    const normalizedSongs = songs.map((song) => ({
+      id: song.id,
+      title: song.title,
+      mediaSrc: song.mediaSrc || song.audioUrl,
+      imageUrl: song.imageUrl,
+      artists: normalizeArtists(song.artists)
+    }));
+
+    // Play track đầu tiên
+    loadQueue(normalizedSongs, 0);
+    handlePlay(normalizedSongs[0]);
+  };
+
   return (
     <Box sx={{ my: 5, ml: 11, mr: 11 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+      {/* Header */}
+      <Box sx={{
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', mb: 2
+      }}>
         <Typography variant="h5" fontWeight={700} sx={{ color: headerColor }}>
           Danh sách playlist
         </Typography>
@@ -51,11 +99,8 @@ export default function TopPlaylistsSection() {
           variant="outlined"
           sx={{
             height: 40,
-            color: 'text.primary',
             backgroundColor: 'background.paper',
-            '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0,0,0,0.23)' },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
-            '.MuiSvgIcon-root': { color: 'text.primary' },
+            color: 'text.primary'
           }}
         >
           <MenuItem value="listens">Lượt nghe</MenuItem>
@@ -64,12 +109,24 @@ export default function TopPlaylistsSection() {
         </Select>
       </Box>
 
+      {/* Nội dung */}
       {playlists.length > 0 ? (
-        // ép carousel remount khi đổi sort để cập nhật thứ tự
-        <PlaylistCarousel key={sortBy} playlists={playlists} onPlay={handlePlay} columns={3} />
+        <PlaylistCarousel
+          key={sortBy} // ép remount khi đổi sort
+          playlists={playlists}
+          columns={3}
+          onPlay={handlePlayPlaylist}  // ⭐ TRUYỀN ĐÚNG CALLBACK PLAY PLAYLIST
+        />
       ) : (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 130 }}>
-          <Typography color="text.secondary">Đang chờ dữ liệu từ backend...</Typography>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: 130
+        }}>
+          <Typography color="text.secondary">
+            Đang chờ dữ liệu từ backend...
+          </Typography>
         </Box>
       )}
     </Box>

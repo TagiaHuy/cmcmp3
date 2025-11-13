@@ -8,23 +8,33 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
   const [startIndex, setStartIndex] = useState(0);
 
   const handleNext = () => {
-    setStartIndex((prevIndex) => Math.min(prevIndex + columns, playlists.length - columns));
+    setStartIndex((prev) =>
+      Math.min(prev + columns, playlists.length - columns)
+    );
   };
 
   const handlePrev = () => {
-    setStartIndex((prevIndex) => Math.max(prevIndex - columns, 0));
+    setStartIndex((prev) => Math.max(prev - columns, 0));
   };
 
   const visiblePlaylists = playlists.slice(startIndex, startIndex + columns);
 
   return (
     <Box sx={{ my: 4, position: 'relative' }}>
+      {/* Header */}
       {title && (
-        <Typography variant="h5" component="h2" gutterBottom sx={{ color: (theme) => theme.palette.text.primary }}>
+        <Typography
+          variant="h5"
+          component="h2"
+          gutterBottom
+          sx={{ color: (theme) => theme.palette.text.primary }}
+        >
           {title}
         </Typography>
       )}
-      <IconButton 
+
+      {/* Button Prev */}
+      <IconButton
         onClick={handlePrev}
         disabled={startIndex === 0}
         sx={{
@@ -32,7 +42,7 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
           left: 0,
           top: '50%',
           transform: 'translateY(-50%)',
-          zIndex: 1,
+          zIndex: 2,
           backgroundColor: 'rgba(0,0,0,0.5)',
           color: 'white',
           '&:hover': { backgroundColor: 'rgba(0,0,0,0.7)' },
@@ -40,17 +50,21 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
       >
         <ChevronLeftIcon />
       </IconButton>
-      <Grid container spacing={5} justifyContent="center">
-        {visiblePlaylists.map((playlist, index) => (
-          <Grid key={index} xs={12 / columns}>
+
+      {/* Grid list */}
+      <Grid container spacing={4} justifyContent="center">
+        {visiblePlaylists.map((playlist) => (
+          <Grid item key={playlist.id} xs={12 / columns}>
             <PlaylistCardSafe
               playlist={playlist}
-              onPlay={onPlay}
+              onPlay={() => onPlay(playlist)}   // ⭐ NHẤN MẠNH: TRUYỀN ĐÚNG CALLBACK
             />
           </Grid>
         ))}
       </Grid>
-      <IconButton 
+
+      {/* Button Next */}
+      <IconButton
         onClick={handleNext}
         disabled={startIndex + columns >= playlists.length}
         sx={{
@@ -58,7 +72,7 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
           right: 0,
           top: '50%',
           transform: 'translateY(-50%)',
-          zIndex: 1,
+          zIndex: 2,
           backgroundColor: 'rgba(0,0,0,0.5)',
           color: 'white',
           '&:hover': { backgroundColor: 'rgba(0,0,0,0.7)' },

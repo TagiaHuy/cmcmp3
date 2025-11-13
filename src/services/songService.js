@@ -1,11 +1,30 @@
 // src/services/songService.js
 import API_BASE_URL from '../config';
 import { safeJson } from '../utils/http';
-import { authHeader } from '../utils/auth';  // thêm hàm lấy token
+import { authHeader } from '../utils/auth';
 
-/**
- * Lấy toàn bộ danh sách bài hát (yêu cầu JWT Bearer token)
- */
+// 🟢 Chuẩn hóa artists (tránh bị object)
+const normalizeArtists = (artists) => {
+  if (!artists) return "Không rõ";
+  if (typeof artists === "string") return artists;
+  if (Array.isArray(artists)) return artists.map(a => a.name || a).join(", ");
+  if (typeof artists === "object") return artists.name || JSON.stringify(artists);
+  return String(artists);
+};
+
+// 🟢 Chuẩn hóa song trả về FE
+const mapSong = (song) => {
+  if (!song) return null;
+  return {
+    ...song,
+    artists: normalizeArtists(song.artists),
+    mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`,
+  };
+};
+
+/* ==========================================================
+    1) GET ALL SONGS (có token)
+========================================================== */
 export const getAllSongs = async (page = 0, size = 10, sortBy = 'createdAt', direction = 'desc', signal) => {
   try {
     const queryParams = new URLSearchParams({
@@ -24,20 +43,19 @@ export const getAllSongs = async (page = 0, size = 10, sortBy = 'createdAt', dir
       signal,
     });
 
-    const data = await safeJson(res);        // ⬅️  TRÁNH crash khi body rỗng
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
 
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    return data || [];
+    return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
     console.error("Error fetching songs:", error);
     return [];
   }
 };
 
+/* ==========================================================
+    2) GET SONG BY ID
+========================================================== */
 export const getSongById = async (id, signal) => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/songs/${id}`, {
@@ -50,19 +68,18 @@ export const getSongById = async (id, signal) => {
     });
 
     const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
 
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    return data;
+    return mapSong(data);
   } catch (error) {
     console.error(`Error fetching song with ID ${id}:`, error);
     return null;
   }
 };
 
+/* ==========================================================
+    3) GET SONGS BY ARTIST
+========================================================== */
 export const getSongsByArtist = async (artistId, signal) => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/artists/${artistId}/songs`, {
@@ -75,23 +92,17 @@ export const getSongsByArtist = async (artistId, signal) => {
     });
 
     const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
 
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    return data || [];
+    return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
     return [];
   }
 };
 
-/**
- * ✅ Lấy TOP bài hát sắp xếp theo lượt nghe giảm dần
- * Không cần token
- * GET /api/songs/top?limit=10
- */
+/* ==========================================================
+    4) TOP SONGS — Listen count
+========================================================== */
 export const getTopSongs = async (limit = 10, signal) => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/songs/top?limit=${limit}`, {
@@ -104,28 +115,18 @@ export const getTopSongs = async (limit = 10, signal) => {
     });
 
     const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
 
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    const songs = Array.isArray(data) ? data : [];
-
-    // Add mediaSrc to each song
-    return songs.map(song => ({
-      ...song,
-      mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`,
-    }));
-    
+    return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
+    console.error("Error fetching TOP songs:", error);
     return [];
   }
 };
 
-/**
- * Lấy TOP bài hát sắp xếp theo ngày phát hành giảm dần
- */
+/* ==========================================================
+    5) NEWEST SONGS
+========================================================== */
 export const getNewestSongs = async (limit = 9, signal) => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/songs/top/new-releases?limit=${limit}`, {
@@ -138,26 +139,18 @@ export const getNewestSongs = async (limit = 9, signal) => {
     });
 
     const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
 
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    const songs = Array.isArray(data) ? data : [];
-    return songs.map(song => ({
-      ...song,
-      mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`,
-    }));
+    return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
-    console.error("Error fetching TOP new releases songs:", error);
+    console.error("Error fetching TOP new songs:", error);
     return [];
   }
 };
 
-/**
- * Lấy TOP bài hát sắp xếp theo lượt thích giảm dần
- */
+/* ==========================================================
+    6) TOP LIKED SONGS
+========================================================== */
 export const getSongsByLikes = async (limit = 9, signal) => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/songs/top/most-liked?limit=${limit}`, {
@@ -170,26 +163,18 @@ export const getSongsByLikes = async (limit = 9, signal) => {
     });
 
     const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
 
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    const songs = Array.isArray(data) ? data : [];
-    return songs.map(song => ({
-      ...song,
-      mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`,
-    }));
+    return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
-    console.error("Error fetching TOP most liked songs:", error);
+    console.error("Error fetching TOP liked songs:", error);
     return [];
   }
 };
 
-/**
- * Lấy danh sách các bài hát đã tải lên của người dùng hiện tại
- */
+/* ==========================================================
+    7) UPLOADED SONGS
+========================================================== */
 export const getUploadedSongs = async (signal) => {
   const res = await fetch(`${API_BASE_URL}/api/songs/uploaded`, {
     method: "GET",
@@ -201,14 +186,7 @@ export const getUploadedSongs = async (signal) => {
   });
 
   const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
 
-  if (!res.ok) {
-    const msg = data?.message || data?.error || `HTTP ${res.status}`;
-    throw new Error(msg);
-  }
-
-  return data;
+  return (Array.isArray(data) ? data : []).map(mapSong);
 };
-
-
-
