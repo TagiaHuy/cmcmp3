@@ -79,7 +79,7 @@ function MainLayoutContent({ children }) {
             left: 0,
             right: 0,
             zIndex: (theme) => theme.zIndex.drawer + 2,
-            bgcolor: 'background.paper',
+            bgcolor: (theme) => theme.body.background,
             borderTop: '1px solid',
             borderColor: 'divider',
             p: 0,
