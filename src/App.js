@@ -4,6 +4,8 @@ import './App.css';
 import MainLayout from './layout/MainLayout';
 import { useTheme } from '@mui/material/styles';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import HomePage from './pages/HomePage';
 import RecentlyPlayedPage from './pages/RecentlyPlayedPage';
@@ -110,6 +112,18 @@ function App() {
         {/* 404 → về trang chủ */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </MainLayout>
   );
 }
