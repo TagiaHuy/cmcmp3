@@ -1,22 +1,44 @@
+// src/components/Card/SongCard.jsx
 import React from 'react';
-import { Card, CardContent, CardMedia, Typography, Box } from '@mui/material';
+import { Card, CardContent, Typography, Box } from '@mui/material';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import PlayableImage from './PlayableImage'; // Re-using the playable image component
 
-const SongCard = ({ song }) => {
-  const { handlePlay } = useMediaPlayer();
+const SongCard = ({ song, onPlay }) => {
+  const { handlePlay, normalizeArtists } = useMediaPlayer();
 
-  const onPlay = () => {
-    if (song) {
-      handlePlay(song);
+  if (!song) return null;
+
+  // 👉 Hàm play thống nhất: ưu tiên onPlay từ props, nếu không có thì dùng handlePlay
+  const handlePlayClick = () => {
+    if (!song) return;
+
+    if (onPlay) {
+      // Parent (TopSongsSection, Carousel, ...) sẽ lo queue + Next/Prev
+      onPlay(song);
+    } else {
+      // Fallback: play trực tiếp 1 bài như trước
+      handlePlay({
+        id: song.id,
+        title: song.title,
+        mediaSrc: song.mediaSrc || song.audioUrl,
+        imageUrl: song.imageUrl,
+        artists: normalizeArtists
+          ? normalizeArtists(song.artists)
+          : song.artists?.map((a) => a.name).join(', ') || 'Unknown Artist',
+      });
     }
   };
 
-  const artists = song.artists?.map(artist => artist.name).join(', ') || 'Unknown Artist';
+  const artistsText =
+    (normalizeArtists
+      ? normalizeArtists(song.artists)
+      : song.artists?.map((artist) => artist.name).join(', ')) || 'Unknown Artist';
 
   return (
     <Box sx={{ position: 'relative', width: 180, cursor: 'pointer' }}>
       <Card
+        onClick={handlePlayClick}
         sx={{
           width: '100%',
           transition: 'transform .2s ease-in-out',
@@ -28,16 +50,10 @@ const SongCard = ({ song }) => {
         <PlayableImage
           imageUrl={song.imageUrl}
           title={song.title}
-          onPlay={onPlay}
+          onPlay={handlePlayClick}
           size={180}
-        >
-          <CardMedia
-            component="img"
-            height="180"
-            image={song.imageUrl || 'https://via.placeholder.com/180'}
-            alt={song.title}
-          />
-        </PlayableImage>
+        />
+
         <CardContent>
           <Typography
             variant="subtitle1"
@@ -52,7 +68,7 @@ const SongCard = ({ song }) => {
             noWrap
             sx={{ color: 'text.secondary' }}
           >
-            {artists}
+            {artistsText}
           </Typography>
         </CardContent>
       </Card>

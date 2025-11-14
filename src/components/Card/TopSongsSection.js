@@ -8,6 +8,7 @@ import {
   getSongsByLikes,
 } from "../../services/songService";
 import SongCarousel from "../Carousel/SongCarousel";
+import { useMediaPlayer } from "../../context/MediaPlayerContext";
 
 export default function TopSongsSection() {
   const [topSongs, setTopSongs] = useState([]);
@@ -15,6 +16,9 @@ export default function TopSongsSection() {
   const theme = useTheme();
   const headerColor = theme.palette.mode === "dark" ? "#fff" : "#000";
 
+  const { loadQueue, normalizeArtists } = useMediaPlayer();
+
+  // Fetch dữ liệu theo sort
   useEffect(() => {
     const ac = new AbortController();
 
@@ -49,6 +53,35 @@ export default function TopSongsSection() {
     setSortBy(event.target.value);
   };
 
+  // ⭐ Hàm play 1 bài trong danh sách — hỗ trợ Next / Prev
+  const handlePlaySong = (clickedSong) => {
+    if (!clickedSong || !Array.isArray(topSongs) || topSongs.length === 0) {
+      return;
+    }
+
+    // Chuẩn hoá toàn bộ list → queue
+    const normalizedSongs = topSongs.map((song, index) => ({
+      id: song.id ?? index,
+      title: song.title,
+      mediaSrc: song.mediaSrc || song.audioUrl,
+      imageUrl: song.imageUrl,
+      artists: normalizeArtists?.(song.artists) ?? song.artists,
+      duration: song.duration,
+      source: "topsongs",
+    }));
+
+    // Tìm index bài click (dựa cả id và mediaSrc cho chắc)
+    let startIndex = normalizedSongs.findIndex(
+      (s) =>
+        (clickedSong.id && s.id === clickedSong.id) ||
+        (clickedSong.mediaSrc && s.mediaSrc === clickedSong.mediaSrc)
+    );
+    if (startIndex < 0) startIndex = 0;
+
+    // Nạp queue + set bài đang phát
+    loadQueue(normalizedSongs, startIndex);
+  };
+
   return (
     <Box sx={{ my: 5, ml: 11, mr: 11 }}>
       {/* Header */}
@@ -76,15 +109,6 @@ export default function TopSongsSection() {
             height: 40,
             color: "text.primary",
             backgroundColor: "background.paper",
-            ".MuiOutlinedInput-notchedOutline": {
-              borderColor: "rgba(0, 0, 0, 0.23)",
-            },
-            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-              borderColor: "primary.main",
-            },
-            ".MuiSvgIcon-root": {
-              color: "text.primary",
-            },
           }}
         >
           <MenuItem value="listens">Lượt nghe</MenuItem>
@@ -95,7 +119,11 @@ export default function TopSongsSection() {
 
       {/* Song Carousel */}
       {topSongs.length > 0 ? (
-        <SongCarousel songs={topSongs} columns={3} />
+        <SongCarousel
+          songs={topSongs}
+          columns={3}
+          onPlay={handlePlaySong}   // 🔥 Quan trọng: truyền callback xuống
+        />
       ) : (
         <Box
           sx={{
