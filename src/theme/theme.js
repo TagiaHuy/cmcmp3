@@ -15,6 +15,8 @@ const darkTheme = createTheme({
     background: {
       default: '#121212',
       artistCard: '#282846ff',
+      table: '#414174ff',
+      tableHover: '#2a2a4aff',
     },
     text: {
       primary: '#ffffff',
