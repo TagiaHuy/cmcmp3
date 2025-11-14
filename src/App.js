@@ -22,6 +22,9 @@ import LibraryPage from './pages/LibraryPage'; // New import
 import ArtistsPage from './pages/ArtistsPage'; // New import for ArtistsPage
 import { useAuth } from './context/AuthContext';
 
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+
 /** Chặn trang công khai (login/register) nếu đã đăng nhập */
 const PublicOnlyRoute = ({ isAuthed, children }) =>
   isAuthed ? <Navigate to="/" replace /> : children;
@@ -78,6 +81,8 @@ function App() {
             </PublicOnlyRoute>
           }
         />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Private pages: yêu cầu đăng nhập */}
         <Route
