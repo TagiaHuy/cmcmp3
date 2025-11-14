@@ -7,6 +7,7 @@ import TopSongsSection from '../components/Card/TopSongsSection';
 import PlaylistView from '../components/Card/PlaylistView';
 import Top100Section from '../components/Card/Top100Section';
 import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
+import RecentlyPlayed from '../components/Card/RecentlyPlayed';
 
 const HomePage = () => {
   const { playlists, loading, error } = usePlaylists();
@@ -30,6 +31,7 @@ const HomePage = () => {
       <TopPlaylistsSection />
 
       <TopSongsSection />
+      <RecentlyPlayed />
 
       <Top100Section />
       <BXHNewReleaseSection />

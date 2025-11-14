@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useContext } from 'react';
 import { Box, IconButton, Slider, Typography, Stack } from '@mui/material';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
@@ -6,6 +6,7 @@ import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { useMediaActions } from '../../hooks/useMediaActions';
+import { ThemeContext } from '../../theme/ThemeContext'; // Import ThemeContext
 
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
@@ -22,6 +23,8 @@ const MediaPlayer = () => {
     toggleSidebarRight,
     handleEnded,        // context xử lý next/prev theo repeat/shuffle
   } = useMediaPlayer();
+
+  const { currentTheme } = useContext(ThemeContext); // Use ThemeContext
 
   const {
     prev,
@@ -124,6 +127,8 @@ const MediaPlayer = () => {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  const textColor = currentTheme === 'dark' ? 'white' : 'black'; // Determine text color
+
   return (
     <Box
       sx={{
@@ -167,7 +172,7 @@ const MediaPlayer = () => {
             onEnded={onEnded}
           />
 
-          <Typography variant="body2">
+          <Typography variant="body2" sx={{ color: textColor }}>
             {format(safeCurrent)}
           </Typography>
 
@@ -177,9 +182,17 @@ const MediaPlayer = () => {
             max={safeDuration}
             step={1}
             onChange={handleSeek}
+            sx={{
+              color: '#9353FF',
+              '& .MuiSlider-thumb': {
+                '&:hover, &.Mui-focusVisible': {
+                  boxShadow: '0px 0px 0px 8px rgba(147, 83, 255, 0.16)',
+                },
+              },
+            }}
           />
 
-          <Typography variant="body2">
+          <Typography variant="body2" sx={{ color: textColor }}>
             {format(safeDuration)}
           </Typography>
         </Stack>
@@ -197,7 +210,15 @@ const MediaPlayer = () => {
           max={1}
           step={0.01}
           onChange={(_e, v) => setVolume(v)}
-          sx={{ width: 100 }}
+          sx={{ 
+            width: 100,
+            color: '#9353FF',
+            '& .MuiSlider-thumb': {
+              '&:hover, &.Mui-focusVisible': {
+                boxShadow: '0px 0px 0px 8px rgba(147, 83, 255, 0.16)',
+              },
+            },
+          }}
         />
 
         <IconButton
