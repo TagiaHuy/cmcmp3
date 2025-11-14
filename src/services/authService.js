@@ -141,3 +141,49 @@ export const updateUserAvatar = async (token, formData, signal) => {
   }
   return data;
 };
+
+/** Yêu cầu gửi OTP để reset mật khẩu */
+export const forgotPassword = async (email, signal) => {
+  const res = await fetch(`${API_URL}/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ email }),
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.message || data.error)) ||
+      `Không thể gửi yêu cầu (HTTP ${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
+/** Đặt lại mật khẩu bằng OTP */
+export const resetPassword = async (email, otp, newPassword, signal) => {
+  const res = await fetch(`${API_URL}/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ email, otp, newPassword }),
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.message || data.error)) ||
+      `Không thể đặt lại mật khẩu (HTTP ${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+};

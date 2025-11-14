@@ -28,6 +28,11 @@ const LoginPage = () => {
             Đăng ký ngay
           </Link>
         </Typography>
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          <Link to="/forgot-password" style={{ color: '#9353FF', textDecoration: 'none' }}>
+            Quên mật khẩu?
+          </Link>
+        </Typography>
       </Paper>
     </Container>
   );
