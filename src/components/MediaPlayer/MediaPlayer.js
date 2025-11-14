@@ -3,12 +3,15 @@ import { Box, IconButton, Slider, Typography, Stack } from '@mui/material';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
+
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { useMediaActions } from '../../hooks/useMediaActions';
+
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
 
 const MediaPlayer = () => {
@@ -17,7 +20,7 @@ const MediaPlayer = () => {
     currentTrack,
     isSidebarRightVisible,
     toggleSidebarRight,
-    handleEnded, // xử lý hết bài theo repeat/shuffle trong context
+    handleEnded,        // context xử lý next/prev theo repeat/shuffle
   } = useMediaPlayer();
 
   const {
@@ -31,13 +34,13 @@ const MediaPlayer = () => {
 
   const audioRef = useRef(null);
 
-  // UI (local)
+  // UI state
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.5);
 
-  // Gắn listeners khi src đổi
+  // Khi đổi src → load lại metadata
   useEffect(() => {
     const audio = audioRef.current;
 
@@ -49,11 +52,14 @@ const MediaPlayer = () => {
     }
 
     const onLoaded = () => {
-      const d = Number.isFinite(audio.duration) ? audio.duration : 0;
-      setDuration(d);
+      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
       setCurrentTime(audio.currentTime || 0);
-      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     };
+
     const onTime = () => setCurrentTime(audio.currentTime || 0);
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
@@ -71,12 +77,12 @@ const MediaPlayer = () => {
     };
   }, [currentPlayingSrc]);
 
-  // Sync volume
+  // Đồng bộ volume
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  // Play/Pause
+  // Play/pause
   const handlePlayPause = () => {
     const a = audioRef.current;
     if (!a) return;
@@ -85,27 +91,31 @@ const MediaPlayer = () => {
 
   // Seek
   const handleSeek = (_e, v) => {
-    const a = audioRef.current;
-    if (!a) return;
-    a.currentTime = v;
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = v;
     setCurrentTime(v);
   };
 
-  // Mute toggle
-  const toggleMute = () => setVolume(v => (v === 0 ? 0.5 : 0));
+  // Mute
+  const toggleMute = () => {
+    setVolume((v) => (v === 0 ? 0.5 : 0));
+  };
 
-  // Khi audio kết thúc
+  // Khi bài hát kết thúc
   const onEnded = () => {
     if (repeatMode === 'one' && audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play();
       return;
     }
-    handleEnded();
+    handleEnded(); // chuyển bài theo context
   };
 
   const safeDuration = Number.isFinite(duration) ? duration : 0;
-  const safeCurrent = Math.min(Number.isFinite(currentTime) ? currentTime : 0, safeDuration);
+  const safeCurrent = Math.min(
+    Number.isFinite(currentTime) ? currentTime : 0,
+    safeDuration
+  );
 
   const format = (t) => {
     if (!Number.isFinite(t) || t <= 0) return '0:00';
@@ -115,7 +125,15 @@ const MediaPlayer = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <Box
+      sx={{
+        width: '100%',
+        p: 2,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}
+    >
       {/* LEFT */}
       <Box sx={{ width: '25%', display: 'flex', alignItems: 'center', gap: 1.2 }}>
         <CurrentSongCard
@@ -127,7 +145,7 @@ const MediaPlayer = () => {
         <MoreButton />
       </Box>
 
-      {/* MIDDLE */}
+      {/* CENTER */}
       <Stack sx={{ flexGrow: 1, alignItems: 'center', px: 2 }}>
         <PlaybackControls
           isPlaying={isPlaying}
@@ -141,7 +159,7 @@ const MediaPlayer = () => {
         />
 
         <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-          {/* ❗ KHÔNG đặt key; React bind src qua prop */}
+          
           <audio
             ref={audioRef}
             src={currentPlayingSrc || undefined}
@@ -149,8 +167,7 @@ const MediaPlayer = () => {
             onEnded={onEnded}
           />
 
-          {/* thời gian hiện tại — tự đổi trắng/đen theo theme */}
-          <Typography variant="body2" sx={{ color: (t) => t.palette.text.primary }}>
+          <Typography variant="body2">
             {format(safeCurrent)}
           </Typography>
 
@@ -162,8 +179,7 @@ const MediaPlayer = () => {
             onChange={handleSeek}
           />
 
-          {/* tổng thời gian — tự đổi trắng/đen theo theme */}
-          <Typography variant="body2" sx={{ color: (t) => t.palette.text.primary }}>
+          <Typography variant="body2">
             {format(safeDuration)}
           </Typography>
         </Stack>
@@ -174,6 +190,7 @@ const MediaPlayer = () => {
         <IconButton onClick={toggleMute}>
           {volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}
         </IconButton>
+
         <Slider
           value={volume}
           min={0}
@@ -182,7 +199,11 @@ const MediaPlayer = () => {
           onChange={(_e, v) => setVolume(v)}
           sx={{ width: 100 }}
         />
-        <IconButton onClick={toggleSidebarRight} color={isSidebarRightVisible ? 'primary' : 'default'}>
+
+        <IconButton
+          onClick={toggleSidebarRight}
+          color={isSidebarRightVisible ? 'primary' : 'default'}
+        >
           <QueueMusicIcon />
         </IconButton>
       </Box>

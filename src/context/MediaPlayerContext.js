@@ -6,6 +6,18 @@ import React, {
 const MediaPlayerContext = createContext();
 export const useMediaPlayer = () => useContext(MediaPlayerContext);
 
+/** 
+ * Hàm chuẩn hóa artists để tránh lỗi React render object 
+ * - Nếu artists là array → lấy artists.name
+ * - Nếu artists là string → giữ nguyên
+ */
+export function normalizeArtists(artists) {
+  if (Array.isArray(artists)) {
+    return artists.map(a => a.name).join(', ');
+  }
+  return artists ?? '';
+}
+
 /**
  * repeatMode: 'none' | 'one' | 'all'
  * queue: [{ id, title, mediaSrc, imageUrl, artists, ... }]
@@ -18,10 +30,10 @@ export const MediaPlayerProvider = ({ children }) => {
   const [isSidebarRightVisible, setIsSidebarRightVisible] = useState(true);
 
   // ===== Queue & playback mode =====
-  const [queue, setQueue] = useState([]);        // danh sách đang phát
+  const [queue, setQueue] = useState([]);        
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isShuffling, setIsShuffling] = useState(false);
-  const [repeatMode, setRepeatMode] = useState('none'); // 'none' | 'one' | 'all'
+  const [repeatMode, setRepeatMode] = useState('none');
 
   // --- Init recently played from localStorage ---
   useEffect(() => {
@@ -33,7 +45,7 @@ export const MediaPlayerProvider = ({ children }) => {
     }
   }, []);
 
-  // --- Sync src khi đổi track (KHÔNG tăng key, KHÔNG remount) ---
+  // --- Sync src khi đổi track ---
   useEffect(() => {
     setCurrentPlayingSrc(currentTrack?.mediaSrc || null);
   }, [currentTrack]);
@@ -46,9 +58,13 @@ export const MediaPlayerProvider = ({ children }) => {
 
   const findTrackIndex = useCallback((list, track) => {
     if (!track) return -1;
+
     const byId = list.findIndex(x => x?.id && x.id === track.id);
     if (byId !== -1) return byId;
-    return list.findIndex(x => x?.title === track.title && x?.mediaSrc === track.mediaSrc);
+
+    return list.findIndex(x => 
+      x?.title === track.title && x?.mediaSrc === track.mediaSrc
+    );
   }, []);
 
   const randomNextIndex = useCallback((list, cur) => {
@@ -60,70 +76,75 @@ export const MediaPlayerProvider = ({ children }) => {
 
   // ===== API phát nhạc =====
 
-  /** Phát 1 bài lẻ (không thay queue nếu đã có bài trong queue) */
   const handlePlay = useCallback((track) => {
     if (!track || !track.mediaSrc) return;
 
     setQueue(prev => {
       const list = Array.isArray(prev) ? [...prev] : [];
       let idx = findTrackIndex(list, track);
+
       if (idx === -1) {
-        list.push(track);       // thêm vào cuối
+        list.push(track);
         idx = list.length - 1;
       }
+
       setCurrentIndex(idx);
       return list;
     });
 
     setCurrentTrack(track);
 
-    // Recently played (unique + limit 10)
+    // Recently played
     setRecentlyPlayed(prev => {
       const filtered = (prev || []).filter(p =>
         (p?.id && track?.id && p.id !== track.id) ||
-        (!p?.id || !track?.id) && (p?.title !== track.title || p?.mediaSrc !== track.mediaSrc)
+        (!p?.id || !track?.id) && 
+        (p?.title !== track.title || p?.mediaSrc !== track.mediaSrc)
       );
+
       const updated = [track, ...filtered].slice(0, 10);
       localStorage.setItem('recentlyPlayed', JSON.stringify(updated));
       return updated;
     });
   }, [findTrackIndex]);
 
-  /** Xóa Recently Played */
   const clearRecentlyPlayed = useCallback(() => {
     setRecentlyPlayed([]);
     localStorage.removeItem('recentlyPlayed');
   }, []);
 
-  /** Toggle Sidebar phải */
   const toggleSidebarRight = useCallback(() => {
     setIsSidebarRightVisible(v => !v);
   }, []);
 
-  /** Nạp playlist và phát từ index chỉ định */
   const loadQueue = useCallback((songs, startIndex = 0) => {
     const list = Array.isArray(songs) ? songs : [];
     setQueue(list);
+
     const idx = safeIndex(startIndex, list.length);
     setCurrentIndex(idx);
     setCurrentTrack(list[idx] || null);
+
   }, [safeIndex]);
 
-  /** Phát ngẫu nhiên 1 bài trong playlist & bật shuffle (KHÔNG reset bài nếu đã phát) */
   const playPlaylistRandom = useCallback((songs) => {
     const list = Array.isArray(songs) ? songs : [];
+
     if (!list.length) {
-      setQueue([]); setCurrentIndex(0); setCurrentTrack(null);
+      setQueue([]); 
+      setCurrentIndex(0); 
+      setCurrentTrack(null);
       return;
     }
+
     const idx = Math.floor(Math.random() * list.length);
     setQueue(list);
     setCurrentIndex(idx);
     setCurrentTrack(list[idx]);
-    setIsShuffling(true);        // chỉ đổi cờ
+    setIsShuffling(true);
+
   }, []);
 
-  /** Phát bài ở vị trí index trong queue (tiện cho sidebar queue) */
   const playAt = useCallback((index) => {
     setCurrentIndex(i => {
       const nextI = safeIndex(index, queue.length);
@@ -132,7 +153,6 @@ export const MediaPlayerProvider = ({ children }) => {
     });
   }, [queue, safeIndex]);
 
-  /** Bài trước */
   const prev = useCallback(() => {
     setCurrentIndex(i => {
       const nextI = safeIndex(i - 1, queue.length);
@@ -141,55 +161,62 @@ export const MediaPlayerProvider = ({ children }) => {
     });
   }, [queue, safeIndex]);
 
-  /** Bài sau */
   const next = useCallback(() => {
     if (!queue.length) return;
+
     setCurrentIndex(i => {
       let nextI = i;
+
       if (isShuffling) {
         nextI = randomNextIndex(queue, i);
       } else {
         const atLast = i === queue.length - 1;
-        if (atLast) nextI = (repeatMode === 'all') ? 0 : i;
-        else nextI = i + 1;
+
+        if (atLast) {
+          nextI = (repeatMode === 'all') ? 0 : i;
+        } else {
+          nextI = i + 1;
+        }
       }
+
       setCurrentTrack(queue[nextI] || null);
       return nextI;
     });
+
   }, [queue, isShuffling, repeatMode, randomNextIndex]);
 
-  /** Bật/tắt shuffle — chỉ đổi cờ, KHÔNG đổi bài hiện tại */
   const toggleShuffle = useCallback(() => {
     setIsShuffling(s => !s);
   }, []);
 
-  /** Đổi repeat: none → one → all → none — chỉ đổi cờ */
   const cycleRepeatMode = useCallback(() => {
-    setRepeatMode(m => (m === 'none' ? 'one' : m === 'one' ? 'all' : 'none'));
+    setRepeatMode(m => 
+      (m === 'none' ? 'one' : m === 'one' ? 'all' : 'none')
+    );
   }, []);
 
-  /** Gọi khi <audio> kết thúc */
   const handleEnded = useCallback(() => {
     if (!queue.length) return;
-    if (repeatMode === 'one') return; // MediaPlayer tự tua 0 & play lại
+    if (repeatMode === 'one') return;
     if (repeatMode === 'none' && currentIndex === queue.length - 1) return;
     next();
   }, [queue.length, repeatMode, currentIndex, next]);
 
+  // ============================================
+  // VALUE xuất ra cho toàn app
+  // ============================================
+
   const value = useMemo(() => ({
-    // data
     queue,
     currentIndex,
     currentTrack,
     currentPlayingSrc,
 
-    // recently played & sidebar
     recentlyPlayed,
     clearRecentlyPlayed,
     isSidebarRightVisible,
     toggleSidebarRight,
 
-    // controls
     isShuffling,
     repeatMode,
     handlePlay,
@@ -201,6 +228,10 @@ export const MediaPlayerProvider = ({ children }) => {
     toggleShuffle,
     cycleRepeatMode,
     handleEnded,
+
+    // thêm vào để dùng ở mọi component
+    normalizeArtists
+
   }), [
     queue, currentIndex, currentTrack, currentPlayingSrc,
     recentlyPlayed, isSidebarRightVisible,

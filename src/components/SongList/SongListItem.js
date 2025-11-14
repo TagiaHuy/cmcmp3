@@ -4,60 +4,51 @@ import {
   ListItemButton, 
   ListItemText, 
   Stack, 
-  Typography 
+  Typography,
+  Box
 } from '@mui/material';
-import GraphicEqIcon from '@mui/icons-material/GraphicEq'; // Icon hiển thị đang phát
-import Box from '@mui/material/Box';
+import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
-import PlayableImage from '../Card/PlayableImage'; // Import the PlayableImage component
+import PlayableImage from '../Card/PlayableImage';
+import { normalizeArtists } from '../../context/MediaPlayerContext';
 
 const SongListItem = ({ song, index, onPlay, isPlaying }) => {
 
-  // Giả định hàm chuyển đổi thời lượng (ví dụ: 240 -> 4:00)
-  const formatDuration = (seconds) => {
-    // Logic chuyển đổi
-    return "4:00"; // Thay thế bằng logic thực tế
-  };
+  // ⭐ Chuẩn hóa artist (phòng BE trả array)
+  const artistText = normalizeArtists(song.artists);
+
+  // ⭐ Format track (phòng handlePlay nhận track chưa đúng format)
+  const mediaUrl = song.mediaSrc || song.audioUrl;
 
   return (
     <ListItem
       disablePadding
       secondaryAction={
-        // Gom nhóm các nút phụ vào đây
         <Stack direction="row" spacing={1} alignItems="center">
-          {/* Nút Like */}
           <FavoriteButton isFavorite={song.isFavorite} />
-          
-          {/* Thời lượng bài hát */}
-          {/* <Typography variant="caption" color="text.secondary" sx={{ minWidth: 40, textAlign: 'right' }}>
-            {formatDuration(song.duration)}
-          </Typography> */}
-
-          {/* Nút More */}
           <MoreButton />
         </Stack>
       }
-      // Highlight bài hát đang phát
-      sx={{ 
-        bgcolor: isPlaying ? 'action.hover' : 'transparent', // Màu nền nhẹ khi đang phát
+      sx={{
+        bgcolor: isPlaying ? 'action.hover' : 'transparent',
         borderBottom: '1px solid',
         borderColor: 'divider',
-        '&:hover': {
-          bgcolor: 'action.hover',
-        }
+        '&:hover': { bgcolor: 'action.hover' }
       }}
     >
-      <ListItemButton onClick={onPlay} sx={{ py: 1.5, pr: '150px' /* Add padding to avoid overlap with secondaryAction */ }}>
+      <ListItemButton onClick={onPlay} sx={{ py: 1.5, pr: '150px' }}>
         
-        {/* Cột 1: STT / Icon Đang phát */}
-        <Box sx={{ 
-          width: 40, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          mr: 2,
-        }}>
+        {/* ======== Cột 1: STT hoặc Icon Đang phát ======== */}
+        <Box
+          sx={{
+            width: 40,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            mr: 2
+          }}
+        >
           {isPlaying ? (
             <GraphicEqIcon color="primary" />
           ) : (
@@ -67,22 +58,23 @@ const SongListItem = ({ song, index, onPlay, isPlaying }) => {
           )}
         </Box>
 
-        {/* Cột 2: Ảnh với nút Play khi hover */}
+        {/* ======== Cột 2: Ảnh + nút Play hover ======== */}
         <Box sx={{ mr: 2 }}>
           <PlayableImage
-            imageUrl={song.imageUrl}
+            imageUrl={song.imageUrl || ''}
             title={song.title}
             size={48}
             borderRadius="4px"
+            mediaSrc={mediaUrl}
             onPlay={onPlay}
           />
         </Box>
 
-        {/* Cột 3: Tên bài hát & Nghệ sĩ */}
+        {/* ======== Cột 3: Tên bài hát & Nghệ sĩ ======== */}
         <ListItemText
           primary={
-            <Typography 
-              variant="subtitle1" 
+            <Typography
+              variant="subtitle1"
               fontWeight={isPlaying ? 600 : 500}
               color={isPlaying ? 'primary' : 'text.primary'}
               noWrap
@@ -92,11 +84,11 @@ const SongListItem = ({ song, index, onPlay, isPlaying }) => {
           }
           secondary={
             <Typography variant="body2" color="text.secondary" noWrap>
-              {song.artists}
+              {artistText}
             </Typography>
           }
         />
-        
+
       </ListItemButton>
     </ListItem>
   );
