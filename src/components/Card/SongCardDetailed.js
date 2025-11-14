@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import BaseCard from './BaseCard';
 import PlayableImage from './PlayableImage';
-import { useMediaPlayer } from '../../context/MediaPlayerContext';
+import { useMediaPlayer, normalizeArtists } from '../../context/MediaPlayerContext';
 
 const FALLBACK_BG =
   "data:image/svg+xml;utf8," +
@@ -19,20 +19,28 @@ const FALLBACK_BG =
 function SongCardDetailed({ song }) {
   const { handlePlay } = useMediaPlayer();
 
+  if (!song) return null;
+
+  // ⭐ Chuẩn hóa artists
+  const artistText = normalizeArtists(song.artists);
+
+  // ⭐ chuẩn unified track
+  const unifiedTrack = {
+    id: song.id,
+    title: song.title,
+    imageUrl: song.imageUrl,
+    mediaSrc: song.mediaSrc || song.audioUrl,
+    artists: artistText,
+  };
+
   const onPlay = () => {
-    console.log(`Attempting to play song: ${song?.title}`);
-    if (song) {
-      handlePlay(song);
-    }
+    handlePlay(unifiedTrack);
   };
 
   const {
     title = 'Unknown Song',
-    artists = 'Unknown Artist',
     imageUrl = '',
-  } = song || {};
-  
-  const artistNames = Array.isArray(artists) ? artists.map(a => a.name).join(', ') : artists;
+  } = song;
 
   const safeBg = imageUrl || FALLBACK_BG;
 
@@ -47,58 +55,62 @@ function SongCardDetailed({ song }) {
     overflow: 'hidden',
     cursor: 'pointer',
     transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+
     '&:hover': {
       boxShadow: '0 8px 20px rgba(0, 0, 0, 0.4)',
     },
+
     '&::before': {
       content: '""',
       position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 50%)',
+      inset: 0,
+      background:
+        'linear-gradient(to top, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 55%)',
       zIndex: 1,
     },
   };
 
   return (
     <BaseCard sx={cardStyle}>
-        <>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundImage: `url(${safeBg})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              filter: 'blur(8px)',
-              transform: 'scale(1.05)',
-              willChange: 'filter, transform',
-              zIndex: 0,
-            }}
-          />
-        </>
+      {/* Nền blur */}
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url(${safeBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          filter: 'blur(8px)',
+          transform: 'scale(1.05)',
+          willChange: 'filter, transform',
+          zIndex: 0,
+        }}
+      />
 
+      {/* Ảnh phát */}
       <PlayableImage
         imageUrl={imageUrl}
         title={title}
-        size={130} // Match the default size
+        size={130}
+        mediaSrc={unifiedTrack.mediaSrc}
         sx={{ position: 'absolute', top: 15, left: 15, zIndex: 2 }}
         onPlay={onPlay}
-        song={song}
-        mediaSrc={song.mediaSrc} // Pass the mediaSrc prop
       />
 
-      <Box sx={{ marginLeft: '160px', zIndex: 3, paddingBottom: 3, position: 'relative' }}>
+      {/* Text */}
+      <Box
+        sx={{
+          marginLeft: '160px',
+          zIndex: 3,
+          paddingBottom: 3,
+          position: 'relative',
+        }}
+      >
         <Typography
           variant="subtitle1"
           fontWeight="bold"
-          color='white'
+          color="white"
           sx={{ lineHeight: 1.2 }}
         >
           {title}
@@ -106,11 +118,10 @@ function SongCardDetailed({ song }) {
 
         <Typography
           variant="caption"
-          color='#ccc'
-          mt={0.5}
-          sx={{ display: 'block' }}
+          color="#ccc"
+          sx={{ display: 'block', mt: 0.5 }}
         >
-          {artistNames}
+          {artistText}
         </Typography>
       </Box>
     </BaseCard>

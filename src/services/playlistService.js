@@ -3,44 +3,44 @@ import API_BASE_URL from '../config';
 import { safeJson } from '../utils/http';
 import { authHeader } from '../utils/auth';
 
-/**
- * Lấy toàn bộ danh sách playlist (yêu cầu JWT Bearer token)
- */
-export const getAllPlaylists = async (signal) => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/playlists`, {
-      method: 'GET',
-      headers: {
-        ...authHeader(),
-        Accept: 'application/json',
-      },
-      signal,
-    });
+/* --------------------------------------------------------
+   ⭐ Normalize playlist để 100% FE luôn chạy đúng
+-------------------------------------------------------- */
+const normalizePlaylist = (p) => {
+  if (!p) return null;
 
-    const data = await safeJson(res);
+  return {
+    id: p.id,
+    title: p.title || p.name || "Playlist",
+    imageUrl: p.imageUrl || "",
+    artist: p.artist || p.creatorDisplayName || "",
+    // tránh lỗi artists dạng object array
+    artistText: Array.isArray(p.artist)
+      ? p.artist.map(a => a?.name).join(", ")
+      : p.artist || p.creatorDisplayName || "Không rõ nghệ sĩ",
 
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
+    songs: Array.isArray(p.songs) ? p.songs : [],
 
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching playlists:', error);
-    return [];
-  }
+    // fallback cho play button
+    mediaSrc: p.mediaSrc || null,
+
+    listenCount: p.listenCount || 0,
+    likeCount: p.likeCount || 0,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+  };
 };
 
-/**
- * Lấy thông tin một playlist bằng ID (yêu cầu JWT Bearer token)
- */
-export const getPlaylistById = async (id, signal) => {
+/* --------------------------------------------------------
+   ⭐ Fetch wrapper: đảm bảo không crash UI
+-------------------------------------------------------- */
+const fetchSafe = async (url, signal) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/playlists/${id}`, {
-      method: 'GET',
+    const res = await fetch(url, {
+      method: "GET",
       headers: {
         ...authHeader(),
-        Accept: 'application/json',
+        Accept: "application/json",
       },
       signal,
     });
@@ -48,112 +48,73 @@ export const getPlaylistById = async (id, signal) => {
     const data = await safeJson(res);
 
     if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+      const msg =
+        (data && (data.message || data.error)) || `HTTP ${res.status}`;
       throw new Error(msg);
     }
 
     return data;
-  } catch (error) {
-    console.error(`Error fetching playlist with ID ${id}:`, error);
-    return null; // đồng bộ với songService.getSongById
+  } catch (err) {
+    console.error("FETCH ERROR:", err);
+    return null;
   }
 };
 
-/**
- * ✅ Lấy TOP playlist sắp xếp theo lượt nghe giảm dần
- * Không cần token
- * GET /api/playlists?sort=listenCount,desc&limit=8
- */
+/* --------------------------------------------------------
+   ⭐ Lấy tất cả playlist
+-------------------------------------------------------- */
+export const getAllPlaylists = async (signal) => {
+  const data = await fetchSafe(`${API_BASE_URL}/api/playlists`, signal);
+  if (!Array.isArray(data)) return [];
+  return data.map(normalizePlaylist);
+};
+
+/* --------------------------------------------------------
+   ⭐ Lấy playlist theo ID
+-------------------------------------------------------- */
+export const getPlaylistById = async (id, signal) => {
+  const data = await fetchSafe(`${API_BASE_URL}/api/playlists/${id}`, signal);
+  return normalizePlaylist(data);
+};
+
+/* --------------------------------------------------------
+   ⭐ TOP playlist theo lượt nghe giảm dần
+-------------------------------------------------------- */
 export const getTopPlaylists = async (limit = 8, signal) => {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/playlists/top?limit=${limit}`,
-      {
-        method: 'GET',
-        headers: {
-          ...authHeader(),
-          Accept: 'application/json'
-        },
-        signal,
-      }
-    );
+  const data = await fetchSafe(
+    `${API_BASE_URL}/api/playlists/top?limit=${limit}`,
+    signal
+  );
 
-    const data = await safeJson(res);
-
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error('Error fetching TOP playlists:', error);
-    return [];
-  }
+  return Array.isArray(data)
+    ? data.map(normalizePlaylist)
+    : [];
 };
 
-/**
- * ✅ Lấy TOP playlist sắp xếp theo ngày tạo/phát hành giảm dần
- * GET /api/playlists?sort=createdAt,desc&limit=8
- */
+/* --------------------------------------------------------
+   ⭐ TOP playlist mới nhất
+-------------------------------------------------------- */
 export const getNewestPlaylists = async (limit = 8, signal) => {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/playlists/top/new?limit=${limit}`,
-      {
-        method: 'GET',
-        headers: {
-          ...authHeader(),
-          Accept: 'application/json'
-        },
-        signal,
-      }
-    );
+  const data = await fetchSafe(
+    `${API_BASE_URL}/api/playlists/top/new?limit=${limit}`,
+    signal
+  );
 
-    const data = await safeJson(res);
-
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error('Error fetching TOP newest playlists:', error);
-    return [];
-  }
+  return Array.isArray(data)
+    ? data.map(normalizePlaylist)
+    : [];
 };
 
-/**
- * Lấy TOP playlist sắp xếp theo lượt thích giảm dần
- * GET /api/playlists/top/likes
- */
+/* --------------------------------------------------------
+   ⭐ TOP playlist theo lượt thích giảm dần
+-------------------------------------------------------- */
 export const getPlaylistsByTopLikes = async (limit = 8, signal) => {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/playlists/top/likes?limit=${limit}`,
-      {
-        method: 'GET',
-        headers: {
-          ...authHeader(),
-          Accept: 'application/json'
-        },
-        signal,
-      }
-    );
+  const data = await fetchSafe(
+    `${API_BASE_URL}/api/playlists/top/likes?limit=${limit}`,
+    signal
+  );
 
-    const data = await safeJson(res);
-
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error('Error fetching TOP liked playlists:', error);
-    return [];
-  }
+  return Array.isArray(data)
+    ? data.map(normalizePlaylist)
+    : [];
 };
-
-

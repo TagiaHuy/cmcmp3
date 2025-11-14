@@ -17,14 +17,13 @@ import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 const ACTION_WIDTH = 96;
 
 const NowPlaying = () => {
-  const { currentTrack, handlePlay } = useMediaPlayer();
+  const { currentTrack, handlePlay, normalizeArtists } = useMediaPlayer();
   const theme = useTheme();
 
   if (!currentTrack) return null;
 
   return (
     <Box sx={{ mb: 3 }}>
-      {/* ✅ Tiêu đề không nằm trong khung tím */}
       <Typography
         variant="subtitle1"
         sx={{
@@ -36,7 +35,6 @@ const NowPlaying = () => {
         Đang phát
       </Typography>
 
-      {/* ✅ Chỉ bài hát được ôm trong khung tím */}
       <Paper
         elevation={0}
         sx={{
@@ -73,6 +71,7 @@ const NowPlaying = () => {
                 alt={currentTrack.title}
                 sx={{ width: 48, height: 48, borderRadius: 1 }}
               />
+
               <PlayArrowRoundedIcon
                 className="thumb-play"
                 onClick={(e) => {
@@ -106,8 +105,9 @@ const NowPlaying = () => {
             <Typography noWrap fontWeight={800} color={theme.palette.text.primary}>
               {currentTrack.title}
             </Typography>
+
             <Typography noWrap color={theme.palette.text.secondary}>
-              {currentTrack.artists}
+              {normalizeArtists(currentTrack.artists)}
             </Typography>
           </Box>
 

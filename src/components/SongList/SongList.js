@@ -1,14 +1,20 @@
 import React from 'react';
 import { Box, Typography, CircularProgress, List } from '@mui/material';
 import useSongsByIds from '../../hooks/useSongsByIds';
-import { useMediaPlayer } from '../../context/MediaPlayerContext';
+import { useMediaPlayer, normalizeArtists } from '../../context/MediaPlayerContext';
 import SongListItem from './SongListItem';
 
-// This is a new "presentational" component that just renders the list of songs.
+/* -------------------------------------------------------------------
+   ⭐ Renderer — chỉ render UI, không fetch, không dùng hook.
+------------------------------------------------------------------- */
 const SongListRenderer = ({ songs, onPlay, currentTrack }) => {
-  if (!songs || songs.length === 0) {
+  if (!Array.isArray(songs) || songs.length === 0) {
     return (
-      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ textAlign: 'center', py: 3 }}
+      >
         Danh sách phát này hiện chưa có bài hát nào.
       </Typography>
     );
@@ -16,30 +22,51 @@ const SongListRenderer = ({ songs, onPlay, currentTrack }) => {
 
   return (
     <List sx={{ width: '100%', p: 0 }}>
-      {songs.map((song, index) => (
-        <SongListItem
-          key={song.id}
-          song={song}
-          index={index}
-          onPlay={() => onPlay(song)}
-          isPlaying={currentTrack && currentTrack.id === song.id}
-        />
-      ))}
+      {songs.map((song, index) => {
+        if (!song) return null;
+
+        // ⭐ Chuẩn hóa tên nghệ sĩ
+        const artistText = normalizeArtists(song.artists);
+
+        // ⭐ Format track unified
+        const unifiedTrack = {
+          id: song.id,
+          title: song.title,
+          mediaSrc: song.mediaSrc || song.audioUrl,
+          imageUrl: song.imageUrl || '',
+          artists: artistText,
+        };
+
+        const isPlaying =
+          currentTrack &&
+          currentTrack.mediaSrc === unifiedTrack.mediaSrc;
+
+        return (
+          <SongListItem
+            key={song.id || index}
+            song={{ ...song, artists: artistText }}
+            index={index}
+            onPlay={() => onPlay(unifiedTrack)}
+            isPlaying={isPlaying}
+          />
+        );
+      })}
     </List>
   );
 };
 
-// This is the main component that decides whether to fetch songs or use the ones passed in.
+/* -------------------------------------------------------------------
+   ⭐ SongList chính — xử lý fetch hoặc nhận sẵn dữ liệu
+------------------------------------------------------------------- */
 const SongList = ({ songIds, songs: songsFromProps }) => {
   const { handlePlay, currentTrack } = useMediaPlayer();
-  
-  // Always call hooks at the top level.
+
+  // ⭐ Chỉ fetch khi không có songs được truyền thẳng vào props
   const { songs: fetchedSongs, loading, error } = useSongsByIds(songIds);
 
-  // If songs are passed directly, we use them. Otherwise, we use the fetched ones.
   const songsToRender = songsFromProps || fetchedSongs;
 
-  // Loading and error states are only relevant if we are fetching data.
+  // ⭐ Loading/error CHỈ áp dụng khi fetch
   if (!songsFromProps) {
     if (loading) {
       return (
@@ -50,11 +77,21 @@ const SongList = ({ songIds, songs: songsFromProps }) => {
     }
 
     if (error) {
-      return <Typography color="error" sx={{ textAlign: 'center', py: 5 }}>Không thể tải danh sách bài hát.</Typography>;
+      return (
+        <Typography color="error" sx={{ textAlign: 'center', py: 5 }}>
+          Không thể tải danh sách bài hát.
+        </Typography>
+      );
     }
   }
 
-  return <SongListRenderer songs={songsToRender} onPlay={handlePlay} currentTrack={currentTrack} />;
+  return (
+    <SongListRenderer
+      songs={songsToRender}
+      onPlay={handlePlay}
+      currentTrack={currentTrack}
+    />
+  );
 };
 
 export default SongList;

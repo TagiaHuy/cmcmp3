@@ -3,7 +3,6 @@ import React from "react";
 import { Box } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
-// Kích thước vòng tròn nút ▶ dùng chung cho các nơi khác (RecentlyPlayed, Top100, v.v.)
 export const PLAY_BUTTON_DIAMETER = 42; // px
 
 const BasePlayableImage = ({
@@ -18,9 +17,11 @@ const BasePlayableImage = ({
   onMouseLeave,
   hidePlayButtonBorder = false,
 }) => {
+
+  // ⭐ BasePlayableImage KHÔNG format data — chỉ gọi play
   const handlePlayClick = (e) => {
     e.stopPropagation();
-    if (onPlay && mediaSrc) onPlay(mediaSrc);
+    if (onPlay && mediaSrc) onPlay();  // ❗ Quan trọng: Không truyền mediaSrc nữa
   };
 
   return (
@@ -53,7 +54,7 @@ const BasePlayableImage = ({
         />
       )}
 
-      {/* Nút ▶ trung tâm: trong suốt + viền trắng đậm (style giống Zing) */}
+      {/* Nút ▶ trung tâm */}
       {isHovered && (
         <Box
           onClick={handlePlayClick}
@@ -69,15 +70,16 @@ const BasePlayableImage = ({
             placeItems: "center",
             cursor: "pointer",
 
-            background: "rgba(255,255,255,0.08)",       // nền trong suốt nhẹ
-            border: hidePlayButtonBorder ? "none" : "3px solid rgba(255,255,255,0.95)", // viền trắng đậm
+            background: "rgba(255,255,255,0.08)",
+            border: hidePlayButtonBorder
+              ? "none"
+              : "3px solid rgba(255,255,255,0.95)",
 
             transition: "transform .18s ease",
             zIndex: 3,
             "&:hover": { transform: "translate(-50%,-50%) scale(1.09)" },
           }}
         >
-          {/* lệch nhẹ sang phải như UI gốc */}
           <PlayArrowIcon sx={{ color: "#fff", fontSize: 28, ml: 0.4 }} />
         </Box>
       )}

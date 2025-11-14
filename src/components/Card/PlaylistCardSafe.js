@@ -1,10 +1,11 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import { useMediaPlayer, normalizeArtists } from '../../context/MediaPlayerContext';
 import BaseCard from './BaseCard';
 import CardTag from './CardTag';
 import PlayableImage from './PlayableImage';
 
-// ✅ Fallback nền blur (data URI, không gọi mạng → hết nháy)
+// Fallback nền blur mượt
 const FALLBACK_BG =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
@@ -18,18 +19,55 @@ const FALLBACK_BG =
   );
 
 function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
+  const { handlePlay } = useMediaPlayer();
 
-  const {
-    title = playlist?.name || playlist?.title || 'Playlist',
-    // ✅ LẤY TÊN CA SĨ
-    artist = playlist?.artist || playlist?.creatorDisplayName || 'Không rõ nghệ sĩ',
-    imageUrl = playlist?.imageUrl || '',
-    mediaSrc = playlist?.mediaSrc,
-  } = playlist || {};
+  if (!playlist) return null;
 
-  // ✅ Dùng ảnh an toàn cho nền blur (tránh retry URL lỗi gây nháy)
+  // =============================
+  // ⭐ Chuẩn hóa dữ liệu Playlist
+  // =============================
+  const title =
+    playlist.name ||
+    playlist.title ||
+    'Playlist';
+
+  const artistRaw =
+    playlist.artist ||
+    playlist.creatorDisplayName ||
+    'Không rõ nghệ sĩ';
+
+  const artistText = normalizeArtists(artistRaw);
+
+  const imageUrl = playlist.imageUrl || '';
+  const mediaSrc = playlist.mediaSrc || null;
+
+  // Nền blur fallback
   const safeBg = imageUrl || FALLBACK_BG;
 
+  // ============================================
+  // ⭐ Tạo unifiedTrack nếu người dùng click PLAY
+  // ============================================
+  const unifiedTrack = {
+    id: playlist.id,
+    title,
+    imageUrl,
+    mediaSrc,
+    artists: artistText,
+  };
+
+  const handlePlayClick = () => {
+    if (onPlay) {
+      // Nếu cha đã truyền onPlay riêng → dùng đúng logic cha
+      onPlay(playlist);
+    } else {
+      // Mặc định: play playlist như một bài
+      handlePlay(unifiedTrack);
+    }
+  };
+
+  // ============================================
+  // ⭐ STYLE THẺ
+  // ============================================
   const cardStyle = {
     width: 320,
     height: 130,
@@ -40,24 +78,25 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
     position: 'relative',
     overflow: 'hidden',
     cursor: 'pointer',
-    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-    backgroundColor: variant === 'simple' ? (theme) => theme.palette.action.hover : 'transparent',
+    transition: '0.3s ease-in-out',
+    backgroundColor:
+      variant === 'simple'
+        ? (t) => t.palette.action.hover
+        : 'transparent',
 
     '&:hover': {
-      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.4)',
-      background: variant === 'simple'
-        ? (theme) => theme.palette.action.selected
-        : 'linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 50%)',
+      boxShadow: '0 8px 20px rgba(0,0,0,.4)',
+      background:
+        variant === 'simple'
+          ? (t) => t.palette.action.selected
+          : 'linear-gradient(to bottom, #fff 0%, #fff 50%)',
     },
 
     '&::before': {
       content: '""',
       position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 50%)',
+      inset: 0,
+      background: 'linear-gradient(to top, rgba(0,0,0,.4), transparent)',
       zIndex: 1,
       display: variant === 'simple' ? 'none' : 'block',
     },
@@ -65,59 +104,64 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
 
   return (
     <BaseCard sx={cardStyle}>
+      {/* Nền blur */}
       {variant === 'default' && (
         <>
-          {/* ✅ Nền blur dùng safeBg để không bị retry URL lỗi */}
           <Box
             sx={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
+              inset: 0,
               backgroundImage: `url(${safeBg})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               filter: 'blur(8px)',
-              transform: 'scale(1.02)',          // tránh viền blur
-              willChange: 'filter, transform',
+              transform: 'scale(1.02)',
               zIndex: 0,
             }}
           />
+
           <CardTag text="CÓ THỂ BẠN THÍCH" />
         </>
       )}
 
-      {/* Ảnh phát (đã có fallback trong PlayableImage) */}
+      {/* Ảnh Playlist + nút PLAY */}
       <PlayableImage
         imageUrl={imageUrl}
         title={title}
-        sx={{ position: 'absolute', top: 15, left: 15, zIndex: 2 }}
-        onPlay={onPlay}
-        playlist={playlist}
         mediaSrc={mediaSrc}
+        sx={{ 
+          position: 'absolute', 
+          top: 15, 
+          left: 15, 
+          zIndex: 2 
+        }}
+        onPlay={handlePlayClick}
       />
 
-      {/* Nội dung chữ bên phải */}
-      <Box sx={{ marginLeft: '160px', zIndex: 3, paddingBottom: 3, position: 'relative' }}>
+      {/* Text */}
+      <Box
+        sx={{
+          marginLeft: '160px',
+          zIndex: 3,
+          paddingBottom: 3,
+          position: 'relative',
+        }}
+      >
         <Typography
           variant="subtitle1"
           fontWeight="bold"
           color={variant === 'simple' ? 'text.primary' : 'white'}
-          sx={{ lineHeight: 1.2 }}
         >
           {title}
         </Typography>
 
-        {/* ✅ Hiển thị tên ca sĩ */}
         <Typography
           variant="caption"
           color={variant === 'simple' ? 'text.secondary' : '#ccc'}
-          mt={0.5}
-          sx={{ display: 'block' }}
+          sx={{ mt: 0.5, display: 'block' }}
         >
-          {artist}
+          {artistText}
         </Typography>
       </Box>
     </BaseCard>
