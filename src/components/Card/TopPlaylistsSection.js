@@ -18,8 +18,6 @@ export default function TopPlaylistsSection() {
 
   const {
     loadQueue,
-    handlePlay,
-    playPlaylistRandom,
     normalizeArtists
   } = useMediaPlayer();
 
@@ -56,9 +54,9 @@ export default function TopPlaylistsSection() {
   }, [sortBy]);
 
   // ==========================================
-  // ⭐ Hàm play playlist (track đầu hoặc random)
+  // ⭐ Play playlist — hỗ trợ Next / Prev
   // ==========================================
-  const handlePlayPlaylist = (playlist) => {
+  const handlePlayPlaylist = (playlist, clickedSong = null) => {
     if (!playlist) return;
 
     const songs = playlist.songs || playlist.trackList || [];
@@ -68,27 +66,39 @@ export default function TopPlaylistsSection() {
       return;
     }
 
-    // Chuẩn hóa track list
-    const normalizedSongs = songs.map((song) => ({
-      id: song.id,
+    // Chuẩn hóa track list giống ZingChart (để MediaPlayer xử lý queue)
+    const normalizedSongs = songs.map((song, index) => ({
+      id: song.id ?? index,
       title: song.title,
       mediaSrc: song.mediaSrc || song.audioUrl,
       imageUrl: song.imageUrl,
       artists: normalizeArtists(song.artists)
     }));
 
-    // Play track đầu tiên
-    loadQueue(normalizedSongs, 0);
-    handlePlay(normalizedSongs[0]);
+    // Xác định bài bắt đầu play
+    let startIndex = 0;
+
+    if (clickedSong) {
+      const idx = normalizedSongs.findIndex(s => s.id === clickedSong.id);
+      if (idx >= 0) startIndex = idx;
+    }
+
+    // ⭐ Nạp toàn bộ queue + chỉ định bài sẽ phát đầu
+    // (MediaPlayer sẽ tự lo Next / Prev giống ZingChart)
+    loadQueue(normalizedSongs, startIndex);
   };
 
   return (
     <Box sx={{ my: 5, ml: 11, mr: 11 }}>
       {/* Header */}
-      <Box sx={{
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', mb: 2
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2
+        }}
+      >
         <Typography variant="h5" fontWeight={700} sx={{ color: headerColor }}>
           Danh sách playlist
         </Typography>
@@ -112,18 +122,21 @@ export default function TopPlaylistsSection() {
       {/* Nội dung */}
       {playlists.length > 0 ? (
         <PlaylistCarousel
-          key={sortBy} // ép remount khi đổi sort
+          key={sortBy}          // ép remount khi đổi sort
           playlists={playlists}
           columns={3}
-          onPlay={handlePlayPlaylist}  // ⭐ TRUYỀN ĐÚNG CALLBACK PLAY PLAYLIST
+          // Khi bấm play playlist → nạp queue + Next/Prev OK
+          onPlay={handlePlayPlaylist}
         />
       ) : (
-        <Box sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: 130
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: 130
+          }}
+        >
           <Typography color="text.secondary">
             Đang chờ dữ liệu từ backend...
           </Typography>

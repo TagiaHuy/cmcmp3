@@ -1,8 +1,9 @@
+// src/components/Card/SongCardDetailed.jsx
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import BaseCard from './BaseCard';
 import PlayableImage from './PlayableImage';
-import { useMediaPlayer, normalizeArtists } from '../../context/MediaPlayerContext';
+import { useMediaPlayer } from '../../context/MediaPlayerContext';
 
 const FALLBACK_BG =
   "data:image/svg+xml;utf8," +
@@ -16,13 +17,15 @@ const FALLBACK_BG =
      </svg>`
   );
 
-function SongCardDetailed({ song }) {
-  const { handlePlay } = useMediaPlayer();
+function SongCardDetailed({ song, onPlay }) {
+  const { handlePlay, normalizeArtists } = useMediaPlayer();
 
   if (!song) return null;
 
   // ⭐ Chuẩn hóa artists
-  const artistText = normalizeArtists(song.artists);
+  const artistText = normalizeArtists
+    ? normalizeArtists(song.artists)
+    : song.artists;
 
   // ⭐ chuẩn unified track
   const unifiedTrack = {
@@ -33,8 +36,15 @@ function SongCardDetailed({ song }) {
     artists: artistText,
   };
 
-  const onPlay = () => {
-    handlePlay(unifiedTrack);
+  const handlePlayClick = (e) => {
+    e?.stopPropagation?.();
+    if (onPlay) {
+      // Parent (TopSongsSection / SongCarousel) sẽ lo loadQueue + Next/Prev
+      onPlay(unifiedTrack);
+    } else {
+      // Fallback: play trực tiếp 1 bài
+      handlePlay(unifiedTrack);
+    }
   };
 
   const {
@@ -57,6 +67,7 @@ function SongCardDetailed({ song }) {
     transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
 
     '&:hover': {
+      transform: 'translateY(-2px)',
       boxShadow: '0 8px 20px rgba(0, 0, 0, 0.4)',
     },
 
@@ -71,7 +82,7 @@ function SongCardDetailed({ song }) {
   };
 
   return (
-    <BaseCard sx={cardStyle}>
+    <BaseCard sx={cardStyle} onClick={handlePlayClick}>
       {/* Nền blur */}
       <Box
         sx={{
@@ -95,7 +106,7 @@ function SongCardDetailed({ song }) {
         size={130}
         mediaSrc={unifiedTrack.mediaSrc}
         sx={{ position: 'absolute', top: 15, left: 15, zIndex: 2 }}
-        onPlay={onPlay}
+        onPlay={handlePlayClick}
       />
 
       {/* Text */}

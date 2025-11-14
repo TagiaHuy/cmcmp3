@@ -1,3 +1,4 @@
+// src/components/Carousel/SongCarousel.jsx
 import React, { useState } from 'react';
 import { Box, Typography, IconButton, Grid } from '@mui/material';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
@@ -5,9 +6,9 @@ import SongCardDetailed from '../Card/SongCardDetailed';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const SongCarousel = ({ title, songs = [], columns = 3 }) => {
+const SongCarousel = ({ title, songs = [], columns = 3, onPlay }) => {
   const [startIndex, setStartIndex] = useState(0);
-  const { normalizeArtists } = useMediaPlayer(); // (optional) vẫn dùng được nếu cần
+  const { normalizeArtists } = useMediaPlayer();
 
   if (!Array.isArray(songs) || songs.length === 0) {
     return (
@@ -64,7 +65,11 @@ const SongCarousel = ({ title, songs = [], columns = 3 }) => {
       <Grid container spacing={5} justifyContent="center">
         {visibleSongs.map((song) => (
           <Grid item key={song.id || song.mediaSrc} xs={12 / columns}>
-            <SongCardDetailed song={song} normalizeArtists={normalizeArtists} />
+            <SongCardDetailed
+              song={song}
+              normalizeArtists={normalizeArtists}
+              onPlay={() => onPlay?.(song)}  // 🔥 Gọi callback của TopSongsSection
+            />
           </Grid>
         ))}
       </Grid>
