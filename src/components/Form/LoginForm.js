@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Box, TextField, Button, Divider, Typography, Alert,
+  Box, TextField, Button, Divider, Typography,
   IconButton, InputAdornment
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { toast } from 'react-toastify';
 
 const emailRegex = /^[^\s@]+@gmail\.com$/i;
 
@@ -18,14 +19,12 @@ const LoginForm = () => {
 
   const [form, setForm] = useState({ email: '', password: '' });
   const [fieldErr, setFieldErr] = useState({ email: '', password: '' });
-  const [submitErr, setSubmitErr] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const onChange = (key) => (e) => {
     setForm((s) => ({ ...s, [key]: e.target.value }));
     setFieldErr((err) => ({ ...err, [key]: '' })); // clear lỗi khi người dùng sửa
-    setSubmitErr('');
   };
 
   const validate = () => {
@@ -44,20 +43,20 @@ const LoginForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setSubmitErr('');
 
     if (!validate()) return;
 
     try {
       setSubmitting(true);
       await login(form.email.trim(), form.password);
-      navigate('/'); // chuyển về trang chủ khi đăng nhập thành công
+      toast.success('Đăng nhập thành công!');
+      setTimeout(() => navigate('/'), 1500);
     } catch (err) {
       const msg =
         /401/.test(err.message) ? 'Email hoặc mật khẩu không đúng'
         : /403/.test(err.message) ? 'Bạn không có quyền truy cập'
         : err.message || 'Đăng nhập thất bại';
-      setSubmitErr(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -80,8 +79,6 @@ const LoginForm = () => {
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }} noValidate>
-      {submitErr && <Alert severity="error" sx={{ mb: 2 }}>{submitErr}</Alert>}
-
       <TextField
         margin="normal"
         required

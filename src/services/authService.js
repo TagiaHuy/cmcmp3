@@ -4,15 +4,38 @@ import API_BASE_URL from "../config";
 
 const API_URL = `${API_BASE_URL}/api/auth`;
 
+/** Gửi mã OTP đến email */
+export const sendOtp = async (email, signal) => {
+  const res = await fetch(`${API_URL}/send-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ email }),
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.message || data.error)) ||
+      `Không thể gửi OTP (HTTP ${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
 /** Đăng ký tài khoản */
-export const register = async (displayName, email, password, signal) => {
+export const register = async (displayName, email, password, otp, signal) => {
   const res = await fetch(`${API_URL}/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({ displayName, email, password }),
+    body: JSON.stringify({ displayName, email, password, otp }),
     signal,
   });
 

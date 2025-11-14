@@ -84,11 +84,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (displayName, email, password) => {
+  const register = async (displayName, email, password, otp) => {
     setError(null);
     const ac = new AbortController();
     try {
-      return await apiRegister(displayName, email, password, ac.signal);
+      return await apiRegister(displayName, email, password, otp, ac.signal);
     } catch (e) {
       setError(e?.message || "Đăng ký thất bại");
       throw e;
