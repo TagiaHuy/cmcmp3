@@ -7,8 +7,6 @@ import UpgradeButton from '../components/Button/Specific/UpgradeButton';
 import SettingButton from '../components/Button/Specific/SettingButton';
 import Navigation from '../components/Navigation/Navigation';
 import ThemeToggleButton from '../components/Button/Specific/ThemeToggleButton';
-
-// ✅ Menu avatar tài khoản (đã tạo ở components/MenuItem/UserAvatarMenu.js)
 import UserAvatarMenu from '../components/MenuItem/UserAvatarMenu';
 
 function Header() {
@@ -23,16 +21,20 @@ function Header() {
       }}
     >
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        {/* Bên trái: nút back/next + search */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Navigation />
           <Search />
         </Box>
 
+        {/* Bên phải: nút nâng cấp, setting, avatar, toggle theme */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <UpgradeButton />
           <SettingButton />
-          {/* ✅ Luôn hiển thị icon tài khoản; menu bên trong sẽ tự phân nhánh theo trạng thái đăng nhập */}
+
+          {/* ✅ Avatar góc phải – tự dùng useAuth bên trong */}
           <UserAvatarMenu />
+
           <ThemeToggleButton />
         </Box>
       </Toolbar>

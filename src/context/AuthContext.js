@@ -1,18 +1,34 @@
 // src/context/AuthContext.js
-import React, { createContext, useState, useEffect, useContext, useMemo } from "react";
-import { register as apiRegister, login as apiLogin, getUserMe } from "../services/authService";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useMemo,
+} from "react";
+import {
+  register as apiRegister,
+  login as apiLogin,
+  getUserMe,
+} from "../services/authService";
 
 const AuthContext = createContext(null);
 
-// helper: loại bỏ tiền tố "Bearer " nếu có
+// Xóa tiền tố "Bearer "
 const cleanToken = (t) => (t || "").replace(/^Bearer\s+/i, "").trim();
 
 export const AuthProvider = ({ children }) => {
+  // =============================
+  // 🔐 TOKEN
+  // =============================
   const [token, setToken] = useState(() => {
-    const stored = localStorage.getItem("token");
-    return stored ? cleanToken(stored) : null;
+    const saved = localStorage.getItem("token");
+    return saved ? cleanToken(saved) : null;
   });
 
+  // =============================
+  // 👤 USER
+  // =============================
   const [user, setUser] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("user")) || null;
@@ -22,122 +38,197 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState(null);
+  const [error, setError] = useState(null);
 
-  // Đồng bộ user từ /api/user/me khi có token
+  // =============================
+  // 🔄 Đồng bộ user → localStorage
+  // =============================
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
+    }
+  }, [user]);
+
+  // =============================
+  // 🔄 Lấy user từ token khi reload
+  // =============================
   useEffect(() => {
     const ac = new AbortController();
+
     (async () => {
-      if (!token) { setLoading(false); return; }
-      setError(null);
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
       try {
-        const me = await getUserMe(token, ac.signal); // token đã sạch
+        const me = await getUserMe(token, ac.signal);
+
+        // BE có thể trả { user: {...} } hoặc {...}
         const userToSet = me?.user ?? me;
-        if (userToSet && Object.keys(userToSet).length > 0) {
+
+        if (userToSet) {
           setUser(userToSet);
-          localStorage.setItem("user", JSON.stringify(userToSet));
+        } else {
+          setUser(null);
         }
-      } catch (e) {
-        if (e.name !== "AbortError") {
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("getUserMe failed:", err);
           setUser(null);
           setToken(null);
           localStorage.removeItem("token");
           localStorage.removeItem("user");
-          setError(e?.message || "Phiên đăng nhập đã hết hạn");
         }
       } finally {
         setLoading(false);
       }
     })();
+
     return () => ac.abort();
   }, [token]);
 
+  // =============================
+  // 🔑 LOGIN
+  // =============================
   const login = async (email, password) => {
     setError(null);
     const ac = new AbortController();
+
     try {
-      const loginData = await apiLogin(email, password, ac.signal);
-      if (!loginData?.token) throw new Error("Phản hồi đăng nhập không có token");
+      const data = await apiLogin(email, password, ac.signal);
+      if (!data?.token) throw new Error("Login response missing token");
 
-      const raw   = loginData.token;
-      const clean = cleanToken(raw);               // ← làm sạch
+      const rawToken = data.token;
+      const cleanedToken = cleanToken(rawToken);
 
-      const me = await getUserMe(clean, ac.signal);
+      // Lưu token trước
+      setToken(cleanedToken);
+      localStorage.setItem("token", cleanedToken);
+
+      // Lấy thông tin user hiện tại
+      const me = await getUserMe(cleanedToken, ac.signal);
       const userToSet = me?.user ?? me;
-      if (!userToSet || Object.keys(userToSet).length === 0) {
-        throw new Error("Không thể lấy thông tin người dùng sau khi đăng nhập");
-      }
 
-      setToken(clean);
-      setUser(userToSet);
-      localStorage.setItem("token", clean);        // ← lưu token sạch
-      localStorage.setItem("user", JSON.stringify(userToSet));
+      setUser(userToSet || null);
 
-      return { token: clean, user: userToSet };
-    } catch (e) {
-      setUser(null);
+      return { token: cleanedToken, user: userToSet };
+    } catch (err) {
+      console.error("Login error:", err);
       setToken(null);
+      setUser(null);
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      setError(e?.message || "Đăng nhập thất bại");
-      throw e;
+      setError(err.message || "Đăng nhập thất bại");
+      throw err;
     }
   };
 
+  // =============================
+  // 📝 REGISTER
+  // =============================
   const register = async (displayName, email, password, otp) => {
     setError(null);
     const ac = new AbortController();
+
     try {
       return await apiRegister(displayName, email, password, otp, ac.signal);
-    } catch (e) {
-      setError(e?.message || "Đăng ký thất bại");
-      throw e;
+    } catch (err) {
+      console.error("Register error:", err);
+      setError(err.message || "Đăng ký thất bại");
+      throw err;
     }
   };
 
+  // =============================
+  // 🚪 LOGOUT
+  // =============================
   const logout = () => {
-    setUser(null);
     setToken(null);
+    setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setError(null);
   };
 
-  // ==== TÍNH isAdmin MẠNH MẼ ====
+  // =============================
+  // 🛠 Hàm tiện ích: cập nhật một phần user
+  // (avatar, displayName, phoneNumber, ...)
+  // =============================
+  const updateUser = (partial) => {
+    setUser((prev) => (prev ? { ...prev, ...partial } : prev));
+  };
+
+  // =============================
+  // 👑 Tính isAdmin
+  // =============================
   const isAdmin = useMemo(() => {
     if (!user) return false;
-    const roleCandidates = [
-      ...(Array.isArray(user.roles) ? user.roles : []),
-      ...(Array.isArray(user.authorities) ? user.authorities : []),
-      ...(Array.isArray(user.roleList) ? user.roleList : []),
+
+    const roleSource = [
+      ...(user.roles || []),
+      ...(user.authorities || []),
+      ...(user.roleList || []),
     ];
 
-    const roleStrs = roleCandidates
-      .map(r => (typeof r === "string" ? r : (r?.authority || r?.name || r?.role || r?.code || "")))
-      .map(s => String(s).toUpperCase());
+    const roleStrings = roleSource
+      .map((r) =>
+        typeof r === "string"
+          ? r
+          : r?.authority || r?.name || r?.role || r?.code || ""
+      )
+      .map((s) => String(s).toUpperCase());
 
-    if (roleStrs.some(s => s.includes("ADMIN"))) return true;
+    if (roleStrings.some((s) => s.includes("ADMIN"))) return true;
 
-    const uname = (user.username || user.email || "").toString().toLowerCase();
-    if (uname.startsWith("admin")) return true;
+    if ((user.username || "").toLowerCase().startsWith("admin")) return true;
 
-    if (user.isAdmin === true) return true;
-
-    return false;
+    return user.isAdmin === true;
   }, [user]);
 
-  const value = useMemo(() => ({
-    user, token, loading, error,
-    isAuthenticated: !!token,
-    isAdmin,
-    login, register, logout,
-    handleSocialLogin: (rawToken) => {
-      const clean = cleanToken(rawToken);          // ← sạch khi social login
-      setToken(clean);
-      localStorage.setItem("token", clean);
-    },
-    setUser,
-  }), [user, token, loading, error, isAdmin]);
+  // =============================
+  // 📦 Giá trị context
+  // =============================
+  const value = useMemo(
+    () => ({
+      user,
+      token,
+      loading,
+      error,
+      isAuthenticated: !!token,
+      isAdmin,
+
+      // actions
+      login,
+      register,
+      logout,
+
+      // Social login (nếu dùng)
+      handleSocialLogin: async (rawToken) => {
+        const cleanedToken = cleanToken(rawToken);
+        setToken(cleanedToken);
+        localStorage.setItem("token", cleanedToken);
+
+        try {
+          const me = await getUserMe(cleanedToken);
+          const userToSet = me?.user ?? me;
+          if (userToSet) setUser(userToSet);
+        } catch (e) {
+          console.error("Social login getUserMe failed:", e);
+        }
+      },
+
+      // Cập nhật từng phần user
+      updateUser,
+
+      // Giữ lại setUser để các chỗ khác (ProfilePage, v.v.) vẫn dùng được
+      setUser,
+    }),
+    [user, token, loading, error, isAdmin]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

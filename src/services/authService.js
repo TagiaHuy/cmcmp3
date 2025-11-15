@@ -20,7 +20,8 @@ export const sendOtp = async (email, signal) => {
 
   if (!res.ok) {
     const msg =
-      (data && (data.message || data.error)) ||
+      data?.message ||
+      data?.error ||
       `Không thể gửi OTP (HTTP ${res.status})`;
     throw new Error(msg);
   }
@@ -43,11 +44,16 @@ export const register = async (displayName, email, password, otp, signal) => {
 
   if (!res.ok) {
     const msg =
-      (data && (data.message || data.error)) ||
-      (res.status === 400 ? "Đăng ký thất bại (400)" : `HTTP ${res.status}`);
+      data?.message ||
+      data?.error ||
+      (res.status === 400
+        ? "Đăng ký thất bại (400)"
+        : `HTTP ${res.status}`);
     throw new Error(msg);
   }
-  return data; // { token, user } hoặc payload BE trả
+
+  // BE có thể trả { token, user } hoặc custom payload
+  return data;
 };
 
 /** Đăng nhập */
@@ -66,19 +72,24 @@ export const login = async (email, password, signal) => {
 
   if (!res.ok) {
     const msg =
-      (data && (data.message || data.error)) ||
-      (res.status === 401 ? "Sai email hoặc mật khẩu (401)" : `HTTP ${res.status}`);
+      data?.message ||
+      data?.error ||
+      (res.status === 401
+        ? "Sai email hoặc mật khẩu (401)"
+        : `HTTP ${res.status}`);
     throw new Error(msg);
   }
-  return data; // { token, user } …
+
+  // { token, user?, ... }
+  return data;
 };
 
 /** Lấy thông tin user hiện tại (cần Bearer token) */
 export const getUserMe = async (token, signal) => {
-  const res = await fetch(`${API_BASE_URL}/api/me`, {
+  const res = await fetch(`${API_BASE_URL}/api/users/me`, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${token}`, 
+      Authorization: `Bearer ${token}`,
       Accept: "application/json",
     },
     signal,
@@ -88,7 +99,8 @@ export const getUserMe = async (token, signal) => {
 
   if (!res.ok) {
     const msg =
-      (data && (data.message || data.error)) ||
+      data?.message ||
+      data?.error ||
       (res.status === 403
         ? "Không có quyền truy cập (403)"
         : res.status === 401
@@ -96,17 +108,19 @@ export const getUserMe = async (token, signal) => {
         : `HTTP ${res.status}`);
     throw new Error(msg);
   }
-  return data; // { id, email, ... } hoặc { user: {...} }
+
+  // Nếu BE trả { user: {...} } thì lấy user, còn không thì dùng trực tiếp
+  return data.user ?? data; // UserDTO
 };
 
-/** Cập nhật thông tin user (cần Bearer token) */
+/** Cập nhật thông tin user (displayName, phone, gender, ...) */
 export const updateUserProfile = async (token, profileData, signal) => {
-  const res = await fetch(`${API_BASE_URL}/api/me`, {
-    method: 'PUT',
+  const res = await fetch(`${API_BASE_URL}/api/users/me`, {
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
+      Accept: "application/json",
     },
     body: JSON.stringify(profileData),
     signal,
@@ -115,31 +129,37 @@ export const updateUserProfile = async (token, profileData, signal) => {
   const data = await safeJson(res);
 
   if (!res.ok) {
-    const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+    const msg = data?.message || data?.error || `HTTP ${res.status}`;
     throw new Error(msg);
   }
-  return data;
+
+  // BE có thể trả { user: {...} } hoặc UserDTO trực tiếp
+  return data.user ?? data; // UserDTO
 };
 
-/** Cập nhật avatar user (cần Bearer token) */
+/** Cập nhật avatar user (FormData, cần Bearer token) */
 export const updateUserAvatar = async (token, formData, signal) => {
-  const res = await fetch(`${API_BASE_URL}/api/me/avatar`, {
-    method: 'POST',
+  const res = await fetch(`${API_BASE_URL}/api/users/me/avatar`, {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
+      Accept: "application/json",
+      // KHÔNG set Content-Type, để browser tự set cho FormData
     },
-    body: formData, // FormData sẽ tự động set Content-Type là multipart/form-data
+    body: formData,
     signal,
   });
 
   const data = await safeJson(res);
 
   if (!res.ok) {
-    const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+    const msg = data?.message || data?.error || `HTTP ${res.status}`;
     throw new Error(msg);
   }
-  return data;
+
+  // UserService.updateAvatar đang trả UserDTO,
+  // nếu sau này bọc trong { user: ... } thì vẫn OK.
+  return data.user ?? data; // UserDTO có avatarUrl mới
 };
 
 /** Yêu cầu gửi OTP để reset mật khẩu */
@@ -158,7 +178,8 @@ export const forgotPassword = async (email, signal) => {
 
   if (!res.ok) {
     const msg =
-      (data && (data.message || data.error)) ||
+      data?.message ||
+      data?.error ||
       `Không thể gửi yêu cầu (HTTP ${res.status})`;
     throw new Error(msg);
   }
@@ -181,7 +202,8 @@ export const resetPassword = async (email, otp, newPassword, signal) => {
 
   if (!res.ok) {
     const msg =
-      (data && (data.message || data.error)) ||
+      data?.message ||
+      data?.error ||
       `Không thể đặt lại mật khẩu (HTTP ${res.status})`;
     throw new Error(msg);
   }
