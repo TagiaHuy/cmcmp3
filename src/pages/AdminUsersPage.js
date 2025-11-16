@@ -68,7 +68,7 @@ export default function AdminUsersPage() {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: theme.palette.action.hover }}>
-                    {['ID', 'Tên hiển thị', 'Email', 'Số điện thoại', 'Quyền'].map((head, i) => (
+                    {['STT', 'Tên hiển thị', 'Email', 'Số điện thoại', 'Quyền'].map((head, i) => (
                       <TableCell
                         key={i}
                         sx={{
@@ -106,7 +106,7 @@ export default function AdminUsersPage() {
                           transition: 'background-color 0.2s',
                         }}
                       >
-                        <TableCell>{u.id}</TableCell>
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell>{u.displayName || u.username || '-'}</TableCell>
                         <TableCell>{u.email || '-'}</TableCell>
                         <TableCell>{u.phoneNumber || '-'}</TableCell>
