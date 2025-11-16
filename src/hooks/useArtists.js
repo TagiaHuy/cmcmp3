@@ -11,7 +11,7 @@ const useArtists = () => {
       try {
         setLoading(true);
         const response = await getAllArtists();
-        setArtists(response); // Assuming getAllArtists directly returns the array of artists
+        setArtists(response || []); // Assuming getAllArtists directly returns the array of artists
       } catch (err) {
         setError(err);
       } finally {
