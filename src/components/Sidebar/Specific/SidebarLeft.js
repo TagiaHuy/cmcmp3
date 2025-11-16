@@ -1,5 +1,5 @@
 // src/components/Sidebar/Specific/SidebarLeft.js
-import React, { useMemo } from 'react';
+import React, {useContext, useMemo} from 'react';
 import Sidebar from '../Sidebar';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
@@ -7,9 +7,11 @@ import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import LogoButton from '../../Button/Specific/LogoButton';
 import { useAuth } from '../../../context/AuthContext';
+import {ThemeContext} from "../../../theme/ThemeContext";
 
 function SidebarLeft() {
   const { isAdmin } = useAuth();
+  const { currentTheme } = useContext(ThemeContext);
 
   const items = useMemo(() => {
     const navSection = [
@@ -51,10 +53,10 @@ function SidebarLeft() {
         borderRadius: '10px',
         fontSize: '0.97rem',
         fontWeight: 500,
-        color: 'rgba(255,255,255,0.86)',
+        color: 'text.primary',
         transition: '0.25s ease',
         '&:hover': {
-          background: 'rgba(255,255,255,0.1)',
+          background: currentTheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
           backdropFilter: 'blur(4px)',
           transform: 'translateX(4px)',
         },
@@ -63,7 +65,7 @@ function SidebarLeft() {
         px: 2.5,
         py: 1,
         fontSize: '0.75rem',
-        color: 'rgba(255,255,255,0.45)',
+        color: 'text.secondary',
         textTransform: 'uppercase',
         letterSpacing: '0.6px',
         mt: 2,
