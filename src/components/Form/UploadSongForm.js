@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Autocomplete, Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import useArtists from '../../hooks/useArtists';
+import useTags from '../../hooks/useTags';
 import API_BASE_URL from '../../config';
 
 const style = {
@@ -18,15 +19,18 @@ const style = {
 
 const UploadSongForm = ({ open, handleClose }) => {
   const [title, setTitle] = useState('');
-  const [artist, setArtist] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedArtists, setSelectedArtists] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [songFile, setSongFile] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const { artists } = useArtists();
+  const { tags } = useTags();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!title || !artist || !songFile || !imageFile) {
+    if (!title || !songFile || !imageFile) {
       alert('Vui lòng điền đầy đủ thông tin và chọn tệp.');
       return;
     }
@@ -39,9 +43,19 @@ const UploadSongForm = ({ open, handleClose }) => {
 
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('artist', artist);
     formData.append('songFile', songFile);
     formData.append('imageFile', imageFile);
+    if (description) {
+        formData.append('description', description);
+    }
+    const artistIds = selectedArtists.map(artist => artist.id).join(',');
+    if (artistIds) {
+        formData.append('artistIds', artistIds);
+    }
+    const tagIds = selectedTags.map(tag => tag.id).join(',');
+    if (tagIds) {
+        formData.append('tagIds', tagIds);
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/songs/upload`, {
@@ -57,7 +71,9 @@ const UploadSongForm = ({ open, handleClose }) => {
         alert('Tải bài hát lên thành công!');
         console.log('Upload successful:', result);
         setTitle('');
-        setArtist('');
+        setDescription('');
+        setSelectedArtists([]);
+        setSelectedTags([]);
         setSongFile(null);
         setImageFile(null);
         handleClose();
@@ -106,25 +122,50 @@ const UploadSongForm = ({ open, handleClose }) => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+          <TextField
+            margin="normal"
+            fullWidth
+            id="description"
+            label="Mô tả"
+            name="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
           <Autocomplete
-              freeSolo
-              options={artists.map((option) => option.name)}
-              value={artist}
+              multiple
+              id="artist-select"
+              options={artists}
+              getOptionLabel={(option) => option.name}
+              value={selectedArtists}
               onChange={(event, newValue) => {
-                  setArtist(newValue);
-              }}
-              onInputChange={(event, newInputValue) => {
-                  setArtist(newInputValue);
+                setSelectedArtists(newValue);
               }}
               renderInput={(params) => (
                   <TextField
                       {...params}
                       margin="normal"
-                      required
                       fullWidth
                       name="artist"
                       label="Tên nghệ sĩ"
-                      id="artist"
+                  />
+              )}
+          />
+          <Autocomplete
+              multiple
+              id="tag-select"
+              options={tags}
+              getOptionLabel={(option) => option.name}
+              value={selectedTags}
+              onChange={(event, newValue) => {
+                setSelectedTags(newValue);
+              }}
+              renderInput={(params) => (
+                  <TextField
+                      {...params}
+                      margin="normal"
+                      fullWidth
+                      name="tag"
+                      label="Thẻ"
                   />
               )}
           />
