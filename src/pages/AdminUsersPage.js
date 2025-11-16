@@ -68,7 +68,7 @@ export default function AdminUsersPage() {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: theme.palette.action.hover }}>
-                    {['ID', 'Tên hiển thị', 'Email', 'Số điện thoại', 'Quyền'].map((head, i) => (
+                    {['STT', 'Tên hiển thị', 'Email', 'Số điện thoại', 'Quyền', 'Đăng nhập lần cuối'].map((head, i) => (
                       <TableCell
                         key={i}
                         sx={{
@@ -111,6 +111,7 @@ export default function AdminUsersPage() {
                         <TableCell>{u.email || '-'}</TableCell>
                         <TableCell>{u.phoneNumber || '-'}</TableCell>
                         <TableCell>{roles || '-'}</TableCell>
+                        <TableCell>{u.lastLoginTime ? new Date(u.lastLoginTime).toLocaleString() : '-'}</TableCell>
                       </TableRow>
                     );
                   })}
