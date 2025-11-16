@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import API_BASE_URL from '../../config';
 
 const style = {
   position: 'absolute',
@@ -39,7 +40,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
     }
 
     try {
-      const response = await fetch('/api/artists/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/artists`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
