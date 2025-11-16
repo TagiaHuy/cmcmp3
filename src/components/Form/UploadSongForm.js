@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
+import { Autocomplete, Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import useArtists from '../../hooks/useArtists';
+import API_BASE_URL from '../../config';
 
 const style = {
   position: 'absolute',
@@ -19,6 +21,7 @@ const UploadSongForm = ({ open, handleClose }) => {
   const [artist, setArtist] = useState('');
   const [songFile, setSongFile] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const { artists } = useArtists();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -41,7 +44,7 @@ const UploadSongForm = ({ open, handleClose }) => {
     formData.append('imageFile', imageFile);
 
     try {
-      const response = await fetch('/api/songs/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/songs/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -103,15 +106,27 @@ const UploadSongForm = ({ open, handleClose }) => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="artist"
-            label="Tên nghệ sĩ"
-            id="artist"
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
+          <Autocomplete
+              freeSolo
+              options={artists.map((option) => option.name)}
+              value={artist}
+              onChange={(event, newValue) => {
+                  setArtist(newValue);
+              }}
+              onInputChange={(event, newInputValue) => {
+                  setArtist(newInputValue);
+              }}
+              renderInput={(params) => (
+                  <TextField
+                      {...params}
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="artist"
+                      label="Tên nghệ sĩ"
+                      id="artist"
+                  />
+              )}
           />
           <Button
             variant="contained"
