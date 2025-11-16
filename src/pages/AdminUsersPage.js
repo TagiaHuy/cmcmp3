@@ -106,7 +106,7 @@ export default function AdminUsersPage() {
                           transition: 'background-color 0.2s',
                         }}
                       >
-                        <TableCell>{u.id}</TableCell>
+                        <TableCell>{index + 1}</TableCell>
                         <TableCell>{u.displayName || u.username || '-'}</TableCell>
                         <TableCell>{u.email || '-'}</TableCell>
                         <TableCell>{u.phoneNumber || '-'}</TableCell>
