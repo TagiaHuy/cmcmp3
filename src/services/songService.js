@@ -190,3 +190,34 @@ export const getUploadedSongs = async (signal) => {
 
   return (Array.isArray(data) ? data : []).map(mapSong);
 };
+
+/* ==========================================================
+    8) SEARCH SONGS
+========================================================== */
+const normalizeSong = (song) => {
+  if (!song) return null;
+  const artistText = Array.isArray(song.artists)
+    ? song.artists.map(a => a.name).join(', ')
+    : 'Nghệ sĩ không xác định';
+  return { ...song, artistText };
+};
+
+export const searchSongs = async (query, signal) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/search?q=${encodeURIComponent(query)}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+    return (Array.isArray(data) ? data : []).map(normalizeSong);
+  } catch (error) {
+    console.error("Error searching songs:", error);
+    return [];
+  }
+};

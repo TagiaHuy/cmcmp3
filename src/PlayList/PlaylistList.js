@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Typography, CircularProgress, List } from '@mui/material';
-import { useMediaPlayer } from '../../context/MediaPlayerContext';
-import { getPlaylistById } from '../../services/playlistService';
+import { useMediaPlayer } from '../context/MediaPlayerContext';
+import { getPlaylistById } from '../services/playlistService';
 import PlaylistListItem from './PlaylistListItem';
 
 /** Presentational – chỉ render danh sách */
-const PlaylistListRenderer = ({ playlists, onPlay, onOpen }) => {
+const PlaylistListRenderer = ({ playlists, onPlay, onOpen, onEdit, onDelete }) => {
   if (!playlists || playlists.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
-        Danh sách này hiện chưa có playlist nào.
+        Bạn chưa có playlist nào. Hãy tạo một cái!
       </Typography>
     );
   }
@@ -18,11 +18,13 @@ const PlaylistListRenderer = ({ playlists, onPlay, onOpen }) => {
     <List sx={{ width: '100%', p: 0 }}>
       {playlists.map((pl, index) => (
         <PlaylistListItem
-          key={pl.id}
+          key={pl.id || index}
           playlist={pl}
           index={index}
           onPlay={() => onPlay?.(pl)}
           onOpen={onOpen}
+          onEdit={onEdit}
+          onDelete={onDelete}
         />
       ))}
     </List>
@@ -35,8 +37,10 @@ const PlaylistListRenderer = ({ playlists, onPlay, onOpen }) => {
  *  - playlistIds?: string[]
  *  - playlists?: PlaylistDTO[]
  *  - onOpen?: (pl) => void
+ *  - onEdit?: (pl) => void
+ *  - onDelete?: (id) => void
  */
-export default function PlaylistList({ playlistIds, playlists: playlistsFromProps, onOpen }) {
+export default function PlaylistList({ playlistIds, playlists: playlistsFromProps, onOpen, onEdit, onDelete }) {
   const { handlePlay } = useMediaPlayer(); // nếu bạn có playPlaylist thì thay bằng nó
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState(null);
@@ -117,6 +121,8 @@ export default function PlaylistList({ playlistIds, playlists: playlistsFromProp
       playlists={playlistsToRender}
       onPlay={handlePlayPlaylist}
       onOpen={onOpen}
+      onEdit={onEdit}
+      onDelete={onDelete}
     />
   );
 }

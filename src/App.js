@@ -19,6 +19,7 @@ import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import LibraryPage from './pages/LibraryPage'; // New import
+import PlaylistsPage from './pages/PlaylistsPage';
 import ArtistsPage from './pages/ArtistsPage'; // New import for ArtistsPage
 import { useAuth } from './context/AuthContext';
 
@@ -98,6 +99,14 @@ function App() {
           element={
             <PrivateRoute isAuthed={isAuthenticated}>
               <LibraryPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/playlists"
+          element={
+            <PrivateRoute isAuthed={isAuthenticated}>
+              <PlaylistsPage />
             </PrivateRoute>
           }
         />

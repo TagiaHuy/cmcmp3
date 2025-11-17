@@ -19,7 +19,7 @@ function SidebarLeft() {
       { text: 'Thư viện', icon: <LibraryMusicIcon />, to: '/library' },
       { text: 'Nghệ sĩ', icon: <PeopleAltRoundedIcon />, to: '/artists' },
       { text: 'Nghe gần đây', icon: <HistoryIcon />, to: '/recently-played' },
-      { text: 'Playlist', icon: <PlaylistPlayIcon />, to: '/playlist' },
+      { text: 'Playlist', icon: <PlaylistPlayIcon />, to: '/playlists' },
     ];
 
     const adminSection = isAdmin

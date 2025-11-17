@@ -15,7 +15,7 @@ const useSongs = () => {
         setLoading(true);
 
         // 🎯 API đã trả đúng format (mapSong trong service)
-        const fetchedSongs = await getAllSongs(0, 50, 'createdAt', 'desc', ac.signal);
+        const fetchedSongs = await getAllSongs(0, 1000, 'createdAt', 'desc', ac.signal);
 
         setSongs(Array.isArray(fetchedSongs) ? fetchedSongs : []);
       } catch (err) {
