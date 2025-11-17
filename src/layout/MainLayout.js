@@ -4,7 +4,7 @@ import Header from './Header';
 import SidebarLeft from '../components/Sidebar/Specific/SidebarLeft';
 import SidebarRight from '../components/Sidebar/Specific/SidebarRight';
 // import CreateArtistForm from '../components/Form/CreateArtistForm'; // Import CreateArtistForm
-// import Footer from './Footer'; // nếu chưa dùng có thể bỏ
+import Footer from './Footer'; // nếu chưa dùng có thể bỏ
 import MediaPlayer from '../components/MediaPlayer/MediaPlayer';
 import { MediaPlayerProvider, useMediaPlayer } from '../context/MediaPlayerContext';
 
@@ -65,6 +65,7 @@ function MainLayoutContent({ children }) {
           <Header />
           <Toolbar />
           {children}
+          <Footer />
         </Box>
 
         {isSidebarRightVisible && <SidebarRight />}
