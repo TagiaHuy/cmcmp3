@@ -25,7 +25,7 @@ const SongDetailPage = () => {
       id: song.id,
       title: song.title,
       imageUrl: song.imageUrl,
-      mediaSrc: song.mediaSrc || song.audioUrl,
+      mediaSrc: song.filePath,
       artists: normalizeArtists(song.artists),
     };
 
