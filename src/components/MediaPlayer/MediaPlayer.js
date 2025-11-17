@@ -138,7 +138,7 @@ const MediaPlayer = () => {
           songTitle={currentTrack?.title || 'No song playing'}
           songAuthor={currentTrack?.artists || 'Unknown'}
         />
-        <FavoriteButton />
+        <FavoriteButton songId={currentTrack?.id} isFavorite={currentTrack?.isFavorite} />
         <MoreButton />
       </Box>
 

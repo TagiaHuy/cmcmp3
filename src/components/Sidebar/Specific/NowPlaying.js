@@ -129,7 +129,7 @@ const NowPlaying = () => {
               transition: 'opacity .15s ease',
             }}
           >
-            <FavoriteButton size="small" aria-label="Yêu thích" />
+            <FavoriteButton songId={currentTrack?.id} isFavorite={currentTrack?.isFavorite} size="small" aria-label="Yêu thích" />
             <MoreButton size="small" aria-label="Thêm" />
           </Box>
         </ListItem>

@@ -190,3 +190,54 @@ export const getUploadedSongs = async (signal) => {
 
   return (Array.isArray(data) ? data : []).map(mapSong);
 };
+
+/* ==========================================================
+    8) LIKE A SONG
+========================================================== */
+export const likeSong = async (id) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/${id}/like`, {
+      method: "POST",
+      headers: {
+        ...authHeader(),
+        "Content-Type": "application/json",
+      },
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ message: `HTTP error! status: ${res.status}` }));
+      throw new Error(errorData.message);
+    }
+    if (res.status === 204 || res.status === 200) { 
+        return { success: true };
+    }
+    return await res.json();
+  } catch (error) {
+    console.error(`Error liking song with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+/* ==========================================================
+    9) UNLIKE A SONG
+========================================================== */
+export const unlikeSong = async (id) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/${id}/like`, {
+      method: "DELETE",
+      headers: {
+        ...authHeader(),
+      },
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ message: `HTTP error! status: ${res.status}` }));
+      throw new Error(errorData.message);
+    }
+    if (res.status === 204 || res.status === 200) { // No Content
+        return { success: true };
+    }
+    return await res.json();
+  } catch (error) {
+    console.error(`Error unliking song with ID ${id}:`, error);
+    throw error;
+  }
+};
