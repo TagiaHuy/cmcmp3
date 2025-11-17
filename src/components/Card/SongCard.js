@@ -21,7 +21,7 @@ const SongCard = ({ song, onPlay }) => {
       handlePlay({
         id: song.id,
         title: song.title,
-        mediaSrc: song.mediaSrc || song.audioUrl,
+        mediaSrc: song.filePath,
         imageUrl: song.imageUrl,
         artists: normalizeArtists
           ? normalizeArtists(song.artists)

@@ -18,7 +18,7 @@ const mapSong = (song) => {
   return {
     ...song,
     artists: normalizeArtists(song.artists),
-    mediaSrc: `${API_BASE_URL}/api/songs/stream/${song.id}`,
+    mediaSrc: song.filePath,
   };
 };
 
