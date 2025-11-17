@@ -202,6 +202,17 @@ export const MediaPlayerProvider = ({ children }) => {
     next();
   }, [queue.length, repeatMode, currentIndex, next]);
 
+  const updateSongInQueue = useCallback((songId, update) => {
+    setQueue(prevQueue =>
+      prevQueue.map(song =>
+        song.id === songId ? { ...song, ...update } : song
+      )
+    );
+    setCurrentTrack(prevTrack =>
+      prevTrack && prevTrack.id === songId ? { ...prevTrack, ...update } : prevTrack
+    );
+  }, []);
+
   // ============================================
   // VALUE xuất ra cho toàn app
   // ============================================
@@ -228,6 +239,7 @@ export const MediaPlayerProvider = ({ children }) => {
     toggleShuffle,
     cycleRepeatMode,
     handleEnded,
+    updateSongInQueue,
 
     // thêm vào để dùng ở mọi component
     normalizeArtists
@@ -238,7 +250,7 @@ export const MediaPlayerProvider = ({ children }) => {
     isShuffling, repeatMode,
     handlePlay, loadQueue, playPlaylistRandom, playAt,
     prev, next, toggleShuffle, cycleRepeatMode, handleEnded,
-    clearRecentlyPlayed, toggleSidebarRight
+    clearRecentlyPlayed, toggleSidebarRight, updateSongInQueue
   ]);
 
   return (

@@ -77,7 +77,7 @@ const SongDetailCard = ({ song }) => {
 
       {/* 3. Action Buttons */}
       <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 4 }}>
-        <FavoriteButton isFavorite={isLiked} />
+        <FavoriteButton songId={song.id} isFavorite={isLiked} />
 
         {/* ⭐ Play chính → truyền unifiedTrack */}
         <PrimaryPlaybackButton

@@ -26,7 +26,7 @@ const SongListItem = ({ song, index, onPlay, isPlaying }) => {
       disablePadding
       secondaryAction={
         <Stack direction="row" spacing={1} alignItems="center">
-          <FavoriteButton isFavorite={song.isFavorite} />
+          <FavoriteButton songId={song.id} isFavorite={song.isFavorite} />
           <MoreButton />
         </Stack>
       }
