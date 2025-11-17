@@ -1,10 +1,10 @@
 // src/components/Sidebar/Specific/SidebarLeft.js
 import React, {useContext, useMemo} from 'react';
 import Sidebar from '../Sidebar';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
+import HistoryIcon from '@mui/icons-material/History';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 import LogoButton from '../../Button/Specific/LogoButton';
 import { useAuth } from '../../../context/AuthContext';
 import {ThemeContext} from "../../../theme/ThemeContext";
@@ -14,22 +14,12 @@ function SidebarLeft() {
   const { currentTheme } = useContext(ThemeContext);
 
   const items = useMemo(() => {
-    const navSection = [
-      { section: 'Navigation' },
-      { text: 'Inbox', icon: <InboxIcon />, to: '/' },
-      { text: 'Starred', icon: <MailIcon />, to: '/recently-played' },
-    ];
-
     const librarySection = [
       { section: 'Library' },
       { text: 'Thư viện', icon: <LibraryMusicIcon />, to: '/library' },
       { text: 'Nghệ sĩ', icon: <PeopleAltRoundedIcon />, to: '/artists' },
-    ];
-
-    const otherSection = [
-      { section: 'Others' },
-      { text: 'Send email', icon: <InboxIcon />, to: '/test' },
-      { text: 'Drafts', icon: <MailIcon />, to: '/test' },
+      { text: 'Nghe gần đây', icon: <HistoryIcon />, to: '/recently-played' },
+      { text: 'Playlist', icon: <PlaylistPlayIcon />, to: '/playlist' },
     ];
 
     const adminSection = isAdmin
@@ -39,7 +29,7 @@ function SidebarLeft() {
         ]
       : [];
 
-    return [...navSection, ...librarySection, ...otherSection, ...adminSection];
+    return [...librarySection, ...adminSection];
   }, [isAdmin]);
 
   return (
