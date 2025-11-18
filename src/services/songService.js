@@ -13,10 +13,20 @@ const normalizeArtists = (artists) => {
 };
 
 // 🟢 Chuẩn hóa song trả về FE
+const toArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value];
+};
+
 const mapSong = (song) => {
   if (!song) return null;
+  const artistEntities = toArray(song.artists);
+  const tagEntities = toArray(song.tags);
   return {
     ...song,
+    artistEntities,
+    tagEntities,
     artists: normalizeArtists(song.artists),
     mediaSrc: song.filePath,
   };
@@ -265,4 +275,27 @@ export const getSongsAdmin = async (page = 0, size = 10, signal) => {
     }
 
     return data;
+};
+
+export const updateUploadedSong = async (id, formData) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/uploaded/${id}`, {
+      method: "PUT",
+      headers: {
+        ...authHeader(),
+      },
+      body: formData,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) {
+      const msg = data?.message || data?.error || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    return mapSong(data);
+  } catch (error) {
+    console.error(`Error updating uploaded song ${id}:`, error);
+    throw error;
+  }
 };
