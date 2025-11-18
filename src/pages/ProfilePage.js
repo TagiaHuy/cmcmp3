@@ -96,8 +96,6 @@ const ProfilePage = () => {
     }
   };
 
-  const avatarSrc = user.avatarUrl ? `${API_BASE_URL}/images/${user.avatarUrl.split('/').pop()}` : null;
-
   return (
     <Box sx={{ padding: 4, display: 'flex', justifyContent: 'center' }}>
       <Paper sx={{ padding: 4, backgroundColor: (theme) => theme.palette.background.paper, maxWidth: 800, width: '100%' }}>
@@ -111,7 +109,7 @@ const ProfilePage = () => {
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <Avatar
-              src={avatarSrc}
+              src={user.avatarUrl}
               sx={{ width: 150, height: 150, cursor: 'pointer', border: '2px solid' }}
               onClick={handleAvatarClick}
             />
