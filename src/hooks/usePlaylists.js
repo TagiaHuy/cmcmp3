@@ -86,7 +86,7 @@ const usePlaylists = () => {
       // Optionally update the songCount in the local state if the API returns it
       setPlaylists((prev) =>
         prev.map((p) =>
-          p.id === playlistId ? { ...p, songCount: updatedSongs.length } : p
+          p.id === playlistId ? { ...p, songCount: updatedSongs.length, songs: updatedSongs } : p
         )
       );
       toast.success('Cập nhật bài hát trong playlist thành công!');

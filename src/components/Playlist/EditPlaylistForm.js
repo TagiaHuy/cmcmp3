@@ -11,12 +11,12 @@ import {
   ListItem,
   ListItemText,
   IconButton,
-  Checkbox,
-  FormGroup,
+  Autocomplete,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import useSongs from '../../hooks/useSongs';
+import useArtists from '../../hooks/useArtists';
+import useSearch from '../../hooks/useSearch'; // Import useSearch
 import { toast } from 'react-toastify';
 import usePlaylists from '../../hooks/usePlaylists';
 
@@ -29,10 +29,13 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
   const [currentSongs, setCurrentSongs] = useState([]);
   const [loadingSongs, setLoadingSongs] = useState(true);
   const [errorSongs, setErrorSongs] = useState(null);
-  const [selectedSongsToAdd, setSelectedSongsToAdd] = useState([]);
+  const [selectedArtists, setSelectedArtists] = useState([]);
+
+  const [songSearchQuery, setSongSearchQuery] = useState(''); // State for song search input
+  const { results: searchResults, loading: loadingSearchResults } = useSearch(songSearchQuery); // Use useSearch hook
 
   const { updatePlaylistSongsList, getSongsForPlaylist } = usePlaylists();
-  const { songs: allSongs, loading: loadingAllSongs, error: errorAllSongs } = useSongs();
+  const { artists } = useArtists(); // Integrated useArtists hook
 
   useEffect(() => {
     const fetchCurrentSongs = async () => {
@@ -50,7 +53,24 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
       }
     };
     fetchCurrentSongs();
-  }, [playlist.id, getSongsForPlaylist]);
+
+    // Initialize selectedArtists from playlist.artists if available
+    if (playlist.artists && Array.isArray(playlist.artists)) {
+      setSelectedArtists(playlist.artists);
+    }
+  }, [playlist.id, getSongsForPlaylist, playlist.artists]); // Added playlist.artists to dependency array
+
+  const handleAddSong = async (song) => {
+    try {
+      await updatePlaylistSongsList(playlist.id, { add: [song.id] });
+      setCurrentSongs((prev) => [...prev, song]);
+      setSongSearchQuery(''); // Clear search query
+      toast.success(`Đã thêm "${song.title}" vào playlist.`);
+    } catch (err) {
+      console.error('Failed to add song:', err);
+      toast.error('Lỗi khi thêm bài hát vào playlist.');
+    }
+  };
 
   const handleRemoveSong = async (songId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa bài hát này khỏi playlist không?')) {
@@ -63,28 +83,6 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
     }
   };
 
-  const handleAddSelectedSongs = async () => {
-    if (selectedSongsToAdd.length === 0) {
-      toast.info('Vui lòng chọn bài hát để thêm.');
-      return;
-    }
-    try {
-      await updatePlaylistSongsList(playlist.id, { add: selectedSongsToAdd });
-      const addedSongs = allSongs.filter(song => selectedSongsToAdd.includes(song.id));
-      setCurrentSongs((prev) => [...prev, ...addedSongs]);
-      setSelectedSongsToAdd([]); // Clear selection
-      toast.success('Đã thêm bài hát vào playlist.');
-    } catch (err) {
-      console.error('Failed to add songs:', err);
-    }
-  };
-
-  const handleToggleSongToAdd = (songId) => {
-    setSelectedSongsToAdd((prev) =>
-      prev.includes(songId) ? prev.filter((id) => id !== songId) : [...prev, songId]
-    );
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -94,14 +92,14 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
     if (imageFile) {
       formData.append('imageFile', imageFile);
     }
+    const artistIds = selectedArtists.map(artist => artist.id).join(',');
+    if (artistIds) {
+        formData.append('artistIds', artistIds);
+    }
     onSubmit(playlist.id, formData);
   };
 
-  const availableSongs = allSongs.filter(
-    (song) => !currentSongs.some((current) => current.id === song.id)
-  );
-
-  if (loadingSongs || loadingAllSongs) {
+  if (loadingSongs || loadingSearchResults) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
@@ -109,10 +107,10 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
     );
   }
 
-  if (errorSongs || errorAllSongs) {
+  if (errorSongs) { // errorAllSongs removed
     return (
       <Typography color="error" sx={{ py: 4 }}>
-        Lỗi: {errorSongs?.message || errorAllSongs?.message}
+        Lỗi: {errorSongs?.message}
       </Typography>
     );
   }
@@ -141,6 +139,25 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
         InputLabelProps={{
           sx: { color: 'text.primary', fontWeight: 600 }
         }}
+      />
+      <Autocomplete
+          multiple
+          id="artist-select"
+          options={artists}
+          getOptionLabel={(option) => option.name}
+          value={selectedArtists}
+          onChange={(event, newValue) => {
+            setSelectedArtists(newValue);
+          }}
+          renderInput={(params) => (
+              <TextField
+                  {...params}
+                  margin="normal"
+                  fullWidth
+                  name="artist"
+                  label="Nghệ sĩ liên kết"
+              />
+          )}
       />
       <Button
         variant="contained"
@@ -202,23 +219,38 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
       )}
 
       <Typography variant="h6" mt={2} color="text.primary" fontWeight={600}>Thêm bài hát</Typography>
-      {availableSongs.length === 0 ? (
-        <Typography variant="body2" color="text.primary">Không có bài hát nào để thêm.</Typography>
-      ) : (
-        <FormGroup>
-          {availableSongs.map((song) => (
-            <FormControlLabel
-              key={song.id}
-              control={
-                <Checkbox
-                  checked={selectedSongsToAdd.includes(song.id)}
-                  onChange={() => handleToggleSongToAdd(song.id)}
+      <TextField
+        label="Tìm kiếm bài hát"
+        variant="outlined"
+        fullWidth
+        value={songSearchQuery}
+        onChange={(e) => setSongSearchQuery(e.target.value)}
+        sx={{ mb: 2 }}
+      />
+      {loadingSearchResults && <CircularProgress size={24} />}
+      {!loadingSearchResults && searchResults.length > 0 && (
+        <List dense>
+          {searchResults
+            .filter(result => result.type === 'song' && !currentSongs.some(s => s.id === result.id))
+            .map((song) => (
+              <ListItem
+                key={song.id}
+                secondaryAction={
+                  <IconButton edge="end" aria-label="add" onClick={() => handleAddSong(song)}>
+                    <AddIcon />
+                  </IconButton>
+                }
+              >
+                <ListItemText
+                  primary={<Typography color="text.primary" fontWeight={500}>{song.title}</Typography>}
+                  secondary={<Typography color="text.primary" variant="body2">{song.artists}</Typography>}
                 />
-              }
-              label={<Typography color="text.primary">{`${song.title} - ${song.artistName}`}</Typography>}
-            />
-          ))}
-        </FormGroup>
+              </ListItem>
+            ))}
+        </List>
+      )}
+      {!loadingSearchResults && songSearchQuery && searchResults.filter(result => result.type === 'song').length === 0 && (
+        <Typography variant="body2" color="text.secondary">Không tìm thấy bài hát nào.</Typography>
       )}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
         <Button variant="outlined" onClick={onCancel}>
