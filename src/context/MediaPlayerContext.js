@@ -48,7 +48,24 @@ export const MediaPlayerProvider = ({ children }) => {
 
   // --- Sync src khi đổi track ---
   useEffect(() => {
-    setCurrentPlayingSrc(currentTrack?.mediaSrc || null);
+    if (!currentTrack) {
+      setCurrentPlayingSrc(null);
+      return;
+    }
+    setCurrentPlayingSrc(currentTrack.mediaSrc || null);
+
+    // Update recently played
+    setRecentlyPlayed(prev => {
+      const filtered = (prev || []).filter(p =>
+        (p?.id && currentTrack?.id && p.id !== currentTrack.id) ||
+        (!p?.id || !currentTrack?.id) && 
+        (p?.title !== currentTrack.title || p?.mediaSrc !== currentTrack.mediaSrc)
+      );
+
+      const updated = [currentTrack, ...filtered].slice(0, 10);
+      localStorage.setItem('recentlyPlayed', JSON.stringify(updated));
+      return updated;
+    });
   }, [currentTrack]);
 
   // ===== Helpers =====
@@ -95,19 +112,6 @@ export const MediaPlayerProvider = ({ children }) => {
 
     setCurrentTrack(track);
     setIsPlaying(true);
-
-    // Recently played
-    setRecentlyPlayed(prev => {
-      const filtered = (prev || []).filter(p =>
-        (p?.id && track?.id && p.id !== track.id) ||
-        (!p?.id || !track?.id) && 
-        (p?.title !== track.title || p?.mediaSrc !== track.mediaSrc)
-      );
-
-      const updated = [track, ...filtered].slice(0, 10);
-      localStorage.setItem('recentlyPlayed', JSON.stringify(updated));
-      return updated;
-    });
   }, [findTrackIndex]);
 
   const clearRecentlyPlayed = useCallback(() => {
