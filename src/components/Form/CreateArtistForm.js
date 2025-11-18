@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import API_BASE_URL from '../../config';
+import Loading from '../Loading/Loading';
+import { toast } from 'react-toastify';
 
 const style = {
   position: 'absolute',
@@ -19,12 +21,13 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
   const [name, setName] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!name) {
-      alert('Vui lòng nhập tên nghệ sĩ.');
+      toast.warn('Vui lòng nhập tên nghệ sĩ.');
       return;
     }
 
@@ -36,10 +39,11 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
 
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Xác thực không thành công. Vui lòng đăng nhập lại.');
+      toast.error('Xác thực không thành công. Vui lòng đăng nhập lại.');
       return;
     }
 
+    setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/artists`, {
         method: 'POST',
@@ -51,18 +55,22 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
 
       if (response.ok) {
         const newArtist = await response.json();
-        alert('Tạo nghệ sĩ mới thành công!');
+        toast.success('Tạo nghệ sĩ mới thành công!');
         if (onArtistCreated) {
           onArtistCreated(newArtist);
         }
-        handleClose();
+        setTimeout(() => {
+          handleClose();
+        }, 500);
       } else {
         const errorData = await response.json();
-        alert(`Tạo nghệ sĩ thất bại: ${errorData.message || response.statusText}`);
+        toast.error(`Tạo nghệ sĩ thất bại: ${errorData.message || response.statusText}`);
       }
     } catch (error) {
-      alert('Đã xảy ra lỗi khi tạo nghệ sĩ.');
+      toast.error('Đã xảy ra lỗi khi tạo nghệ sĩ.');
       console.error('Error creating artist:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,6 +81,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
       aria-labelledby="create-artist-modal-title"
     >
       <Box sx={style}>
+        {isLoading && <Loading />}
         <IconButton
           aria-label="close"
           onClick={handleClose}
