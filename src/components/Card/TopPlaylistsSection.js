@@ -1,12 +1,18 @@
-// src/components/Section/TopPlaylistsSection.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Typography, Select, MenuItem, CircularProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import { getTopPlaylists, getNewReleasePlaylists, getMostLikedPlaylists } from '../../services/playlistService';
+import {
+  getTopPlaylists,
+  getNewReleasePlaylists,
+  getMostLikedPlaylists,
+  getPlaylistById,        // ✅ đã có trong playlistService
+} from '../../services/playlistService';
 
+import { getSongById } from '../../services/songService'; // ✅ songService
 import PlaylistCarousel from '../Carousel/PlaylistCarousel';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
+
 
 export default function TopPlaylistsSection() {
   const [playlists, setPlaylists] = useState([]);
