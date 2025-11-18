@@ -4,6 +4,7 @@ import { useMediaPlayer, normalizeArtists } from '../../context/MediaPlayerConte
 import BaseCard from './BaseCard';
 import CardTag from './CardTag';
 import PlayableImage from './PlayableImage';
+import { useNavigate } from 'react-router-dom';
 
 // Fallback nền blur mượt
 const FALLBACK_BG =
@@ -20,6 +21,7 @@ const FALLBACK_BG =
 
 function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
   const { handlePlay } = useMediaPlayer();
+  const navigate = useNavigate();
 
   if (!playlist) return null;
 
@@ -55,7 +57,8 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
     artists: artistText,
   };
 
-  const handlePlayClick = () => {
+  const handlePlayClick = (e) => {
+    e.stopPropagation();
     if (onPlay) {
       // Nếu cha đã truyền onPlay riêng → dùng đúng logic cha
       onPlay(playlist);
@@ -63,6 +66,10 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
       // Mặc định: play playlist như một bài
       handlePlay(unifiedTrack);
     }
+  };
+
+  const handleCardClick = () => {
+    navigate(`/playlist/${playlist.id}`);
   };
 
   // ============================================
@@ -103,7 +110,7 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
   };
 
   return (
-    <BaseCard sx={cardStyle}>
+    <BaseCard sx={cardStyle} onClick={handleCardClick}>
       {/* Nền blur */}
       {variant === 'default' && (
         <>

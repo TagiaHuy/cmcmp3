@@ -135,7 +135,8 @@ export default function TopPlaylistsSection() {
             justifyContent: 'center',
             alignItems: 'center',
             height: 130
-          }}
+          }}Danh sách playlist
+
         >
           <Typography color="text.secondary">
             Đang chờ dữ liệu từ backend...
