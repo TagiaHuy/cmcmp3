@@ -5,6 +5,7 @@ import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 
 function PlaylistResultCard({ playlist, sx }) {
+  console.log('Rendering PlaylistResultCard for playlist:', playlist);
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
