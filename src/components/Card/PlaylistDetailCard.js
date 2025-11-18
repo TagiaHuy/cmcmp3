@@ -43,7 +43,7 @@ const PlaylistDetailCard = ({ playlist }) => {
             flexShrink: 0, // Đảm bảo ảnh không bị co lại
           }}
           src={playlist.imageUrl}
-          alt={playlist.name}
+          alt={playlist.title}
         />
 
         {/* 2. Nội dung Playlist */}
@@ -59,7 +59,7 @@ const PlaylistDetailCard = ({ playlist }) => {
             color="text.primary" 
             fontWeight={800} // Cực kỳ đậm
           >
-            {playlist.name}
+            {playlist.title}
           </Typography>
 
           {/* Mô tả */}

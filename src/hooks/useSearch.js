@@ -54,7 +54,7 @@ const useSearch = (query) => {
           const playlistResults = searchResults.playlists.map(playlist => ({
             type: 'playlist', // Thêm trường type
             id: playlist.id,
-            title: playlist.name, // Dùng 'name' làm 'title'
+            title: playlist.title, // Dùng 'name' làm 'title'
             description: playlist.description,
             imageUrl: playlist.imageUrl,
           }));
