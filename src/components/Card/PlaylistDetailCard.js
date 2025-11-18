@@ -7,7 +7,7 @@ import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import PlayallButton from '../Button/Specific/PlayallButton'; // Thường là nút nổi bật
 
-const PlaylistDetailCard = ({ playlist }) => {
+const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying }) => {
   // Giả định thêm trường 'creator' hoặc 'author' vào object playlist
   const creatorName = playlist.creator || "Người dùng"; // Mặc định nếu không có
 
@@ -120,7 +120,7 @@ const PlaylistDetailCard = ({ playlist }) => {
         justifyContent: { xs: 'center', md: 'flex-start' } // Căn trái trên desktop
       }}>
         {/* Nút Play Nổi bật (Ví dụ: Nút tròn lớn, màu sắc rực rỡ) */}
-        <PlayallButton sx={{ width: 64, height: 64, boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)' }} />
+        <PlayallButton isPlaying={isPlaying} handlePlayPause={handlePlayPlaylist} sx={{ width: 64, height: 64, boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)' }} />
         
         {/* Các nút phụ (Kích thước tiêu chuẩn) */}
         <FavoriteButton />

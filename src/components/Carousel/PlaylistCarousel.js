@@ -4,7 +4,7 @@ import PlaylistCardSafe from '../Card/PlaylistCardSafe';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
+const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay, loadingPlaylistId }) => {
   const [startIndex, setStartIndex] = useState(0);
 
   const handleNext = () => {
@@ -58,6 +58,7 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
             <PlaylistCardSafe
               playlist={playlist}
               onPlay={() => onPlay(playlist)}   // ⭐ NHẤN MẠNH: TRUYỀN ĐÚNG CALLBACK
+              isLoading={loadingPlaylistId === playlist.id}
             />
           </Grid>
         ))}

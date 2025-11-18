@@ -1,6 +1,6 @@
 // src/components/Card/Base/BasePlayableImage.jsx
 import React from "react";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 export const PLAY_BUTTON_DIAMETER = 42; // px
@@ -16,6 +16,7 @@ const BasePlayableImage = ({
   onMouseEnter,
   onMouseLeave,
   hidePlayButtonBorder = false,
+  isLoading = false,
 }) => {
 
   // ⭐ BasePlayableImage KHÔNG format data — chỉ gọi play
@@ -43,7 +44,7 @@ const BasePlayableImage = ({
       {children}
 
       {/* Overlay mờ khi hover */}
-      {isHovered && (
+      {(isHovered || isLoading) && (
         <Box
           sx={{
             position: "absolute",
@@ -54,10 +55,10 @@ const BasePlayableImage = ({
         />
       )}
 
-      {/* Nút ▶ trung tâm */}
-      {isHovered && (
+      {/* Nút ▶ hoặc Loading Spinner */}
+      {(isHovered || isLoading) && (
         <Box
-          onClick={handlePlayClick}
+          onClick={isLoading ? undefined : handlePlayClick}
           sx={{
             position: "absolute",
             top: "50%",
@@ -68,7 +69,7 @@ const BasePlayableImage = ({
             borderRadius: "50%",
             display: "grid",
             placeItems: "center",
-            cursor: "pointer",
+            cursor: isLoading ? "default" : "pointer",
 
             background: "rgba(255,255,255,0.08)",
             border: hidePlayButtonBorder
@@ -77,10 +78,16 @@ const BasePlayableImage = ({
 
             transition: "transform .18s ease",
             zIndex: 3,
-            "&:hover": { transform: "translate(-50%,-50%) scale(1.09)" },
+            "&:hover": { 
+              transform: isLoading ? "translate(-50%,-50%)" : "translate(-50%,-50%) scale(1.09)" 
+            },
           }}
         >
-          <PlayArrowIcon sx={{ color: "#fff", fontSize: 28, ml: 0.4 }} />
+          {isLoading ? (
+            <CircularProgress size={28} sx={{ color: '#fff' }} />
+          ) : (
+            <PlayArrowIcon sx={{ color: "#fff", fontSize: 28, ml: 0.4 }} />
+          )}
         </Box>
       )}
     </Box>

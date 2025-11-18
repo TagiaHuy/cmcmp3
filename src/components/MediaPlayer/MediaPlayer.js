@@ -19,6 +19,8 @@ const MediaPlayer = () => {
   const {
     currentPlayingSrc,
     currentTrack,
+    isPlaying,
+    setIsPlaying,
     isSidebarRightVisible,
     toggleSidebarRight,
     handleEnded,
@@ -38,32 +40,44 @@ const MediaPlayer = () => {
   const audioRef = useRef(null);
 
   // UI STATE
-  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.5);
 
-  // LOAD METADATA
+  // LOAD METADATA & BIND EVENTS
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !currentPlayingSrc) return;
+    if (!audio) return;
 
-    const onLoaded = () => {
-      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
-      setCurrentTime(audio.currentTime || 0);
-
-      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-    };
+    const onLoaded = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+    const onTimeUpdate = () => setCurrentTime(audio.currentTime || 0);
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
 
     audio.addEventListener('loadedmetadata', onLoaded);
-    audio.addEventListener('timeupdate', () => setCurrentTime(audio.currentTime || 0));
-    audio.addEventListener('play', () => setIsPlaying(true));
-    audio.addEventListener('pause', () => setIsPlaying(false));
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
 
     return () => {
       audio.removeEventListener('loadedmetadata', onLoaded);
+      audio.removeEventListener('timeupdate', onTimeUpdate);
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
     };
-  }, [currentPlayingSrc]);
+  }, [setIsPlaying]);
+
+  // SYNC PLAYBACK STATE from context to audio element
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.play().catch(() => setIsPlaying(false)); // Auto-play if context says so
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying, currentPlayingSrc, setIsPlaying]); // Re-sync on song change
 
   // SYNC VOLUME
   useEffect(() => {
@@ -71,8 +85,8 @@ const MediaPlayer = () => {
   }, [volume]);
 
   const handlePlayPause = () => {
-    if (!audioRef.current) return;
-    audioRef.current.paused ? audioRef.current.play() : audioRef.current.pause();
+    if (!currentTrack) return;
+    setIsPlaying(!isPlaying); // Toggle global playing state
   };
 
   const handleSeek = (_e, v) => {

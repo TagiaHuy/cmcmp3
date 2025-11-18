@@ -19,7 +19,7 @@ const FALLBACK_BG =
      </svg>`
   );
 
-function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
+function PlaylistCardSafe({ playlist, onPlay, variant = 'default', isLoading }) {
   const { handlePlay } = useMediaPlayer();
   const navigate = useNavigate();
 
@@ -57,14 +57,13 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
     artists: artistText,
   };
 
-  const handlePlayClick = (e) => {
-    e.stopPropagation();
+  const handlePlayClick = (track) => {
     if (onPlay) {
       // Nếu cha đã truyền onPlay riêng → dùng đúng logic cha
       onPlay(playlist);
     } else {
       // Mặc định: play playlist như một bài
-      handlePlay(unifiedTrack);
+      handlePlay(track);
     }
   };
 
@@ -144,6 +143,7 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
           zIndex: 2 
         }}
         onPlay={handlePlayClick}
+        isLoading={isLoading}
       />
 
       {/* Text */}
