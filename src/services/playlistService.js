@@ -1,120 +1,126 @@
-// src/services/playlistService.js
 import API_BASE_URL from '../config';
 import { safeJson } from '../utils/http';
 import { authHeader } from '../utils/auth';
 
-/* --------------------------------------------------------
-   ⭐ Normalize playlist để 100% FE luôn chạy đúng
--------------------------------------------------------- */
-const normalizePlaylist = (p) => {
-  if (!p) return null;
+const BASE_URL = `${API_BASE_URL}/api/playlists`;
 
-  return {
-    id: p.id,
-    title: p.title || p.name || "Playlist",
-    imageUrl: p.imageUrl || "",
-    artist: p.artist || p.creatorDisplayName || "",
-    // tránh lỗi artists dạng object array
-    artistText: Array.isArray(p.artist)
-      ? p.artist.map(a => a?.name).join(", ")
-      : p.artist || p.creatorDisplayName || "Không rõ nghệ sĩ",
-
-    songs: Array.isArray(p.songs) ? p.songs : [],
-
-    // fallback cho play button
-    mediaSrc: p.mediaSrc || null,
-
-    listenCount: p.listenCount || 0,
-    likeCount: p.likeCount || 0,
-    createdAt: p.createdAt,
-    updatedAt: p.updatedAt,
-  };
+// 1. Get user's created playlists
+export const getPlaylistsMe = async (signal) => {
+  const res = await fetch(`${BASE_URL}/me`, {
+    method: 'GET',
+    headers: { ...authHeader(), 'Accept': 'application/json' },
+    signal,
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return Array.isArray(data) ? data : [];
 };
 
-/* --------------------------------------------------------
-   ⭐ Fetch wrapper: đảm bảo không crash UI
--------------------------------------------------------- */
-const fetchSafe = async (url, signal) => {
-  try {
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        ...authHeader(),
-        Accept: "application/json",
-      },
-      signal,
-    });
+// 2. Create a new playlist
+export const createPlaylist = async (playlistData) => {
+  const res = await fetch(BASE_URL, {
+    method: 'POST',
+    headers: { ...authHeader() },
+    body: playlistData,
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return data;
+};
 
+// 3. Delete a playlist
+export const deletePlaylist = async (playlistId) => {
+  const res = await fetch(`${BASE_URL}/${playlistId}`, {
+    method: 'DELETE',
+    headers: { ...authHeader() },
+  });
+  if (!res.ok) {
     const data = await safeJson(res);
-
-    if (!res.ok) {
-      const msg =
-        (data && (data.message || data.error)) || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    return data;
-  } catch (err) {
-    console.error("FETCH ERROR:", err);
-    return null;
+    throw new Error(data?.message || `HTTP ${res.status}`);
   }
+  // No content on success
 };
 
-/* --------------------------------------------------------
-   ⭐ Lấy tất cả playlist
--------------------------------------------------------- */
-export const getAllPlaylists = async (signal) => {
-  const data = await fetchSafe(`${API_BASE_URL}/api/playlists`, signal);
-  if (!Array.isArray(data)) return [];
-  return data.map(normalizePlaylist);
+// 4. Get songs in a specific playlist
+export const getPlaylistSongs = async (playlistId, signal) => {
+  const res = await fetch(`${BASE_URL}/${playlistId}/songs`, {
+    method: 'GET',
+    headers: { ...authHeader(), 'Accept': 'application/json' },
+    signal,
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return Array.isArray(data) ? data : [];
 };
 
-/* --------------------------------------------------------
-   ⭐ Lấy playlist theo ID
--------------------------------------------------------- */
-export const getPlaylistById = async (id, signal) => {
-  const data = await fetchSafe(`${API_BASE_URL}/api/playlists/${id}`, signal);
-  return normalizePlaylist(data);
+// 5. Add/remove songs from a playlist
+export const updatePlaylistSongs = async (playlistId, songUpdates) => {
+  const res = await fetch(`${BASE_URL}/${playlistId}/songs`, {
+    method: 'PATCH',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(songUpdates),
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return data;
 };
 
-/* --------------------------------------------------------
-   ⭐ TOP playlist theo lượt nghe giảm dần
--------------------------------------------------------- */
-export const getTopPlaylists = async (limit = 8, signal) => {
-  const data = await fetchSafe(
-    `${API_BASE_URL}/api/playlists/top?limit=${limit}`,
-    signal
-  );
-
-  return Array.isArray(data)
-    ? data.map(normalizePlaylist)
-    : [];
+// 6. Update playlist details (name, privacy)
+export const updatePlaylist = async (playlistId, playlistData) => {
+  const res = await fetch(`${BASE_URL}/${playlistId}`, {
+    method: 'PUT',
+    headers: { ...authHeader() },
+    body: playlistData,
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return data;
 };
 
-/* --------------------------------------------------------
-   ⭐ TOP playlist mới nhất
--------------------------------------------------------- */
-export const getNewestPlaylists = async (limit = 8, signal) => {
-  const data = await fetchSafe(
-    `${API_BASE_URL}/api/playlists/top/new?limit=${limit}`,
-    signal
-  );
-
-  return Array.isArray(data)
-    ? data.map(normalizePlaylist)
-    : [];
+// 7. Get a single playlist by ID
+export const getPlaylistById = async (playlistId, signal) => {
+  const res = await fetch(`${BASE_URL}/${playlistId}`, {
+    method: 'GET',
+    headers: { ...authHeader(), 'Accept': 'application/json' },
+    signal,
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return data;
 };
 
-/* --------------------------------------------------------
-   ⭐ TOP playlist theo lượt thích giảm dần
--------------------------------------------------------- */
-export const getPlaylistsByTopLikes = async (limit = 8, signal) => {
-  const data = await fetchSafe(
-    `${API_BASE_URL}/api/playlists/top/likes?limit=${limit}`,
-    signal
-  );
+// 8. Get Top Playlists (assuming endpoint exists)
+export const getTopPlaylists = async (limit = 5, signal) => {
+  const res = await fetch(`${BASE_URL}/top?limit=${limit}`, {
+    method: 'GET',
+    headers: { ...authHeader(), 'Accept': 'application/json' },
+    signal,
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return Array.isArray(data) ? data : [];
+};
 
-  return Array.isArray(data)
-    ? data.map(normalizePlaylist)
-    : [];
+// 9. Get Newest Playlists (assuming endpoint exists)
+export const getNewestPlaylists = async (limit = 5, signal) => {
+  const res = await fetch(`${BASE_URL}/newest?limit=${limit}`, {
+    method: 'GET',
+    headers: { ...authHeader(), 'Accept': 'application/json' },
+    signal,
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return Array.isArray(data) ? data : [];
+};
+
+// 10. Get Top Liked Playlists (assuming endpoint exists)
+export const getPlaylistsByTopLikes = async (limit = 5, signal) => {
+  const res = await fetch(`${BASE_URL}/top-liked?limit=${limit}`, {
+    method: 'GET',
+    headers: { ...authHeader(), 'Accept': 'application/json' },
+    signal,
+  });
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+  return Array.isArray(data) ? data : [];
 };

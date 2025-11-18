@@ -44,11 +44,14 @@ export default function PlaylistListItem({
       }
     >
       <ListItemAvatar>
-        <Avatar
-          variant="square"
+        <img
           src={imageUrl}
           alt={playlist?.name}
-          sx={{ width: 56, height: 56, borderRadius: 1 }}
+          style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'cover' }}
+          onError={(e) => {
+            console.error('Error loading playlist image:', imageUrl, e);
+            e.target.src = '/placeholder-cover.png'; // Fallback to placeholder
+          }}
         />
       </ListItemAvatar>
 
