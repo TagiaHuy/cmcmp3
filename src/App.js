@@ -18,6 +18,7 @@ import PlaylistDetailPage from './pages/PlaylistDetailPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import AdminManageSongsPage from './pages/AdminManageSongsPage';
 import LibraryPage from './pages/LibraryPage'; // New import
 import ArtistsPage from './pages/ArtistsPage'; // New import for ArtistsPage
 import { useAuth } from './context/AuthContext';
@@ -112,6 +113,17 @@ function App() {
               </AdminRoute>
             </PrivateRoute>
           }
+        />
+
+        <Route
+            path="/admin/songs"
+            element={
+                <PrivateRoute isAuthed={isAuthenticated}>
+                    <AdminRoute isAdmin={isAdmin}>
+                        <AdminManageSongsPage />
+                    </AdminRoute>
+                </PrivateRoute>
+            }
         />
 
         {/* 404 → về trang chủ */}
