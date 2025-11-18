@@ -4,6 +4,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import useArtists from '../../hooks/useArtists';
 import useTags from '../../hooks/useTags';
 import API_BASE_URL from '../../config';
+import Loading from '../Loading/Loading';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const style = {
   position: 'absolute',
@@ -25,6 +28,7 @@ const UploadSongForm = ({ open, handleClose }) => {
   const [songFile, setSongFile] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { artists } = useArtists();
   const { tags } = useTags();
 
@@ -32,13 +36,13 @@ const UploadSongForm = ({ open, handleClose }) => {
     event.preventDefault();
 
     if (!title || !songFile || !imageFile) {
-      alert('Vui lòng điền đầy đủ thông tin và chọn tệp.');
+      toast.warn('Vui lòng điền đầy đủ thông tin và chọn tệp.');
       return;
     }
 
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      toast.error('Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
       return;
     }
 
@@ -58,6 +62,7 @@ const UploadSongForm = ({ open, handleClose }) => {
         formData.append('tagIds', tagIds);
     }
 
+    setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/songs/upload`, {
         method: 'POST',
@@ -69,7 +74,7 @@ const UploadSongForm = ({ open, handleClose }) => {
 
       if (response.ok) {
         const result = await response.json();
-        alert('Tải bài hát lên thành công!');
+        toast.success('Tải bài hát lên thành công!');
         console.log('Upload successful:', result);
         setTitle('');
         setDescription('');
@@ -77,15 +82,19 @@ const UploadSongForm = ({ open, handleClose }) => {
         setSelectedTags([]);
         setSongFile(null);
         setImageFile(null);
-        handleClose();
+        setTimeout(() => {
+          handleClose();
+        }, 5000);
       } else {
         const errorData = await response.json();
-        alert(`Tải bài hát lên thất bại: ${errorData.message || response.statusText}`);
+        toast.error(`Tải bài hát lên thất bại: ${errorData.message || response.statusText}`);
         console.error('Upload failed:', errorData);
       }
     } catch (error) {
-      alert('Đã xảy ra lỗi khi tải bài hát lên.');
+      toast.error('Đã xảy ra lỗi khi tải bài hát lên.');
       console.error('Network error or unexpected error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,6 +105,7 @@ const UploadSongForm = ({ open, handleClose }) => {
       aria-labelledby="upload-song-modal-title"
     >
       <Box sx={style}>
+        {isLoading && <Loading />}
         <IconButton
           aria-label="close"
           onClick={handleClose}

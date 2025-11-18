@@ -7,6 +7,8 @@ import SidebarRight from '../components/Sidebar/Specific/SidebarRight';
 import Footer from './Footer'; // nếu chưa dùng có thể bỏ
 import MediaPlayer from '../components/MediaPlayer/MediaPlayer';
 import { MediaPlayerProvider, useMediaPlayer } from '../context/MediaPlayerContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const scrollbarStyles = (
   <GlobalStyles
@@ -38,6 +40,7 @@ function MainLayoutContent({ children }) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <ToastContainer position="top-right" />
       {scrollbarStyles}
 
       <Box
