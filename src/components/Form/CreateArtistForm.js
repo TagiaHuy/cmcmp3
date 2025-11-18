@@ -18,6 +18,7 @@ const style = {
 const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
   const [name, setName] = useState('');
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -110,10 +111,23 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
               type="file"
               hidden
               accept="image/*"
-              onChange={(e) => setImageFile(e.target.files[0])}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setImageFile(file);
+                if (file) {
+                  setImagePreviewUrl(URL.createObjectURL(file));
+                } else {
+                  setImagePreviewUrl(null);
+                }
+              }}
             />
           </Button>
           {imageFile && <Typography sx={{ mt: 1 }} color="text.primary">{imageFile.name}</Typography>}
+          {imagePreviewUrl && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
+            </Box>
+          )}
           <Button
             type="submit"
             fullWidth
