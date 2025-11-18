@@ -13,7 +13,7 @@ import MoreButton from '../Button/Specific/MoreButton';
 import PlayableImage from '../Card/PlayableImage';
 import { normalizeArtists } from '../../context/MediaPlayerContext';
 
-const SongListItem = ({ song, index, onPlay, isPlaying }) => {
+const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
 
   // ⭐ Chuẩn hóa artist (phòng BE trả array)
   const artistText = normalizeArtists(song.artists);
@@ -21,15 +21,21 @@ const SongListItem = ({ song, index, onPlay, isPlaying }) => {
   // ⭐ Format track (phòng handlePlay nhận track chưa đúng format)
   const mediaUrl = song.mediaSrc || song.audioUrl;
 
+  const defaultActions = (
+    <Stack direction="row" spacing={1} alignItems="center">
+      <FavoriteButton songId={song.id} isFavorite={song.isFavorite} />
+      <MoreButton />
+    </Stack>
+  );
+
+  const actions = typeof renderActions === 'function'
+    ? renderActions(song, defaultActions)
+    : defaultActions;
+
   return (
     <ListItem
       disablePadding
-      secondaryAction={
-        <Stack direction="row" spacing={1} alignItems="center">
-          <FavoriteButton songId={song.id} isFavorite={song.isFavorite} />
-          <MoreButton />
-        </Stack>
-      }
+      secondaryAction={actions}
       sx={{
         bgcolor: isPlaying ? 'action.hover' : 'transparent',
         borderBottom: '1px solid',

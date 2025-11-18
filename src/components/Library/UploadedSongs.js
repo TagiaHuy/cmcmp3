@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Button, Typography, CircularProgress } from '@mui/material';
+import { Box, Button, Typography, CircularProgress, Stack, IconButton } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import UploadSongForm from '../Form/UploadSongForm';
+import EditSongForm from '../Form/EditSongForm';
 import SongList from '../SongList/SongList';
 import { getUploadedSongs } from '../../services/songService';
 
@@ -9,6 +11,7 @@ const UploadedSongs = () => {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingSong, setEditingSong] = useState(null);
 
   const fetchUploadedSongs = useCallback(async (signal) => {
     try {
@@ -43,6 +46,33 @@ const UploadedSongs = () => {
     fetchUploadedSongs(ac.signal);
   };
 
+  const handleEditClick = (song) => {
+    setEditingSong(song);
+  };
+
+  const handleEditClose = () => {
+    setEditingSong(null);
+  };
+
+  const handleSongUpdated = (updatedSong) => {
+    setSongs((prev) =>
+      prev.map((song) => (song.id === updatedSong.id ? updatedSong : song))
+    );
+  };
+
+  const renderSongActions = (song, defaultActions) => (
+    <Stack direction="row" spacing={1} alignItems="center">
+      <IconButton
+        size="small"
+        color="primary"
+        onClick={() => handleEditClick(song)}
+      >
+        <EditIcon fontSize="small" />
+      </IconButton>
+      {defaultActions}
+    </Stack>
+  );
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -60,7 +90,7 @@ const UploadedSongs = () => {
       return <Typography sx={{ textAlign: 'center', py: 5 }}>Bạn chưa có bài hát nào được tải lên.</Typography>;
     }
 
-    return <SongList songs={songs} />;
+    return <SongList songs={songs} renderActions={renderSongActions} />;
   }
 
   return (
@@ -72,6 +102,14 @@ const UploadedSongs = () => {
       </Box>
 
       <UploadSongForm open={modalOpen} handleClose={handleCloseModal} />
+      <EditSongForm
+        open={Boolean(editingSong)}
+        handleClose={handleEditClose}
+        song={editingSong}
+        onUpdated={(updatedSong) => {
+          handleSongUpdated(updatedSong);
+        }}
+      />
 
       {renderContent()}
     </Box>
