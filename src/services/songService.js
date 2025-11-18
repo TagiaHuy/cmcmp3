@@ -241,3 +241,28 @@ export const unlikeSong = async (id) => {
     throw error;
   }
 };
+
+export const getSongsAdmin = async (page = 0, size = 10, signal) => {
+    const queryParams = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+    }).toString();
+
+    const res = await fetch(`${API_BASE_URL}/api/songs?${queryParams}`, {
+        method: "GET",
+        headers: {
+            ...authHeader(),
+            Accept: "application/json",
+        },
+        signal,
+    });
+
+    const data = await safeJson(res);
+
+    if (!res.ok) {
+        const msg = data?.message || data?.error || `HTTP ${res.status}`;
+        throw new Error(msg);
+    }
+
+    return data;
+};
