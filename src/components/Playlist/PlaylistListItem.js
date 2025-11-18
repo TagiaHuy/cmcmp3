@@ -23,13 +23,13 @@ const PlaylistListItem = ({ playlist, onEdit, onDelete }) => {
         mb: 1,
       }}
     >
-      <Avatar variant="rounded" sx={{ mr: 2, width: 56, height: 56, backgroundColor: 'grey.800' }}>
+      <Avatar variant="rounded" src={playlist.imageUrl} sx={{ mr: 2, width: 56, height: 56, backgroundColor: 'grey.800' }}>
         <MusicNoteIcon />
       </Avatar>
       <ListItemText
         primary={
           <Typography variant="body1" color="text.primary" fontWeight={600}>
-            {playlist.name}
+            {playlist.title}
           </Typography>
         }
         secondary={
