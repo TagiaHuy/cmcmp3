@@ -21,7 +21,7 @@ const BasePlayableImage = ({
   // ⭐ BasePlayableImage KHÔNG format data — chỉ gọi play
   const handlePlayClick = (e) => {
     e.stopPropagation();
-    if (onPlay && mediaSrc) onPlay();  // ❗ Quan trọng: Không truyền mediaSrc nữa
+    if (onPlay) onPlay();
   };
 
   return (
