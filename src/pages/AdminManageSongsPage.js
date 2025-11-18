@@ -23,7 +23,7 @@ export default function AdminManageSongsPage() {
         setLoading(true);
         setErr(null);
         const data = await getSongsAdmin(page, rowsPerPage, ac.signal);
-        setRows(data);
+        setRows(data.content || []);
         console.log('Fetched songs for admin:', rows);
         setTotalPages(data.totalPages || 0);
       } catch (e) {
