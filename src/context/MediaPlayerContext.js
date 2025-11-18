@@ -26,6 +26,7 @@ export const MediaPlayerProvider = ({ children }) => {
   // ===== Core states =====
   const [currentPlayingSrc, setCurrentPlayingSrc] = useState(null);
   const [currentTrack, setCurrentTrack] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
   const [isSidebarRightVisible, setIsSidebarRightVisible] = useState(true);
 
@@ -93,6 +94,7 @@ export const MediaPlayerProvider = ({ children }) => {
     });
 
     setCurrentTrack(track);
+    setIsPlaying(true);
 
     // Recently played
     setRecentlyPlayed(prev => {
@@ -124,6 +126,7 @@ export const MediaPlayerProvider = ({ children }) => {
     const idx = safeIndex(startIndex, list.length);
     setCurrentIndex(idx);
     setCurrentTrack(list[idx] || null);
+    setIsPlaying(true);
 
   }, [safeIndex]);
 
@@ -134,6 +137,7 @@ export const MediaPlayerProvider = ({ children }) => {
       setQueue([]); 
       setCurrentIndex(0); 
       setCurrentTrack(null);
+      setIsPlaying(false);
       return;
     }
 
@@ -142,6 +146,7 @@ export const MediaPlayerProvider = ({ children }) => {
     setCurrentIndex(idx);
     setCurrentTrack(list[idx]);
     setIsShuffling(true);
+    setIsPlaying(true);
 
   }, []);
 
@@ -198,7 +203,10 @@ export const MediaPlayerProvider = ({ children }) => {
   const handleEnded = useCallback(() => {
     if (!queue.length) return;
     if (repeatMode === 'one') return;
-    if (repeatMode === 'none' && currentIndex === queue.length - 1) return;
+    if (repeatMode === 'none' && currentIndex === queue.length - 1) {
+      setIsPlaying(false);
+      return;
+    }
     next();
   }, [queue.length, repeatMode, currentIndex, next]);
 
@@ -222,6 +230,8 @@ export const MediaPlayerProvider = ({ children }) => {
     currentIndex,
     currentTrack,
     currentPlayingSrc,
+    isPlaying,
+    setIsPlaying,
 
     recentlyPlayed,
     clearRecentlyPlayed,
@@ -246,6 +256,7 @@ export const MediaPlayerProvider = ({ children }) => {
 
   }), [
     queue, currentIndex, currentTrack, currentPlayingSrc,
+    isPlaying, setIsPlaying,
     recentlyPlayed, isSidebarRightVisible,
     isShuffling, repeatMode,
     handlePlay, loadQueue, playPlaylistRandom, playAt,

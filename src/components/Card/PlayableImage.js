@@ -12,7 +12,8 @@ const PlayableImage = ({
   onPlay,
   playlist,
   mediaSrc,
-  artists
+  artists,
+  isLoading
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -40,6 +41,7 @@ const PlayableImage = ({
       isHovered={isHovered}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      isLoading={isLoading}
     >
       <Box
         component="img"
