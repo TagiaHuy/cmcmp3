@@ -89,7 +89,7 @@ export const getPlaylistById = async (playlistId, signal) => {
   return data;
 };
 
-// 8. Get Top Playlists (assuming endpoint exists)
+// 8. Get Top Playlists
 export const getTopPlaylists = async (limit = 5, signal) => {
   const res = await fetch(`${BASE_URL}/top?limit=${limit}`, {
     method: 'GET',
@@ -101,9 +101,9 @@ export const getTopPlaylists = async (limit = 5, signal) => {
   return Array.isArray(data) ? data : [];
 };
 
-// 9. Get Newest Playlists (assuming endpoint exists)
-export const getNewestPlaylists = async (limit = 5, signal) => {
-  const res = await fetch(`${BASE_URL}/newest?limit=${limit}`, {
+// 9. Get New Release Playlists
+export const getNewReleasePlaylists = async (limit = 5, signal) => {
+  const res = await fetch(`${BASE_URL}/top/new-releases?limit=${limit}`, {
     method: 'GET',
     headers: { ...authHeader(), 'Accept': 'application/json' },
     signal,
@@ -113,9 +113,9 @@ export const getNewestPlaylists = async (limit = 5, signal) => {
   return Array.isArray(data) ? data : [];
 };
 
-// 10. Get Top Liked Playlists (assuming endpoint exists)
-export const getPlaylistsByTopLikes = async (limit = 5, signal) => {
-  const res = await fetch(`${BASE_URL}/top-liked?limit=${limit}`, {
+// 10. Get Most Liked Playlists
+export const getMostLikedPlaylists = async (limit = 5, signal) => {
+  const res = await fetch(`${BASE_URL}/top/most-liked?limit=${limit}`, {
     method: 'GET',
     headers: { ...authHeader(), 'Accept': 'application/json' },
     signal,
