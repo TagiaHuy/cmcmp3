@@ -40,7 +40,6 @@ function MainLayoutContent({ children }) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <ToastContainer position="top-right" />
       {scrollbarStyles}
 
       <Box
