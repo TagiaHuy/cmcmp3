@@ -1,31 +1,31 @@
-// src/components/Section/TopPlaylistsSection.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Typography, Select, MenuItem, CircularProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import { getTopPlaylists, getPlaylistById } from '../../services/playlistService';
-import { getSongById } from '../../services/songService';
+import {
+  getTopPlaylists,
+  getNewReleasePlaylists,
+  getMostLikedPlaylists,
+  getPlaylistById,        // ✅ đã có trong playlistService
+} from '../../services/playlistService';
 
+import { getSongById } from '../../services/songService'; // ✅ songService
 import PlaylistCarousel from '../Carousel/PlaylistCarousel';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 
+
 export default function TopPlaylistsSection() {
-  const [allPlaylists, setAllPlaylists] = useState([]);
-  const [sortedPlaylists, setSortedPlaylists] = useState([]);
-  const [sortBy, setSortBy] = useState('listens');
+  const [playlists, setPlaylists] = useState([]);
+  const [sortBy, setSortBy] = useState('listens'); // 'listens' is the default
   const [loading, setLoading] = useState(true);
   const [loadingPlaylistId, setLoadingPlaylistId] = useState(null);
 
-  const {
-    loadQueue,
-    normalizeArtists
-  } = useMediaPlayer();
-
+  const { loadQueue, normalizeArtists } = useMediaPlayer();
   const theme = useTheme();
   const headerColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
 
   // ============================
-  // Fetch all playlists once
+  // Fetch playlists based on sort option
   // ============================
   useEffect(() => {
     const ac = new AbortController();
@@ -33,13 +33,27 @@ export default function TopPlaylistsSection() {
     async function fetchPlaylists() {
       setLoading(true);
       try {
-        // Fetch a larger number to make sorting meaningful, assuming getTopPlaylists can take a high limit
-        const fetched = await getTopPlaylists(50, ac.signal);
-        const playlists = Array.isArray(fetched) ? fetched : [];
-        setAllPlaylists(playlists);
+        let fetched;
+        const limit = 15; // Fetch a reasonable number for the carousel
+
+        switch (sortBy) {
+          case 'newest':
+            fetched = await getNewReleasePlaylists(limit, ac.signal);
+            break;
+          case 'likes':
+            fetched = await getMostLikedPlaylists(limit, ac.signal);
+            break;
+          case 'listens':
+          default:
+            fetched = await getTopPlaylists(limit, ac.signal);
+            break;
+        }
+
+        const playlistsData = Array.isArray(fetched) ? fetched : [];
+        setPlaylists(playlistsData);
       } catch (err) {
-        if (err.name !== 'AbortError') console.error(err);
-        setAllPlaylists([]);
+        if (err.name !== 'AbortError') console.error(`Error fetching playlists for sort by ${sortBy}:`, err);
+        setPlaylists([]);
       } finally {
         setLoading(false);
       }
@@ -47,25 +61,7 @@ export default function TopPlaylistsSection() {
 
     fetchPlaylists();
     return () => ac.abort();
-  }, []); // Fetch only once
-
-  // ============================
-  // Sort playlists when data or sort option changes
-  // ============================
-  useEffect(() => {
-    let sorted = [...allPlaylists];
-    if (sortBy === 'newest') {
-      // Assuming 'createdAt' field exists. Using optional chaining for safety.
-      sorted.sort((a, b) => new Date(b?.createdAt) - new Date(a?.createdAt));
-    } else if (sortBy === 'likes') {
-      // Assuming 'likes' field exists
-      sorted.sort((a, b) => (b?.likes || 0) - (a?.likes || 0));
-    } else { // 'listens' is the default
-      // Assuming 'listens' field exists, which is likely as it's from 'getTopPlaylists'
-      sorted.sort((a, b) => (b?.listens || 0) - (a?.listens || 0));
-    }
-    setSortedPlaylists(sorted);
-  }, [sortBy, allPlaylists]);
+  }, [sortBy]); // Re-fetch when sortBy changes
 
 
   // ==========================================
@@ -152,10 +148,10 @@ export default function TopPlaylistsSection() {
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 130 }}>
           <CircularProgress />
         </Box>
-      ) : sortedPlaylists.length > 0 ? (
+      ) : playlists.length > 0 ? (
         <PlaylistCarousel
           key={sortBy}          // ép remount khi đổi sort
-          playlists={sortedPlaylists}
+          playlists={playlists}
           columns={3}
           // Khi bấm play playlist → nạp queue + Next/Prev OK
           onPlay={handlePlayPlaylist}
@@ -168,8 +164,7 @@ export default function TopPlaylistsSection() {
             justifyContent: 'center',
             alignItems: 'center',
             height: 130
-          }}Danh sách playlist
-
+          }}
         >
           <Typography color="text.secondary">
             Không tìm thấy playlist nào.
