@@ -21,6 +21,7 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminManageSongsPage from './pages/AdminManageSongsPage';
 import LibraryPage from './pages/LibraryPage'; // New import
 import ArtistsPage from './pages/ArtistsPage'; // New import for ArtistsPage
+import PlaylistsPage from './pages/PlaylistsPage';
 import { useAuth } from './context/AuthContext';
 
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -99,6 +100,14 @@ function App() {
           element={
             <PrivateRoute isAuthed={isAuthenticated}>
               <LibraryPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-playlists"
+          element={
+            <PrivateRoute isAuthed={isAuthenticated}>
+              <PlaylistsPage />
             </PrivateRoute>
           }
         />
