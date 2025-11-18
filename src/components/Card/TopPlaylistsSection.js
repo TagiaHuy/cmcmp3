@@ -1,20 +1,18 @@
 // src/components/Section/TopPlaylistsSection.jsx
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Select, MenuItem } from '@mui/material';
+import { Box, Typography, Select, MenuItem, CircularProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-import {
-  getTopPlaylists,
-  getNewestPlaylists,
-  getPlaylistsByTopLikes
-} from '../../services/playlistService';
+import { getTopPlaylists } from '../../services/playlistService';
 
 import PlaylistCarousel from '../Carousel/PlaylistCarousel';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 
 export default function TopPlaylistsSection() {
-  const [playlists, setPlaylists] = useState([]);
+  const [allPlaylists, setAllPlaylists] = useState([]);
+  const [sortedPlaylists, setSortedPlaylists] = useState([]);
   const [sortBy, setSortBy] = useState('listens');
+  const [loading, setLoading] = useState(true);
 
   const {
     loadQueue,
@@ -25,33 +23,48 @@ export default function TopPlaylistsSection() {
   const headerColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
 
   // ============================
-  // Fetch playlist theo sort type
+  // Fetch all playlists once
   // ============================
   useEffect(() => {
     const ac = new AbortController();
 
     async function fetchPlaylists() {
+      setLoading(true);
       try {
-        let fetched = [];
-
-        if (sortBy === 'listens') {
-          fetched = await getTopPlaylists(8, ac.signal);
-        } else if (sortBy === 'newest') {
-          fetched = await getNewestPlaylists(8, ac.signal);
-        } else if (sortBy === 'likes') {
-          fetched = await getPlaylistsByTopLikes(8, ac.signal);
-        }
-
-        setPlaylists(Array.isArray(fetched) ? fetched : []);
+        // Fetch a larger number to make sorting meaningful, assuming getTopPlaylists can take a high limit
+        const fetched = await getTopPlaylists(50, ac.signal);
+        const playlists = Array.isArray(fetched) ? fetched : [];
+        setAllPlaylists(playlists);
       } catch (err) {
         if (err.name !== 'AbortError') console.error(err);
-        setPlaylists([]);
+        setAllPlaylists([]);
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchPlaylists();
     return () => ac.abort();
-  }, [sortBy]);
+  }, []); // Fetch only once
+
+  // ============================
+  // Sort playlists when data or sort option changes
+  // ============================
+  useEffect(() => {
+    let sorted = [...allPlaylists];
+    if (sortBy === 'newest') {
+      // Assuming 'createdAt' field exists. Using optional chaining for safety.
+      sorted.sort((a, b) => new Date(b?.createdAt) - new Date(a?.createdAt));
+    } else if (sortBy === 'likes') {
+      // Assuming 'likes' field exists
+      sorted.sort((a, b) => (b?.likes || 0) - (a?.likes || 0));
+    } else { // 'listens' is the default
+      // Assuming 'listens' field exists, which is likely as it's from 'getTopPlaylists'
+      sorted.sort((a, b) => (b?.listens || 0) - (a?.listens || 0));
+    }
+    setSortedPlaylists(sorted);
+  }, [sortBy, allPlaylists]);
+
 
   // ==========================================
   // ⭐ Play playlist — hỗ trợ Next / Prev
@@ -120,10 +133,14 @@ export default function TopPlaylistsSection() {
       </Box>
 
       {/* Nội dung */}
-      {playlists.length > 0 ? (
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 130 }}>
+          <CircularProgress />
+        </Box>
+      ) : sortedPlaylists.length > 0 ? (
         <PlaylistCarousel
           key={sortBy}          // ép remount khi đổi sort
-          playlists={playlists}
+          playlists={sortedPlaylists}
           columns={3}
           // Khi bấm play playlist → nạp queue + Next/Prev OK
           onPlay={handlePlayPlaylist}
@@ -139,7 +156,7 @@ export default function TopPlaylistsSection() {
 
         >
           <Typography color="text.secondary">
-            Đang chờ dữ liệu từ backend...
+            Không tìm thấy playlist nào.
           </Typography>
         </Box>
       )}
