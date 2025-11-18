@@ -4,6 +4,8 @@ import './App.css';
 import MainLayout from './layout/MainLayout';
 import { useTheme } from '@mui/material/styles';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import HomePage from './pages/HomePage';
 import RecentlyPlayedPage from './pages/RecentlyPlayedPage';
@@ -16,9 +18,13 @@ import PlaylistDetailPage from './pages/PlaylistDetailPage';
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import AdminManageSongsPage from './pages/AdminManageSongsPage';
 import LibraryPage from './pages/LibraryPage'; // New import
 import ArtistsPage from './pages/ArtistsPage'; // New import for ArtistsPage
 import { useAuth } from './context/AuthContext';
+
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 /** Chặn trang công khai (login/register) nếu đã đăng nhập */
 const PublicOnlyRoute = ({ isAuthed, children }) =>
@@ -76,6 +82,8 @@ function App() {
             </PublicOnlyRoute>
           }
         />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Private pages: yêu cầu đăng nhập */}
         <Route
@@ -107,9 +115,32 @@ function App() {
           }
         />
 
+        <Route
+            path="/admin/songs"
+            element={
+                <PrivateRoute isAuthed={isAuthenticated}>
+                    <AdminRoute isAdmin={isAdmin}>
+                        <AdminManageSongsPage />
+                    </AdminRoute>
+                </PrivateRoute>
+            }
+        />
+
         {/* 404 → về trang chủ */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </MainLayout>
   );
 }

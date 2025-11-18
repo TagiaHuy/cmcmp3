@@ -1,7 +1,7 @@
     import React from 'react';
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 import { Box, Typography, Grid } from '@mui/material';
-import PlaylistCard from '../components/Card/PlaylistCard';
+import SongCard from '../components/Card/SongCard'; // Changed from PlaylistCard
 import { useTheme } from '@mui/material/styles';
 
 const RecentlyPlayedPage = () => {
@@ -15,9 +15,9 @@ const RecentlyPlayedPage = () => {
       </Typography>
       {recentlyPlayed.length > 0 ? (
         <Grid container spacing={3}>
-          {recentlyPlayed.map((playlist, index) => (
+          {recentlyPlayed.map((song, index) => ( // Changed 'playlist' to 'song'
             <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-              <PlaylistCard playlist={playlist} onPlay={handlePlay} />
+              <SongCard song={song} onPlay={handlePlay} /> {/* Changed 'playlist' to 'song' */}
             </Grid>
           ))}
         </Grid>

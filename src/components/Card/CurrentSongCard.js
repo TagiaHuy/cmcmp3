@@ -7,10 +7,7 @@ const CurrentSongCard = ({ songImage, songTitle, songAuthor }) => {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        bgcolor: (theme) =>
-          theme.palette.mode === 'dark'
-            ? theme.palette.background.default
-            : theme.palette.background.paper,
+        bgcolor: (theme) => theme.body.background,
         borderRadius: 1.5,
         p: 1,
         width: 250,

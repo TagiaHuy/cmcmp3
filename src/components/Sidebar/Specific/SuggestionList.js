@@ -17,7 +17,7 @@ import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 const ACTION_WIDTH = 96;
 
 const SuggestionList = () => {
-  const { recentlyPlayed, handlePlay, currentTrack } = useMediaPlayer();
+  const { recentlyPlayed, handlePlay, currentTrack, normalizeArtists } = useMediaPlayer();
   const theme = useTheme();
 
   if (!currentTrack) return null;
@@ -25,6 +25,7 @@ const SuggestionList = () => {
   const suggestions = recentlyPlayed.filter(
     (track) => track.mediaSrc !== currentTrack?.mediaSrc
   );
+
   if (!suggestions.length) return null;
 
   return (
@@ -36,24 +37,24 @@ const SuggestionList = () => {
         Gợi ý cho bạn
       </Typography>
 
-      {/* sát mép trái/phải: bỏ padding mặc định của List */}
+      {/* List sát mép trái/phải */}
       <List disablePadding>
         {suggestions.map((track, index) => (
           <ListItem
             key={index}
             button
-            disableGutters                 // bỏ padding trái/phải của ListItem
+            disableGutters
             onClick={() => handlePlay(track)}
             sx={{
               borderRadius: 2,
-              pl: 0,                        // sát trái
-              pr: 0,                        // sát phải khi chưa hover
+              pl: 0,
+              pr: 0,
               position: 'relative',
               cursor: 'pointer',
               transition: 'background .15s ease, padding-right .15s ease',
               '&:hover': {
                 background: 'rgba(155, 77, 224, 0.18)',
-                pr: `${ACTION_WIDTH}px`,    // chỉ khi hover mới chừa chỗ cho cụm nút
+                pr: `${ACTION_WIDTH}px`,
               },
               '&:hover .song-actions': { opacity: 1, visibility: 'visible' },
               '&:hover .thumb-play': {
@@ -74,6 +75,7 @@ const SuggestionList = () => {
                   alt={track.title}
                   sx={{ width: 44, height: 44, borderRadius: 1 }}
                 />
+
                 <PlayArrowRoundedIcon
                   className="thumb-play"
                   onClick={(e) => {
@@ -96,7 +98,7 @@ const SuggestionList = () => {
               </Box>
             </ListItemAvatar>
 
-            {/* chữ dài tối đa bình thường, thu lại khi hover */}
+            {/* text */}
             <Box
               className="song-text"
               sx={{
@@ -109,19 +111,20 @@ const SuggestionList = () => {
               <Typography noWrap fontWeight="bold" color={theme.palette.text.primary}>
                 {track.title}
               </Typography>
+
               <Typography noWrap color={theme.palette.text.secondary}>
-                {track.artists}
+                {normalizeArtists(track.artists)}
               </Typography>
             </Box>
 
-            {/* cụm nút đặt absolute, không chiếm chỗ khi chưa hover */}
+            {/* action buttons */}
             <Box
               className="song-actions"
               onClick={(e) => e.stopPropagation()}
               sx={{
                 position: 'absolute',
                 top: '50%',
-                right: 0,                    // sát mép phải
+                right: 0,
                 transform: 'translateY(-50%)',
                 display: 'flex',
                 alignItems: 'center',

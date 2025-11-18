@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
+import { Autocomplete, Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import useArtists from '../../hooks/useArtists';
+import useTags from '../../hooks/useTags';
+import API_BASE_URL from '../../config';
+import Loading from '../Loading/Loading';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const style = {
   position: 'absolute',
@@ -16,32 +22,49 @@ const style = {
 
 const UploadSongForm = ({ open, handleClose }) => {
   const [title, setTitle] = useState('');
-  const [artist, setArtist] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedArtists, setSelectedArtists] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [songFile, setSongFile] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { artists } = useArtists();
+  const { tags } = useTags();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!title || !artist || !songFile || !imageFile) {
-      alert('Vui lòng điền đầy đủ thông tin và chọn tệp.');
+    if (!title || !songFile || !imageFile) {
+      toast.warn('Vui lòng điền đầy đủ thông tin và chọn tệp.');
       return;
     }
 
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      toast.error('Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
       return;
     }
 
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('artist', artist);
     formData.append('songFile', songFile);
     formData.append('imageFile', imageFile);
+    if (description) {
+        formData.append('description', description);
+    }
+    const artistIds = selectedArtists.map(artist => artist.id).join(',');
+    if (artistIds) {
+        formData.append('artistIds', artistIds);
+    }
+    const tagIds = selectedTags.map(tag => tag.id).join(',');
+    if (tagIds) {
+        formData.append('tagIds', tagIds);
+    }
 
+    setIsLoading(true);
     try {
-      const response = await fetch('/api/songs/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/songs/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -51,21 +74,27 @@ const UploadSongForm = ({ open, handleClose }) => {
 
       if (response.ok) {
         const result = await response.json();
-        alert('Tải bài hát lên thành công!');
+        toast.success('Tải bài hát lên thành công!');
         console.log('Upload successful:', result);
         setTitle('');
-        setArtist('');
+        setDescription('');
+        setSelectedArtists([]);
+        setSelectedTags([]);
         setSongFile(null);
         setImageFile(null);
-        handleClose();
+        setTimeout(() => {
+          handleClose();
+        }, 5000);
       } else {
         const errorData = await response.json();
-        alert(`Tải bài hát lên thất bại: ${errorData.message || response.statusText}`);
+        toast.error(`Tải bài hát lên thất bại: ${errorData.message || response.statusText}`);
         console.error('Upload failed:', errorData);
       }
     } catch (error) {
-      alert('Đã xảy ra lỗi khi tải bài hát lên.');
+      toast.error('Đã xảy ra lỗi khi tải bài hát lên.');
       console.error('Network error or unexpected error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -76,6 +105,7 @@ const UploadSongForm = ({ open, handleClose }) => {
       aria-labelledby="upload-song-modal-title"
     >
       <Box sx={style}>
+        {isLoading && <Loading />}
         <IconButton
           aria-label="close"
           onClick={handleClose}
@@ -105,13 +135,50 @@ const UploadSongForm = ({ open, handleClose }) => {
           />
           <TextField
             margin="normal"
-            required
             fullWidth
-            name="artist"
-            label="Tên nghệ sĩ"
-            id="artist"
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
+            id="description"
+            label="Mô tả"
+            name="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          <Autocomplete
+              multiple
+              id="artist-select"
+              options={artists}
+              getOptionLabel={(option) => option.name}
+              value={selectedArtists}
+              onChange={(event, newValue) => {
+                setSelectedArtists(newValue);
+              }}
+              renderInput={(params) => (
+                  <TextField
+                      {...params}
+                      margin="normal"
+                      fullWidth
+                      name="artist"
+                      label="Tên nghệ sĩ"
+                  />
+              )}
+          />
+          <Autocomplete
+              multiple
+              id="tag-select"
+              options={tags}
+              getOptionLabel={(option) => option.name}
+              value={selectedTags}
+              onChange={(event, newValue) => {
+                setSelectedTags(newValue);
+              }}
+              renderInput={(params) => (
+                  <TextField
+                      {...params}
+                      margin="normal"
+                      fullWidth
+                      name="tag"
+                      label="Thẻ"
+                  />
+              )}
           />
           <Button
             variant="contained"
@@ -139,10 +206,23 @@ const UploadSongForm = ({ open, handleClose }) => {
               type="file"
               hidden
               accept="image/*"
-              onChange={(e) => setImageFile(e.target.files[0])}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setImageFile(file);
+                if (file) {
+                  setImagePreviewUrl(URL.createObjectURL(file));
+                } else {
+                  setImagePreviewUrl(null);
+                }
+              }}
             />
           </Button>
           {imageFile && <Typography sx={{ mt: 1 }} color="text.primary">{imageFile.name}</Typography>}
+          {imagePreviewUrl && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
+            </Box>
+          )}
           <Button
             type="submit"
             fullWidth

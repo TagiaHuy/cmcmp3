@@ -1,33 +1,69 @@
 // src/components/Sidebar/Specific/SidebarLeft.js
-import React, { useMemo } from 'react';
+import React, {useContext, useMemo} from 'react';
 import Sidebar from '../Sidebar';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
-import LibraryMusicIcon from '@mui/icons-material/LibraryMusic'; // New import
+import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
+import HistoryIcon from '@mui/icons-material/History';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 import LogoButton from '../../Button/Specific/LogoButton';
 import { useAuth } from '../../../context/AuthContext';
+import {ThemeContext} from "../../../theme/ThemeContext";
 
 function SidebarLeft() {
   const { isAdmin } = useAuth();
+  const { currentTheme } = useContext(ThemeContext);
 
   const items = useMemo(() => {
-    const base = [
-      { text: 'Inbox', icon: <InboxIcon />, to: '/' },
-      { text: 'Starred', icon: <MailIcon />, to: '/recently-played' },
+    const librarySection = [
+      { section: 'Library' },
       { text: 'Thư viện', icon: <LibraryMusicIcon />, to: '/library' },
-      { text: 'Nghệ sĩ', icon: <PeopleAltRoundedIcon />, to: '/artists' }, // General Artists link
-      { text: 'Send email', icon: <InboxIcon />, to: '/test' },
-      { text: 'Drafts', icon: <MailIcon />, to: '/test' },
+      { text: 'Nghệ sĩ', icon: <PeopleAltRoundedIcon />, to: '/artists' },
+      { text: 'Nghe gần đây', icon: <HistoryIcon />, to: '/recently-played' },
+      { text: 'Playlist', icon: <PlaylistPlayIcon />, to: '/playlist' },
     ];
-    if (isAdmin) {
-      base.push({ text: 'Quản lý tài khoản', icon: <PeopleAltRoundedIcon />, to: '/admin/users' });
-      // Removed the "Create Artist" button for admins
-    }
-    return base;
+
+    const adminSection = isAdmin
+      ? [
+          { section: 'Admin' },
+          { text: 'Quản lý tài khoản', icon: <PeopleAltRoundedIcon />, to: '/admin/users' },
+          { text: 'Quản lý bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs' },
+        ]
+      : [];
+
+    return [...librarySection, ...adminSection];
   }, [isAdmin]);
 
-  return <Sidebar anchor="left" items={items} logoComponent={<LogoButton />} />;
+  return (
+    <Sidebar
+      anchor="left"
+      items={items}
+      logoComponent={<LogoButton />}
+      sxItem={{
+        px: 2.2,
+        py: 1.1,
+        borderRadius: '10px',
+        fontSize: '0.97rem',
+        fontWeight: 500,
+        color: 'text.primary',
+        transition: '0.25s ease',
+        '&:hover': {
+          background: currentTheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(4px)',
+          transform: 'translateX(4px)',
+        },
+      }}
+      sxSection={{
+        px: 2.5,
+        py: 1,
+        fontSize: '0.75rem',
+        color: 'text.secondary',
+        textTransform: 'uppercase',
+        letterSpacing: '0.6px',
+        mt: 2,
+        mb: 0.5,
+      }}
+    />
+  );
 }
 
 export default SidebarLeft;

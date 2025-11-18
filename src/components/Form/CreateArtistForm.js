@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import API_BASE_URL from '../../config';
+import Loading from '../Loading/Loading';
+import { toast } from 'react-toastify';
 
 const style = {
   position: 'absolute',
@@ -17,12 +20,14 @@ const style = {
 const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
   const [name, setName] = useState('');
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!name) {
-      alert('Vui lòng nhập tên nghệ sĩ.');
+      toast.warn('Vui lòng nhập tên nghệ sĩ.');
       return;
     }
 
@@ -34,12 +39,13 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
 
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Xác thực không thành công. Vui lòng đăng nhập lại.');
+      toast.error('Xác thực không thành công. Vui lòng đăng nhập lại.');
       return;
     }
 
+    setIsLoading(true);
     try {
-      const response = await fetch('/api/artists/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/artists`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -49,18 +55,22 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
 
       if (response.ok) {
         const newArtist = await response.json();
-        alert('Tạo nghệ sĩ mới thành công!');
+        toast.success('Tạo nghệ sĩ mới thành công!');
         if (onArtistCreated) {
           onArtistCreated(newArtist);
         }
-        handleClose();
+        setTimeout(() => {
+          handleClose();
+        }, 500);
       } else {
         const errorData = await response.json();
-        alert(`Tạo nghệ sĩ thất bại: ${errorData.message || response.statusText}`);
+        toast.error(`Tạo nghệ sĩ thất bại: ${errorData.message || response.statusText}`);
       }
     } catch (error) {
-      alert('Đã xảy ra lỗi khi tạo nghệ sĩ.');
+      toast.error('Đã xảy ra lỗi khi tạo nghệ sĩ.');
       console.error('Error creating artist:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,6 +81,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
       aria-labelledby="create-artist-modal-title"
     >
       <Box sx={style}>
+        {isLoading && <Loading />}
         <IconButton
           aria-label="close"
           onClick={handleClose}
@@ -109,10 +120,23 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
               type="file"
               hidden
               accept="image/*"
-              onChange={(e) => setImageFile(e.target.files[0])}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setImageFile(file);
+                if (file) {
+                  setImagePreviewUrl(URL.createObjectURL(file));
+                } else {
+                  setImagePreviewUrl(null);
+                }
+              }}
             />
           </Button>
           {imageFile && <Typography sx={{ mt: 1 }} color="text.primary">{imageFile.name}</Typography>}
+          {imagePreviewUrl && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
+            </Box>
+          )}
           <Button
             type="submit"
             fullWidth

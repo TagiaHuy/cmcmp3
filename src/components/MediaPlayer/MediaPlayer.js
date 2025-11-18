@@ -1,14 +1,18 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Box, IconButton, Slider, Typography, Stack } from '@mui/material';
+import React, { useRef, useState, useEffect, useContext } from 'react';
+import { Box, IconButton, Slider, Typography, Stack, Paper } from '@mui/material';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
+
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { useMediaActions } from '../../hooks/useMediaActions';
+import { ThemeContext } from '../../theme/ThemeContext';
+
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
 
 const MediaPlayer = () => {
@@ -17,8 +21,10 @@ const MediaPlayer = () => {
     currentTrack,
     isSidebarRightVisible,
     toggleSidebarRight,
-    handleEnded, // xử lý hết bài theo repeat/shuffle trong context
+    handleEnded,
   } = useMediaPlayer();
+
+  const { currentTheme } = useContext(ThemeContext);
 
   const {
     prev,
@@ -31,70 +37,52 @@ const MediaPlayer = () => {
 
   const audioRef = useRef(null);
 
-  // UI (local)
+  // UI STATE
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.5);
 
-  // Gắn listeners khi src đổi
+  // LOAD METADATA
   useEffect(() => {
     const audio = audioRef.current;
-
-    if (!audio || !currentPlayingSrc) {
-      setIsPlaying(false);
-      setCurrentTime(0);
-      setDuration(0);
-      return;
-    }
+    if (!audio || !currentPlayingSrc) return;
 
     const onLoaded = () => {
-      const d = Number.isFinite(audio.duration) ? audio.duration : 0;
-      setDuration(d);
+      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
       setCurrentTime(audio.currentTime || 0);
+
       audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
     };
-    const onTime = () => setCurrentTime(audio.currentTime || 0);
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
 
     audio.addEventListener('loadedmetadata', onLoaded);
-    audio.addEventListener('timeupdate', onTime);
-    audio.addEventListener('play', onPlay);
-    audio.addEventListener('pause', onPause);
+    audio.addEventListener('timeupdate', () => setCurrentTime(audio.currentTime || 0));
+    audio.addEventListener('play', () => setIsPlaying(true));
+    audio.addEventListener('pause', () => setIsPlaying(false));
 
     return () => {
       audio.removeEventListener('loadedmetadata', onLoaded);
-      audio.removeEventListener('timeupdate', onTime);
-      audio.removeEventListener('play', onPlay);
-      audio.removeEventListener('pause', onPause);
     };
   }, [currentPlayingSrc]);
 
-  // Sync volume
+  // SYNC VOLUME
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  // Play/Pause
   const handlePlayPause = () => {
-    const a = audioRef.current;
-    if (!a) return;
-    a.paused ? a.play() : a.pause();
+    if (!audioRef.current) return;
+    audioRef.current.paused ? audioRef.current.play() : audioRef.current.pause();
   };
 
-  // Seek
   const handleSeek = (_e, v) => {
-    const a = audioRef.current;
-    if (!a) return;
-    a.currentTime = v;
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = v;
     setCurrentTime(v);
   };
 
-  // Mute toggle
-  const toggleMute = () => setVolume(v => (v === 0 ? 0.5 : 0));
+  const toggleMute = () => setVolume((v) => (v === 0 ? 0.5 : 0));
 
-  // Khi audio kết thúc
   const onEnded = () => {
     if (repeatMode === 'one' && audioRef.current) {
       audioRef.current.currentTime = 0;
@@ -114,21 +102,56 @@ const MediaPlayer = () => {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  const textColor = currentTheme === 'dark' ? '#eee' : '#222';
+
   return (
-    <Box sx={{ width: '100%', p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      {/* LEFT */}
-      <Box sx={{ width: '25%', display: 'flex', alignItems: 'center', gap: 1.2 }}>
+    <Paper
+      elevation={6}
+      sx={{
+        width: '100%',
+        px: 3,
+        py: 1.5,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backdropFilter: 'blur(14px)',
+        background: currentTheme === 'dark'
+          ? 'rgba(20, 20, 20, 0.65)'
+          : 'rgba(255, 255, 255, 0.65)',
+        borderTop: currentTheme === 'dark' ? '1px solid #333' : '1px solid #ddd',
+        transition: '0.3s ease',
+      }}
+    >
+      {/* LEFT SECTION — Song Info */}
+      <Box
+        sx={{
+          width: '25%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.8,
+          opacity: 0,
+          animation: 'fadeIn 0.6s ease forwards',
+        }}
+      >
         <CurrentSongCard
           songImage={currentTrack?.imageUrl || cmcmp3Logo}
           songTitle={currentTrack?.title || 'No song playing'}
           songAuthor={currentTrack?.artists || 'Unknown'}
         />
-        <FavoriteButton />
+        <FavoriteButton songId={currentTrack?.id} isFavorite={currentTrack?.isFavorite} />
         <MoreButton />
       </Box>
 
-      {/* MIDDLE */}
-      <Stack sx={{ flexGrow: 1, alignItems: 'center', px: 2 }}>
+      {/* CENTER SECTION — Controls */}
+      <Stack
+        sx={{
+          flexGrow: 1,
+          alignItems: 'center',
+          px: 2,
+          opacity: 0,
+          animation: 'fadeIn 0.8s ease forwards',
+        }}
+      >
         <PlaybackControls
           isPlaying={isPlaying}
           repeatMode={repeatMode}
@@ -140,8 +163,8 @@ const MediaPlayer = () => {
           handleRepeat={cycleRepeatMode}
         />
 
+        {/* Progress Bar */}
         <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-          {/* ❗ KHÔNG đặt key; React bind src qua prop */}
           <audio
             ref={audioRef}
             src={currentPlayingSrc || undefined}
@@ -149,8 +172,7 @@ const MediaPlayer = () => {
             onEnded={onEnded}
           />
 
-          {/* thời gian hiện tại — tự đổi trắng/đen theo theme */}
-          <Typography variant="body2" sx={{ color: (t) => t.palette.text.primary }}>
+          <Typography variant="body2" sx={{ color: textColor, width: 40 }}>
             {format(safeCurrent)}
           </Typography>
 
@@ -160,33 +182,79 @@ const MediaPlayer = () => {
             max={safeDuration}
             step={1}
             onChange={handleSeek}
+            sx={{
+              color: '#9353FF',
+              flexGrow: 1,
+              '& .MuiSlider-track': { border: 'none' },
+              '& .MuiSlider-thumb': {
+                width: 14,
+                height: 14,
+                backgroundColor: '#fff',
+                border: '2px solid #9353FF',
+                '&:hover': { boxShadow: '0 0 0 8px rgba(147, 83, 255, 0.16)' },
+              },
+            }}
           />
 
-          {/* tổng thời gian — tự đổi trắng/đen theo theme */}
-          <Typography variant="body2" sx={{ color: (t) => t.palette.text.primary }}>
+          <Typography variant="body2" sx={{ color: textColor, width: 40, textAlign: 'right' }}>
             {format(safeDuration)}
           </Typography>
         </Stack>
       </Stack>
 
-      {/* RIGHT */}
-      <Box sx={{ width: '25%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', pr: 3 }}>
-        <IconButton onClick={toggleMute}>
+      {/* RIGHT SECTION — Volume + Playlist */}
+      <Box
+        sx={{
+          width: '25%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 1.8,
+          marginRight: 6
+        }}
+      >
+        <IconButton onClick={toggleMute} sx={{ color: textColor }}>
           {volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}
         </IconButton>
+
         <Slider
           value={volume}
           min={0}
           max={1}
           step={0.01}
           onChange={(_e, v) => setVolume(v)}
-          sx={{ width: 100 }}
+          sx={{
+            width: 110,
+            color: '#9353FF',
+            '& .MuiSlider-thumb': {
+              width: 14,
+              height: 14,
+              backgroundColor: '#fff',
+              border: '2px solid #9353FF',
+              '&:hover': { boxShadow: '0 0 0 8px rgba(147, 83, 255, 0.16)' },
+            },
+          }}
         />
-        <IconButton onClick={toggleSidebarRight} color={isSidebarRightVisible ? 'primary' : 'default'}>
+
+        <IconButton
+          onClick={toggleSidebarRight}
+          sx={{
+            color: isSidebarRightVisible ? '#9353FF' : textColor,
+            transition: '0.2s',
+          }}
+        >
           <QueueMusicIcon />
         </IconButton>
       </Box>
-    </Box>
+
+      {/* Fade-in Animation Keyframes */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </Paper>
   );
 };
 

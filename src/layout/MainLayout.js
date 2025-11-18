@@ -4,9 +4,11 @@ import Header from './Header';
 import SidebarLeft from '../components/Sidebar/Specific/SidebarLeft';
 import SidebarRight from '../components/Sidebar/Specific/SidebarRight';
 // import CreateArtistForm from '../components/Form/CreateArtistForm'; // Import CreateArtistForm
-// import Footer from './Footer'; // nếu chưa dùng có thể bỏ
+import Footer from './Footer'; // nếu chưa dùng có thể bỏ
 import MediaPlayer from '../components/MediaPlayer/MediaPlayer';
 import { MediaPlayerProvider, useMediaPlayer } from '../context/MediaPlayerContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const scrollbarStyles = (
   <GlobalStyles
@@ -38,6 +40,7 @@ function MainLayoutContent({ children }) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <ToastContainer position="top-right" />
       {scrollbarStyles}
 
       <Box
@@ -57,7 +60,6 @@ function MainLayoutContent({ children }) {
           sx={{
             backgroundColor: (theme) => theme.body.background,
             paddingBottom: currentPlayingSrc ? '100px' : '24px',
-            px: 3, // Add horizontal padding here
             overflowY: 'scroll',
             overflowX: 'hidden',
             scrollbarGutter: 'stable both-edges',
@@ -66,6 +68,7 @@ function MainLayoutContent({ children }) {
           <Header />
           <Toolbar />
           {children}
+          <Footer />
         </Box>
 
         {isSidebarRightVisible && <SidebarRight />}
@@ -79,7 +82,7 @@ function MainLayoutContent({ children }) {
             left: 0,
             right: 0,
             zIndex: (theme) => theme.zIndex.drawer + 2,
-            bgcolor: 'background.paper',
+            bgcolor: (theme) => theme.body.background,
             borderTop: '1px solid',
             borderColor: 'divider',
             p: 0,

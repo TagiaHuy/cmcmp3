@@ -4,9 +4,9 @@ import {
   TableContainer, CircularProgress, Alert, Pagination
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { getAllUsers } from '../services/userService';
+import { getSongsAdmin } from '../services/songService';
 
-export default function AdminUsersPage() {
+export default function AdminManageSongsPage() {
   const theme = useTheme();
 
   const [rows, setRows] = useState([]);
@@ -22,11 +22,11 @@ export default function AdminUsersPage() {
       try {
         setLoading(true);
         setErr(null);
-        const data = await getAllUsers(page, rowsPerPage, ac.signal);
+        const data = await getSongsAdmin(page, rowsPerPage, ac.signal);
         setRows(Array.isArray(data.content) ? data.content : []);
         setTotalPages(data.totalPages || 0);
       } catch (e) {
-        if (e.name !== 'AbortError') setErr(e.message || 'Không tải được danh sách user');
+        if (e.name !== 'AbortError') setErr(e.message || 'Không tải được danh sách bài hát');
       } finally {
         setLoading(false);
       }
@@ -38,6 +38,13 @@ export default function AdminUsersPage() {
     setPage(newPage - 1);
   };
 
+  const normalizeData = (data) => {
+    if (!data) return "-";
+    if (Array.isArray(data)) return data.map(item => item.name || item).join(", ");
+    if (typeof data === 'object') return data.name || '-';
+    return data;
+  }
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography 
@@ -45,7 +52,7 @@ export default function AdminUsersPage() {
         fontWeight={700} 
         sx={{ mb: 3, color: theme.palette.text.primary }}
       >
-        Danh sách người dùng
+        Quản lý bài hát
       </Typography>
 
       {loading ? (
@@ -68,7 +75,7 @@ export default function AdminUsersPage() {
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: theme.palette.action.hover }}>
-                    {['STT', 'Tên hiển thị', 'Email', 'Số điện thoại', 'Quyền', 'Đăng nhập lần cuối'].map((head, i) => (
+                    {['STT', 'Tên bài hát', 'Nghệ sĩ', 'Tags', 'Lượt nghe', 'Lượt thích', 'Người tải', 'Ngày tạo'].map((head, i) => (
                       <TableCell
                         key={i}
                         sx={{
@@ -85,15 +92,10 @@ export default function AdminUsersPage() {
                 </TableHead>
 
                 <TableBody>
-                  {rows.map((u, index) => {
-                    const roles = (u.roles ?? u.authorities ?? [])
-                      .map(r => (typeof r === 'string' ? r : r?.name || r?.role || r?.authority))
-                      .filter(Boolean)
-                      .join(', ');
-
+                  {rows.map((s, index) => {
                     return (
                       <TableRow
-                        key={u.id}
+                        key={s.id}
                         sx={{
                           backgroundColor:
                             index % 2 === 0
@@ -106,12 +108,14 @@ export default function AdminUsersPage() {
                           transition: 'background-color 0.2s',
                         }}
                       >
-                        <TableCell>{index + 1}</TableCell>
-                        <TableCell>{u.displayName || u.username || '-'}</TableCell>
-                        <TableCell>{u.email || '-'}</TableCell>
-                        <TableCell>{u.phoneNumber || '-'}</TableCell>
-                        <TableCell>{roles || '-'}</TableCell>
-                        <TableCell>{u.lastLoginTime ? new Date(u.lastLoginTime).toLocaleString() : '-'}</TableCell>
+                        <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
+                        <TableCell>{s.title || '-'}</TableCell>
+                        <TableCell>{normalizeData(s.artists)}</TableCell>
+                        <TableCell>{normalizeData(s.tags)}</TableCell>
+                        <TableCell>{s.listenCount || 0}</TableCell>
+                        <TableCell>{s.likeCount || 0}</TableCell>
+                        <TableCell>{normalizeData(s.uploader)}</TableCell>
+                        <TableCell>{s.createdAt ? new Date(s.createdAt).toLocaleString() : '-'}</TableCell>
                       </TableRow>
                     );
                   })}

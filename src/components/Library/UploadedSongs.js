@@ -64,7 +64,7 @@ const UploadedSongs = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Button variant="contained" onClick={handleOpenModal}>
           Tải bài hát mới

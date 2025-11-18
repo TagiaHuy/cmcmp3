@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { getSongById } from '../services/songService';
-import API_BASE_URL from '../config';
+// src/hooks/useSong.js
+import { useState, useEffect } from "react";
+import { getSongById } from "../services/songService";
 
 const useSong = (songId) => {
   const [song, setSong] = useState(null);
@@ -13,35 +13,27 @@ const useSong = (songId) => {
       return;
     }
 
+    const ac = new AbortController();
+
     const fetchSong = async () => {
       try {
         setLoading(true);
-        const fetchedSong = await getSongById(songId);
-        if (fetchedSong) {
-          const formattedSong = {
-            id: fetchedSong.id,
-            title: fetchedSong.title,
-            artists: fetchedSong.artist,
-            imageUrl: fetchedSong.imageUrl,
-            mediaSrc: `${API_BASE_URL}/api/songs/stream/${fetchedSong.id}`,
-            listenCount: fetchedSong.listenCount,
-            likeCount: fetchedSong.likeCount,
-            description: fetchedSong.description,
-            label: fetchedSong.label,
-            createdAt: fetchedSong.createdAt,
-          };
-          setSong(formattedSong);
-        } else {
-          setSong(null);
-        }
+
+        // 🎯 Bản song đã được normalize trong service
+        const fetchedSong = await getSongById(songId, ac.signal);
+
+        setSong(fetchedSong || null);
       } catch (err) {
-        setError(err);
+        if (err?.name !== "AbortError") {
+          setError(err);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchSong();
+    return () => ac.abort();
   }, [songId]);
 
   return { song, loading, error };

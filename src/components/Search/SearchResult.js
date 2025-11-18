@@ -10,7 +10,6 @@ function SearchResult({ anchorEl, open, handleClose, results, handlePlay }) {
       anchorEl={anchorEl}
       open={open}
       onClose={handleClose}
-      
       disableAutoFocusItem={true}
       disableAutoFocus={true}
       disableEnforceFocus={true}
@@ -29,6 +28,7 @@ function SearchResult({ anchorEl, open, handleClose, results, handlePlay }) {
     >
       {results && results.length > 0 ? (
         results.map((result, index) => {
+          console.log('Rendering result:', result);
           switch (result.type) {
             case 'song':
               return (
