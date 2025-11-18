@@ -22,8 +22,10 @@ import usePlaylists from '../../hooks/usePlaylists';
 
 const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
   const [name, setName] = useState(playlist.name);
-  const [description, setDescription] = useState(playlist.description || ''); // Add description state
+  const [description, setDescription] = useState(playlist.description || '');
   const [isPrivate, setIsPrivate] = useState(playlist.privacy === 'private');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(playlist.imageUrl || null);
   const [currentSongs, setCurrentSongs] = useState([]);
   const [loadingSongs, setLoadingSongs] = useState(true);
   const [errorSongs, setErrorSongs] = useState(null);
@@ -85,7 +87,14 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(playlist.id, { name, description, privacy: isPrivate ? 'private' : 'public' }); // Include description
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('privacy', isPrivate ? 'private' : 'public');
+    if (imageFile) {
+      formData.append('imageFile', imageFile);
+    }
+    onSubmit(playlist.id, formData);
   };
 
   const availableSongs = allSongs.filter(
@@ -121,7 +130,7 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
           sx: { color: 'text.primary', fontWeight: 600 }
         }}
       />
-      <TextField // Add description TextField
+      <TextField
         label="Mô tả"
         variant="outlined"
         fullWidth
@@ -133,6 +142,30 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
           sx: { color: 'text.primary', fontWeight: 600 }
         }}
       />
+      <Button
+        variant="contained"
+        component="label"
+        fullWidth
+      >
+        Chọn ảnh mới
+        <input
+          type="file"
+          hidden
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            setImageFile(file);
+            if (file) {
+              setImagePreviewUrl(URL.createObjectURL(file));
+            }
+          }}
+        />
+      </Button>
+      {imagePreviewUrl && (
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
+        </Box>
+      )}
       <FormControlLabel
         control={
           <Switch

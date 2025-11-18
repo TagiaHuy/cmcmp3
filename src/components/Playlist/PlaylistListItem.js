@@ -47,7 +47,7 @@ const PlaylistListItem = ({ playlist, onEdit, onDelete }) => {
         }
       />
       <Box>
-        <IconButton aria-label="edit" onClick={() => onEdit(playlist.id)}>
+        <IconButton aria-label="edit" onClick={() => onEdit(playlist)}>
           <EditIcon />
         </IconButton>
         <IconButton aria-label="delete" onClick={() => onDelete(playlist.id)}>

@@ -20,8 +20,8 @@ export const getPlaylistsMe = async (signal) => {
 export const createPlaylist = async (playlistData) => {
   const res = await fetch(BASE_URL, {
     method: 'POST',
-    headers: { ...authHeader(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(playlistData),
+    headers: { ...authHeader() },
+    body: playlistData,
   });
   const data = await safeJson(res);
   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
@@ -69,8 +69,8 @@ export const updatePlaylistSongs = async (playlistId, songUpdates) => {
 export const updatePlaylist = async (playlistId, playlistData) => {
   const res = await fetch(`${BASE_URL}/${playlistId}`, {
     method: 'PUT',
-    headers: { ...authHeader(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(playlistData),
+    headers: { ...authHeader() },
+    body: playlistData,
   });
   const data = await safeJson(res);
   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);

@@ -5,10 +5,19 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ name, description, privacy: isPrivate ? 'private' : 'public' });
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('privacy', isPrivate ? 'private' : 'public');
+    if (imageFile) {
+      formData.append('imageFile', imageFile);
+    }
+    onSubmit(formData);
   };
 
   return (
@@ -36,6 +45,32 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
           sx: { color: 'text.primary', fontWeight: 600 }
         }}
       />
+      <Button
+        variant="contained"
+        component="label"
+        fullWidth
+      >
+        Chọn ảnh
+        <input
+          type="file"
+          hidden
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            setImageFile(file);
+            if (file) {
+              setImagePreviewUrl(URL.createObjectURL(file));
+            } else {
+              setImagePreviewUrl(null);
+            }
+          }}
+        />
+      </Button>
+      {imagePreviewUrl && (
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
+        </Box>
+      )}
       <FormControlLabel
         control={
           <Switch
