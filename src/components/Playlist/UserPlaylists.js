@@ -94,7 +94,7 @@ const UserPlaylists = () => {
         aria-describedby="create-playlist-modal-description"
       >
         <Box sx={style}>
-          <Typography id="create-playlist-modal-title" variant="h6" component="h2" mb={2}>
+          <Typography id="create-playlist-modal-title" variant="h6" component="h2" mb={2} color="text.primary">
             Tạo Playlist Mới
           </Typography>
           <CreatePlaylistForm onSubmit={handleCreatePlaylist} onCancel={handleCloseCreateModal} />
@@ -108,7 +108,7 @@ const UserPlaylists = () => {
         aria-describedby="edit-playlist-modal-description"
       >
         <Box sx={style}>
-          <Typography id="edit-playlist-modal-title" variant="h6" component="h2" mb={2}>
+          <Typography id="edit-playlist-modal-title" variant="h6" component="h2" mb={2} color="text.primary">
             Chỉnh Sửa Playlist
           </Typography>
           {currentPlaylist && (

@@ -62,11 +62,16 @@ function MainLayoutContent({ children }) {
             overflowY: 'scroll',
             overflowX: 'hidden',
             scrollbarGutter: 'stable both-edges',
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 'calc(100vh - 64px - 100px)', // Adjust based on header and player height
           }}
         >
           <Header />
           <Toolbar />
-          {children}
+          <Box sx={{ flexGrow: 1 }}>
+            {children}
+          </Box>
           <Footer />
         </Box>
 
