@@ -21,7 +21,7 @@ import { toast } from 'react-toastify';
 import usePlaylists from '../../hooks/usePlaylists';
 
 const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
-  const [name, setName] = useState(playlist.name);
+  const [name, setName] = useState(playlist.title);
   const [description, setDescription] = useState(playlist.description || '');
   const [isPrivate, setIsPrivate] = useState(playlist.privacy === 'private');
   const [imageFile, setImageFile] = useState(null);
@@ -86,7 +86,7 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('name', name);
+    formData.append('title', name);
     formData.append('description', description);
     formData.append('privacy', isPrivate ? 'private' : 'public');
     if (imageFile) {
