@@ -6,13 +6,26 @@ const BASE_URL = `${API_BASE_URL}/api/playlists`;
 
 // 1. Get user's created playlists
 export const getPlaylistsMe = async (signal) => {
+  const headers = { ...authHeader(), Accept: 'application/json' };
+  const hasAuth = !!headers.Authorization; // có token hay không
+
   const res = await fetch(`${BASE_URL}/me`, {
     method: 'GET',
-    headers: { ...authHeader(), 'Accept': 'application/json' },
+    headers,
     signal,
   });
+
   const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+
+  // Nếu KHÔNG có token thì coi mọi lỗi là "chưa đăng nhập" -> trả [] và KHÔNG throw
+  if (!res.ok) {
+    if (!hasAuth) {
+      return [];
+    }
+    // Có token mà vẫn lỗi -> ném ra cho Toast xử lý
+    throw new Error(data?.message || `HTTP ${res.status}`);
+  }
+
   return Array.isArray(data) ? data : [];
 };
 
@@ -45,7 +58,7 @@ export const deletePlaylist = async (playlistId) => {
 export const getPlaylistSongs = async (playlistId, signal) => {
   const res = await fetch(`${BASE_URL}/${playlistId}/songs`, {
     method: 'GET',
-    headers: { ...authHeader(), 'Accept': 'application/json' },
+    headers: { ...authHeader(), Accept: 'application/json' },
     signal,
   });
   const data = await safeJson(res);
@@ -81,7 +94,7 @@ export const updatePlaylist = async (playlistId, playlistData) => {
 export const getPlaylistById = async (playlistId, signal) => {
   const res = await fetch(`${BASE_URL}/${playlistId}`, {
     method: 'GET',
-    headers: { ...authHeader(), 'Accept': 'application/json' },
+    headers: { ...authHeader(), Accept: 'application/json' },
     signal,
   });
   const data = await safeJson(res);
@@ -93,7 +106,7 @@ export const getPlaylistById = async (playlistId, signal) => {
 export const getTopPlaylists = async (limit = 5, signal) => {
   const res = await fetch(`${BASE_URL}/top?limit=${limit}`, {
     method: 'GET',
-    headers: { ...authHeader(), 'Accept': 'application/json' },
+    headers: { ...authHeader(), Accept: 'application/json' },
     signal,
   });
   const data = await safeJson(res);
@@ -105,7 +118,7 @@ export const getTopPlaylists = async (limit = 5, signal) => {
 export const getNewReleasePlaylists = async (limit = 5, signal) => {
   const res = await fetch(`${BASE_URL}/top/new-releases?limit=${limit}`, {
     method: 'GET',
-    headers: { ...authHeader(), 'Accept': 'application/json' },
+    headers: { ...authHeader(), Accept: 'application/json' },
     signal,
   });
   const data = await safeJson(res);
@@ -117,7 +130,7 @@ export const getNewReleasePlaylists = async (limit = 5, signal) => {
 export const getMostLikedPlaylists = async (limit = 5, signal) => {
   const res = await fetch(`${BASE_URL}/top/most-liked?limit=${limit}`, {
     method: 'GET',
-    headers: { ...authHeader(), 'Accept': 'application/json' },
+    headers: { ...authHeader(), Accept: 'application/json' },
     signal,
   });
   const data = await safeJson(res);
