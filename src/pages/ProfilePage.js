@@ -5,6 +5,7 @@ import {
   Box, Typography, Paper, TextField, Button, Avatar,
   CircularProgress, Alert, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { updateUserProfile, updateUserAvatar } from '../services/authService';
 import API_BASE_URL from '../config';
 
@@ -19,6 +20,7 @@ const ProfilePage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const fileInputRef = useRef(null);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     if (user) {
@@ -161,16 +163,25 @@ const ProfilePage = () => {
               </RadioGroup>
             </FormControl>
 
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading}
-              sx={{ mt: 2, display: 'flex', gap: 1 }}
-            >
-              {loading && <CircularProgress size={20} />}
-              Lưu thay đổi
-            </Button>
+            <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={loading}
+                sx={{ display: 'flex', gap: 1 }}
+              >
+                {loading && <CircularProgress size={20} />}
+                Lưu thay đổi
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate('/change-password')}
+              >
+                Đổi mật khẩu
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Paper>
