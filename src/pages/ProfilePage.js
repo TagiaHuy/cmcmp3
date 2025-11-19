@@ -163,24 +163,25 @@ const ProfilePage = () => {
               </RadioGroup>
             </FormControl>
 
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading}
-              sx={{ mt: 2, display: 'flex', gap: 1 }}
-            >
-              {loading && <CircularProgress size={20} />}
-              Lưu thay đổi
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => navigate('/change-password')}
-              sx={{ mt: 2 }}
-            >
-              Đổi mật khẩu
-            </Button>
+            <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={loading}
+                sx={{ display: 'flex', gap: 1 }}
+              >
+                {loading && <CircularProgress size={20} />}
+                Lưu thay đổi
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate('/change-password')}
+              >
+                Đổi mật khẩu
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Paper>

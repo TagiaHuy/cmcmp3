@@ -58,7 +58,7 @@ const ChangePasswordForm = ({ onSubmit }) => {
           {error}
         </Typography>
       )}
-      <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+      <Button type="submit" variant="contained" sx={{ mt: 2, bgcolor: '#9353FF', '&:hover': { bgcolor: '#7a42cc' } }}>
         Đổi mật khẩu
       </Button>
     </Box>
