@@ -116,7 +116,19 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
   }
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        maxHeight: '70vh',
+        overflowY: 'auto',
+        flexShrink: 1,
+        p: 2,
+      }}
+    >
       <TextField
         label="Tên Playlist"
         variant="outlined"
