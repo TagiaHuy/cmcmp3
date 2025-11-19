@@ -142,6 +142,28 @@ export const updateUserAvatar = async (token, formData, signal) => {
   return data;
 };
 
+/** Đổi mật khẩu cho user đã đăng nhập (cần Bearer token) */
+export const changePassword = async (token, oldPassword, newPassword, signal) => {
+  const res = await fetch(`${API_BASE_URL}/api/users/me/password`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ oldPassword, newPassword }),
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
 /** Yêu cầu gửi OTP để reset mật khẩu */
 export const forgotPassword = async (email, signal) => {
   const res = await fetch(`${API_URL}/forgot-password`, {

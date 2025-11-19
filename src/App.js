@@ -26,6 +26,7 @@ import { useAuth } from './context/AuthContext';
 
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import ChangePasswordPage from './pages/ChangePasswordPage'; // New import
 
 /** Chặn trang công khai (login/register) nếu đã đăng nhập */
 const PublicOnlyRoute = ({ isAuthed, children }) =>
@@ -92,6 +93,14 @@ function App() {
           element={
             <PrivateRoute isAuthed={isAuthenticated}>
               <ProfilePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <PrivateRoute isAuthed={isAuthenticated}>
+              <ChangePasswordPage />
             </PrivateRoute>
           }
         />
