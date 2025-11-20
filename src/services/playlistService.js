@@ -161,3 +161,26 @@ export const unlikePlaylist = async (playlistId) => {
     throw new Error(data?.message || `HTTP ${res.status}`);
   }
 };
+
+// 13. Get user's favorite playlists
+export const getFavoritePlaylists = async (signal) => {
+  const headers = { ...authHeader(), Accept: 'application/json' };
+  const hasAuth = !!headers.Authorization;
+
+  const res = await fetch(`${BASE_URL}/me/liked`, {
+    method: 'GET',
+    headers,
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    if (!hasAuth) {
+      return [];
+    }
+    throw new Error(data?.message || `HTTP ${res.status}`);
+  }
+
+  return Array.isArray(data) ? data : [];
+};
