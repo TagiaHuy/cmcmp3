@@ -9,13 +9,13 @@ import {
     CircularProgress,
     Alert,
     Stack,
-    Paper,
-    Pagination
+    Paper
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 const Comment = ({ songId }) => {
-    const { comments, loading, error, pagination, postComment, deleteComment, updateComment, fetchComments } = useComments(songId);
+    const { comments, loading, error, pagination, postComment, deleteComment, updateComment, loadMore } = useComments(songId);
     const [newComment, setNewComment] = useState('');
     const theme = useTheme();
 
@@ -25,10 +25,6 @@ const Comment = ({ songId }) => {
             await postComment(newComment);
             setNewComment('');
         }
-    };
-
-    const handlePageChange = (event, value) => {
-        fetchComments(value - 1);
     };
 
     return (
@@ -61,7 +57,7 @@ const Comment = ({ songId }) => {
             </Box>
 
             {/* Loading State */}
-            {loading && (
+            {loading && comments.length === 0 && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                     <CircularProgress size={24} />
                 </Box>
@@ -82,7 +78,7 @@ const Comment = ({ songId }) => {
             )}
 
             {/* Comments List */}
-            <Stack spacing={2} sx={{ mt: 2 }}>
+            <Stack spacing={2} sx={{ mt: 2, maxHeight: 600, overflowY: 'auto' }}>
                 {comments.map((comment) => (
                     <CommentItem
                         key={comment.id}
@@ -93,15 +89,16 @@ const Comment = ({ songId }) => {
                 ))}
             </Stack>
 
-            {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
+            {/* Load More Button */}
+            {pagination && !pagination.last && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                    <Pagination
-                        count={pagination.totalPages}
-                        page={pagination.pageNumber + 1}
-                        onChange={handlePageChange}
-                        color="primary"
-                    />
+                    <Button
+                        onClick={loadMore}
+                        startIcon={<ArrowDownwardIcon />}
+                        disabled={loading}
+                    >
+                        {loading ? 'Loading...' : 'Load More'}
+                    </Button>
                 </Box>
             )}
         </Paper>

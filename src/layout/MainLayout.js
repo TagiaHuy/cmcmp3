@@ -72,7 +72,6 @@ function MainLayoutContent({ children }) {
           <Box sx={{ flexGrow: 1 }}>
             {children}
           </Box>
-          <Footer />
         </Box>
 
         {isSidebarRightVisible && <SidebarRight />}
