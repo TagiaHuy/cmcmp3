@@ -12,14 +12,20 @@ import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import PlayableImage from '../Card/PlayableImage';
 import { normalizeArtists } from '../../context/MediaPlayerContext';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // ⭐ Chuẩn hóa artist (phòng BE trả array)
   const artistText = normalizeArtists(song.artists);
 
   // ⭐ Format track (phòng handlePlay nhận track chưa đúng format)
   const mediaUrl = song.mediaSrc || song.audioUrl;
+
+  const handleItemClick = () => {
+    navigate(`/songs/${song.id}`); // Navigate to song detail page
+  };
 
   const defaultActions = (
     <Stack direction="row" spacing={1} alignItems="center">
@@ -43,7 +49,7 @@ const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
         '&:hover': { bgcolor: 'action.hover' }
       }}
     >
-      <ListItemButton onClick={onPlay} sx={{ py: 1.5, pr: '150px' }}>
+      <ListItemButton onClick={handleItemClick} sx={{ py: 1.5, pr: '150px' }}> {/* Use handleItemClick for navigation */}
         
         {/* ======== Cột 1: STT hoặc Icon Đang phát ======== */}
         <Box
@@ -72,7 +78,7 @@ const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
             size={48}
             borderRadius="4px"
             mediaSrc={mediaUrl}
-            onPlay={onPlay}
+            onPlay={(e) => { e.stopPropagation(); onPlay(song); }} // Stop propagation to prevent ListItemButton click
           />
         </Box>
 
