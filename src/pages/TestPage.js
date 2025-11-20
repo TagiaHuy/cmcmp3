@@ -14,6 +14,8 @@ import PlaylistView from '../components/Card/PlaylistView';
 import { search } from '../services/searchService';
 import useSearch from '../hooks/useSearch';
 import useArtistSongs from '../hooks/useArtistSongs';
+import Comment from '../components/Comment/Comment'; // Import Comment component
+
 const TestPage = () => {
   const { handlePlay } = useMediaPlayer();
 
@@ -34,6 +36,7 @@ const TestPage = () => {
     <PlaylistView playlist={l2} />
     <playlistView playlist={l3} />
     <PlaylistView playlist={l4} />
+    <Comment songId={1} /> {/* Add the Comment component here */}
     </Box>
   );
 };
