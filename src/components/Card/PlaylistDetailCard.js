@@ -3,7 +3,7 @@ import { Box, Typography, Stack, Divider } from '@mui/material';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic'; // Icon Lượt Nghe
 import FavoriteIcon from '@mui/icons-material/Favorite'; // Icon Lượt Thích
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // Icon Số Bài hát
-import FavoriteButton from '../Button/Specific/FavoriteButton';
+import FavoritePlaylistButton from '../Button/Specific/FavoritePlaylistButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import PlayallButton from '../Button/Specific/PlayallButton'; // Thường là nút nổi bật
 
@@ -123,7 +123,7 @@ const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying }) => {
         <PlayallButton isPlaying={isPlaying} handlePlayPause={handlePlayPlaylist} sx={{ width: 64, height: 64, boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)' }} />
         
         {/* Các nút phụ (Kích thước tiêu chuẩn) */}
-        <FavoriteButton />
+        <FavoritePlaylistButton playlistId={playlist.id} isFavorite={playlist.isFavorite} />
         <MoreButton />
       </Box>
       

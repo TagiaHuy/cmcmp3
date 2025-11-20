@@ -8,13 +8,14 @@ import {
 import GoogleIcon from '@mui/icons-material/Google';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useNotifications } from '../../hooks/useNotifications';
 import { sendOtp } from '../../services/authService';
-import { toast } from 'react-toastify';
 
 const emailRegex = /^[^\s@]+@gmail\.com$/i;
 
 const RegisterForm = () => {
   const navigate = useNavigate();
+  const { notifySuccess, notifyError } = useNotifications();
 
   const [form, setForm] = useState({
     displayName: '',
@@ -87,7 +88,7 @@ const RegisterForm = () => {
     try {
       const { displayName, email, password } = form;
       await sendOtp(email.trim());
-      toast.success('Mã OTP đã được gửi đến email của bạn.');
+      notifySuccess('Mã OTP đã được gửi đến email của bạn.');
       navigate('/verify-otp', {
         state: {
           displayName: displayName.trim(),
@@ -96,7 +97,7 @@ const RegisterForm = () => {
         },
       });
     } catch (err) {
-      toast.error(err?.message || 'Không thể gửi OTP. Vui lòng thử lại.');
+      notifyError(err?.message || 'Không thể gửi OTP. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }

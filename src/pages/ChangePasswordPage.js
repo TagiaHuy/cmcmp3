@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Container, Alert, CircularProgress, Paper } from '@mui/material';
 import ChangePasswordForm from '../components/Form/ChangePasswordForm';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../hooks/useNotifications';
 import { changePassword } from '../services/authService';
-import { toast } from 'react-toastify';
 
 const ChangePasswordPage = () => {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { notifySuccess, notifyError } = useNotifications();
 
   const handleChangePassword = async ({ oldPassword, newPassword }) => {
     setLoading(true);
@@ -22,12 +23,12 @@ const ChangePasswordPage = () => {
         return;
       }
       await changePassword(token, oldPassword, newPassword);
-      toast.success('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
+      notifySuccess('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
       logout();
       navigate('/login');
     } catch (err) {
       setError(err.message || 'Có lỗi xảy ra khi đổi mật khẩu.');
-      toast.error(err.message || 'Có lỗi xảy ra khi đổi mật khẩu.');
+      notifyError(err.message || 'Có lỗi xảy ra khi đổi mật khẩu.');
     } finally {
       setLoading(false);
     }

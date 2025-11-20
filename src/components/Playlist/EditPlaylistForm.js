@@ -17,8 +17,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import useArtists from '../../hooks/useArtists';
+import { useNotifications } from '../../hooks/useNotifications';
 import useSearch from '../../hooks/useSearch'; // Import useSearch
-import { toast } from 'react-toastify';
 import Loading from '../Loading/Loading';
 import usePlaylists from '../../hooks/usePlaylists';
 
@@ -33,6 +33,7 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
   const [errorSongs, setErrorSongs] = useState(null);
   const [selectedArtists, setSelectedArtists] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { notifySuccess, notifyError } = useNotifications();
 
   const [songSearchQuery, setSongSearchQuery] = useState(''); // State for song search input
   const { results: searchResults, loading: loadingSearchResults } = useSearch(songSearchQuery); // Use useSearch hook
@@ -50,7 +51,7 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
       } catch (err) {
         if (err?.name !== 'AbortError' && !err.message.includes('401')) {
           setErrorSongs(err);
-          toast.error('Lỗi khi tải các bài hát trong playlist.');
+          notifyError('Lỗi khi tải các bài hát trong playlist.');
         }
       } finally {
         setLoadingSongs(false);
@@ -62,17 +63,17 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
     if (playlist.artists && Array.isArray(playlist.artists)) {
       setSelectedArtists(playlist.artists);
     }
-  }, [playlist.id, getSongsForPlaylist, playlist.artists]); // Added playlist.artists to dependency array
+  }, [playlist.id, getSongsForPlaylist, playlist.artists, notifyError]); // Added playlist.artists to dependency array
 
   const handleAddSong = async (song) => {
     try {
       await updatePlaylistSongsList(playlist.id, { add: [song.id] });
       setCurrentSongs((prev) => [...prev, song]);
       setSongSearchQuery(''); // Clear search query
-      toast.success(`Đã thêm "${song.title}" vào playlist.`);
+      notifySuccess(`Đã thêm "${song.title}" vào playlist.`);
     } catch (err) {
       console.error('Failed to add song:', err);
-      toast.error('Lỗi khi thêm bài hát vào playlist.');
+      notifyError('Lỗi khi thêm bài hát vào playlist.');
     }
   };
 

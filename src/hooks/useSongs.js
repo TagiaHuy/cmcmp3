@@ -1,24 +1,25 @@
 // src/hooks/useSongs.js
 import { useState, useEffect, useCallback } from 'react';
+import { useNotifications } from './useNotifications';
 import { getAllSongs } from '../services/songService';
 import { useAuth } from '../context/AuthContext';
-import { toast } from 'react-toastify';
 
 const useSongs = () => {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { logout } = useAuth();
+  const { notifyError } = useNotifications();
 
   const handleAuthError = useCallback((err) => {
     if (err.message.includes('401')) {
       logout();
-      toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      notifyError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
     } else {
-      toast.error(err.message || 'Lỗi khi tải danh sách bài hát.');
+      notifyError(err.message || 'Lỗi khi tải danh sách bài hát.');
     }
     setError(err);
-  }, [logout]);
+  }, [logout, notifyError]);
 
   const fetchSongs = useCallback(async () => {
     const ac = new AbortController();

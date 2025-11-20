@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
+import { useNotifications } from '../../hooks/useNotifications';
 import CloseIcon from '@mui/icons-material/Close';
 import API_BASE_URL from '../../config';
 import Loading from '../Loading/Loading';
-import { toast } from 'react-toastify';
 
 const style = {
   position: 'absolute',
@@ -23,12 +23,13 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const imageInputRef = useRef(null);
+  const { notifySuccess, notifyError, notifyWarning } = useNotifications();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!name) {
-      toast.warn('Vui lòng nhập tên nghệ sĩ.');
+      notifyWarning('Vui lòng nhập tên nghệ sĩ.');
       return;
     }
 
@@ -40,7 +41,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
 
     const token = localStorage.getItem('token');
     if (!token) {
-      toast.error('Xác thực không thành công. Vui lòng đăng nhập lại.');
+      notifyError('Xác thực không thành công. Vui lòng đăng nhập lại.');
       return;
     }
 
@@ -56,7 +57,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
 
       if (response.ok) {
         const newArtist = await response.json();
-        toast.success('Tạo nghệ sĩ mới thành công!');
+        notifySuccess('Tạo nghệ sĩ mới thành công!');
         if (onArtistCreated) {
           onArtistCreated(newArtist);
         }
@@ -65,10 +66,10 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
         }, 500);
       } else {
         const errorData = await response.json();
-        toast.error(`Tạo nghệ sĩ thất bại: ${errorData.message || response.statusText}`);
+        notifyError(`Tạo nghệ sĩ thất bại: ${errorData.message || response.statusText}`);
       }
     } catch (error) {
-      toast.error('Đã xảy ra lỗi khi tạo nghệ sĩ.');
+      notifyError('Đã xảy ra lỗi khi tạo nghệ sĩ.');
       console.error('Error creating artist:', error);
     } finally {
       setIsLoading(false);
