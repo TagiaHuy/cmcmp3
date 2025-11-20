@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import API_BASE_URL from '../../config';
@@ -22,6 +22,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const imageInputRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -74,6 +75,14 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
     }
   };
 
+  const handleRemoveImageFile = () => {
+    setImageFile(null);
+    setImagePreviewUrl(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -120,6 +129,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
               type="file"
               hidden
               accept="image/*"
+              ref={imageInputRef}
               onChange={(e) => {
                 const file = e.target.files[0];
                 setImageFile(file);
@@ -131,7 +141,14 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
               }}
             />
           </Button>
-          {imageFile && <Typography sx={{ mt: 1 }} color="text.primary">{imageFile.name}</Typography>}
+          {imageFile && (
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+              <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{imageFile.name}</Typography>
+              <IconButton onClick={handleRemoveImageFile} size="small">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
           {imagePreviewUrl && (
             <Box sx={{ mt: 2, textAlign: 'center' }}>
               <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
