@@ -62,8 +62,19 @@ const useComments = (songId) => {
         }
     };
 
+    const updateComment = async (commentId, content) => {
+        try {
+            await commentService.updateComment(songId, commentId, content);
+            // Refetch comments after updating
+            const controller = new AbortController();
+            await fetchComments(controller.signal);
+        } catch (err) {
+            setError(err);
+        }
+    };
 
-    return { comments, loading, error, pagination, postComment, deleteComment };
+
+    return { comments, loading, error, pagination, postComment, deleteComment, updateComment };
 };
 
 export default useComments;

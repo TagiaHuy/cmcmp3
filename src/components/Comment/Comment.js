@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import useComments from '../../hooks/useComments';
 import CommentItem from './CommentItem';
-import { useTheme } from '@emotion/react';
-import { Typography, TextField, Button } from '@mui/material';
+import {
+    Box,
+    Typography,
+    TextField,
+    Button,
+    CircularProgress,
+    Alert,
+    Stack,
+    Paper
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 const Comment = ({ songId }) => {
-    const { comments, loading, error, postComment, deleteComment } = useComments(songId);
+    const { comments, loading, error, postComment, deleteComment, updateComment } = useComments(songId);
     const [newComment, setNewComment] = useState('');
     const theme = useTheme();
 
@@ -18,28 +27,67 @@ const Comment = ({ songId }) => {
     };
 
     return (
-        <div style={{ padding: '20px' }}>
-            <Typography variant='h6' sx={{color:theme.palette.text.primary}}>Comments</Typography>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                <TextField
-                    label="Add a comment"
-                    variant="outlined"
-                    fullWidth
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    sx={{ marginRight: '10px' }}
-                />
-                <Button type="submit" variant="contained">Post</Button>
-            </form>
+        <Paper elevation={2} sx={{ p: 3, mt: 2 }}>
+            {/* Header */}
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, mb: 2 }}>
+                Comments
+            </Typography>
 
-            {loading && <div>Loading comments...</div>}
-            {error && <div>Error: {error.message}</div>}
-            {!loading && !error && (!comments || comments.length === 0) && <div>No comments yet.</div>}
+            {/* Add Comment Form */}
+            <Box component="form" onSubmit={handleSubmit} sx={{ mb: 3 }}>
+                <Stack direction="row" spacing={2}>
+                    <TextField
+                        label="Add a comment"
+                        variant="outlined"
+                        fullWidth
+                        size="small"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                    />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        disabled={!newComment.trim()}
+                    >
+                        Post
+                    </Button>
+                </Stack>
+            </Box>
 
-            {comments && comments.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} onDelete={deleteComment} />
-            ))}
-        </div>
+            {/* Loading State */}
+            {loading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                    <CircularProgress size={24} />
+                </Box>
+            )}
+
+            {/* Error State */}
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error.message || 'Failed to load comments'}
+                </Alert>
+            )}
+
+            {/* Empty State */}
+            {!loading && !error && comments.length === 0 && (
+                <Typography variant="body2" color="text.secondary">
+                    No comments yet. Be the first to comment!
+                </Typography>
+            )}
+
+            {/* Comments List */}
+            <Stack spacing={2} sx={{ mt: 2 }}>
+                {comments.map((comment) => (
+                    <CommentItem
+                        key={comment.id}
+                        comment={comment}
+                        onDelete={deleteComment}
+                        onUpdate={updateComment}
+                    />
+                ))}
+            </Stack>
+        </Paper>
     );
 };
 
