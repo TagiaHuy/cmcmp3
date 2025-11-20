@@ -32,7 +32,7 @@ const CommentItem = ({ comment, onDelete, onUpdate }) => {
     };
 
     return (
-        <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
+        <Paper elevation={1} sx={{bgcolor: theme.palette.primary.comment, p: 2, mb: 2 }}>
             <Stack direction="row" spacing={2} alignItems="flex-start">
                 {/* Avatar */}
                 <Avatar

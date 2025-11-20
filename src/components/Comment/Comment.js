@@ -27,7 +27,7 @@ const Comment = ({ songId }) => {
     };
 
     return (
-        <Paper elevation={2} sx={{ p: 3, mt: 2 }}>
+        <Paper elevation={2} sx={{ p: 3, mt: 2, bgcolor: theme.palette.primary.commentbg }}>
             {/* Header */}
             <Typography variant="h6" sx={{ color: theme.palette.text.primary, mb: 2 }}>
                 Comments
