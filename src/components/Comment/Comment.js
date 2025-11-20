@@ -9,12 +9,13 @@ import {
     CircularProgress,
     Alert,
     Stack,
-    Paper
+    Paper,
+    Pagination
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 const Comment = ({ songId }) => {
-    const { comments, loading, error, postComment, deleteComment, updateComment } = useComments(songId);
+    const { comments, loading, error, pagination, postComment, deleteComment, updateComment, fetchComments } = useComments(songId);
     const [newComment, setNewComment] = useState('');
     const theme = useTheme();
 
@@ -24,6 +25,10 @@ const Comment = ({ songId }) => {
             await postComment(newComment);
             setNewComment('');
         }
+    };
+
+    const handlePageChange = (event, value) => {
+        fetchComments(value - 1);
     };
 
     return (
@@ -87,6 +92,18 @@ const Comment = ({ songId }) => {
                     />
                 ))}
             </Stack>
+
+            {/* Pagination */}
+            {pagination && pagination.totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                    <Pagination
+                        count={pagination.totalPages}
+                        page={pagination.pageNumber + 1}
+                        onChange={handlePageChange}
+                        color="primary"
+                    />
+                </Box>
+            )}
         </Paper>
     );
 };

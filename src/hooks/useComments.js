@@ -7,10 +7,10 @@ const useComments = (songId) => {
     const [error, setError] = useState(null);
     const [pagination, setPagination] = useState(null);
 
-    const fetchComments = useCallback(async (signal) => {
+    const fetchComments = useCallback(async (page = 0, size = 10, signal) => {
         try {
             setLoading(true);
-            const data = await commentService.getCommentsBySongId(songId, 0, 10, signal);
+            const data = await commentService.getCommentsBySongId(songId, page, size, signal);
             setComments(data.content);
             setPagination({
                 pageNumber: data.pageable.pageNumber,
@@ -34,7 +34,7 @@ const useComments = (songId) => {
     useEffect(() => {
         if (!songId) return;
         const controller = new AbortController();
-        fetchComments(controller.signal);
+        fetchComments(0, 10, controller.signal);
         return () => {
             controller.abort();
         };
@@ -45,7 +45,7 @@ const useComments = (songId) => {
             await commentService.postComment(songId, content);
             // Refetch comments after posting
             const controller = new AbortController();
-            await fetchComments(controller.signal);
+            await fetchComments(0, 10, controller.signal);
         } catch (err) {
             setError(err);
         }
@@ -56,7 +56,7 @@ const useComments = (songId) => {
             await commentService.deleteComment(songId, commentId);
             // Refetch comments after deleting
             const controller = new AbortController();
-            await fetchComments(controller.signal);
+            await fetchComments(0, 10, controller.signal);
         } catch (err) {
             setError(err);
         }
@@ -67,14 +67,14 @@ const useComments = (songId) => {
             await commentService.updateComment(songId, commentId, content);
             // Refetch comments after updating
             const controller = new AbortController();
-            await fetchComments(controller.signal);
+            await fetchComments(0, 10, controller.signal);
         } catch (err) {
             setError(err);
         }
     };
 
 
-    return { comments, loading, error, pagination, postComment, deleteComment, updateComment };
+    return { comments, loading, error, pagination, postComment, deleteComment, updateComment, fetchComments };
 };
 
 export default useComments;
