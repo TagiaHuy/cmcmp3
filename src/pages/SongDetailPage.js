@@ -6,6 +6,7 @@ import useSong from '../hooks/useSong';
 import SongDetailCard from '../components/Card/SongDetailCard';
 import SongList from '../components/SongList/SongList';
 import { useMediaPlayer, normalizeArtists } from '../context/MediaPlayerContext';
+import Comment from '../components/Comment/Comment'; // Import the Comment component
 
 const SongDetailPage = () => {
   const { songId } = useParams();
@@ -52,13 +53,17 @@ const SongDetailPage = () => {
   }
 
   return (
-    <Box display="flex" flexDirection="row" sx={{ p: 3 }}>
-      {/* ⭐ Card chi tiết bài hát */}
-      <SongDetailCard song={song} />
+    <Box>
+      <Box display="flex" flexDirection="row" sx={{ p: 3 }}>
+        {/* ⭐ Card chi tiết bài hát */}
+        <SongDetailCard song={song} />
 
-      <Box sx={{ width: '100%' }}>
-        {/* ⭐ Danh sách bài (SongList) */}
-        <SongList songIds={[songId]} />
+        <Box sx={{ width: '100%' }}>
+          {/* ⭐ Danh sách bài (SongList) */}
+          <SongList songIds={[songId]} />
+          {/* ⭐ Comment Section */}
+          <Comment songId={songId} /> 
+        </Box>
       </Box>
     </Box>
   );
