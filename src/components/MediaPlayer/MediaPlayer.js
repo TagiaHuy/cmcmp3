@@ -8,6 +8,8 @@ import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { useMediaActions } from '../../hooks/useMediaActions';
 import { ThemeContext } from '../../theme/ThemeContext';
 
+import { increaseListenCount } from '../../services/songService';
+
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
@@ -38,6 +40,7 @@ const MediaPlayer = () => {
   } = useMediaActions();
 
   const audioRef = useRef(null);
+  const listenCountedRef = useRef(false);
 
   // UI STATE
   const [currentTime, setCurrentTime] = useState(0);
@@ -92,6 +95,27 @@ const MediaPlayer = () => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
+  // Listen Count Effect
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentTrack) return;
+
+    listenCountedRef.current = false; // Reset for new track
+
+    const handleTimeUpdate = () => {
+      if (audio.currentTime > 15 && !listenCountedRef.current) {
+        listenCountedRef.current = true; // Prevent multiple calls
+        increaseListenCount(currentTrack.id);
+      }
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, [currentTrack]);
+  
   const handlePlayPause = () => {
     if (!currentTrack) return;
     setIsPlaying(!isPlaying); // Toggle global playing state

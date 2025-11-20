@@ -252,6 +252,29 @@ export const unlikeSong = async (id) => {
   }
 };
 
+/* ==========================================================
+    10) INCREASE LISTEN COUNT
+========================================================== */
+export const increaseListenCount = async (id) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/${id}/listen`, {
+      method: "PUT",
+      headers: {
+        ...authHeader(),
+      },
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ message: `HTTP error! status: ${res.status}` }));
+      throw new Error(errorData.message);
+    }
+    // Listen count endpoint might not return a body
+    return { success: true };
+  } catch (error) {
+    console.error(`Error increasing listen count for song with ID ${id}:`, error);
+    // Don't re-throw, as this is a background task and shouldn't interrupt user.
+  }
+};
+
 export const getSongsAdmin = async (page = 0, size = 10, signal) => {
     const queryParams = new URLSearchParams({
         page: page.toString(),
