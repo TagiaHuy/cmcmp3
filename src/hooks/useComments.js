@@ -51,7 +51,19 @@ const useComments = (songId) => {
         }
     };
 
-    return { comments, loading, error, pagination, postComment };
+    const deleteComment = async (commentId) => {
+        try {
+            await commentService.deleteComment(songId, commentId);
+            // Refetch comments after deleting
+            const controller = new AbortController();
+            await fetchComments(controller.signal);
+        } catch (err) {
+            setError(err);
+        }
+    };
+
+
+    return { comments, loading, error, pagination, postComment, deleteComment };
 };
 
 export default useComments;

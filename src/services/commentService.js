@@ -52,6 +52,29 @@ const commentService = {
             console.error('Error posting comment:', error);
             throw error;
         }
+    },
+    deleteComment: async (songId, commentId, signal) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/songs/${songId}/comments/${commentId}`, {
+                method: "DELETE",
+                headers: {
+                    ...authHeader(),
+                    Accept: "application/json",
+                },
+                signal,
+            });
+
+            if (!res.ok) {
+                const data = await safeJson(res);
+                const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+                throw new Error(msg);
+            }
+
+            // DELETE requests might not have a body, so we don't try to parse it
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            throw error;
+        }
     }
 };
 

@@ -5,7 +5,7 @@ import { useTheme } from '@emotion/react';
 import { Typography, TextField, Button } from '@mui/material';
 
 const Comment = ({ songId }) => {
-    const { comments, loading, error, postComment } = useComments(songId);
+    const { comments, loading, error, postComment, deleteComment } = useComments(songId);
     const [newComment, setNewComment] = useState('');
     const theme = useTheme();
 
@@ -37,7 +37,7 @@ const Comment = ({ songId }) => {
             {!loading && !error && (!comments || comments.length === 0) && <div>No comments yet.</div>}
 
             {comments && comments.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} />
+                <CommentItem key={comment.id} comment={comment} onDelete={deleteComment} />
             ))}
         </div>
     );
