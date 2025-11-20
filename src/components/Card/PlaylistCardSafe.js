@@ -36,7 +36,7 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default', isLoading }) 
   const artistRaw =
     playlist.artist ||
     playlist.creatorDisplayName ||
-    'Không rõ nghệ sĩ';
+    '';
 
   const artistText = normalizeArtists(artistRaw);
 
