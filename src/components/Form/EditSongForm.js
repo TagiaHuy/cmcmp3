@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Autocomplete,
   Box,
@@ -44,6 +44,9 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const songInputRef = useRef(null);
+  const imageInputRef = useRef(null);
+
   useEffect(() => {
     if (open && song) {
       setTitle(song.title || '');
@@ -53,10 +56,8 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
       setSongFile(null);
       setImageFile(null);
       setImagePreviewUrl(song.imageUrl || null);
-    }
-    if (!open) {
-      setSongFile(null);
-      setImageFile(null);
+      if (songInputRef.current) songInputRef.current.value = '';
+      if (imageInputRef.current) imageInputRef.current.value = '';
     }
   }, [song, open]);
 
@@ -70,28 +71,21 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
       toast.warn('Tên bài hát không được để trống.');
       return;
     }
-    if (!selectedArtists.length) {
-      toast.warn('Vui lòng chọn ít nhất một nghệ sĩ.');
-      return;
-    }
-    if (!selectedTags.length) {
-      toast.warn('Vui lòng chọn ít nhất một thể loại.');
-      return;
-    }
 
     const formData = new FormData();
     formData.append('title', title.trim());
     formData.append('description', description || '');
-
+    
     const artistIds = selectedArtists.map((artist) => artist.id).filter(Boolean);
-    const tagIds = selectedTags.map((tag) => tag.id).filter(Boolean);
-
     if (artistIds.length) {
       formData.append('artistIds', artistIds.join(','));
     }
+
+    const tagIds = selectedTags.map((tag) => tag.id).filter(Boolean);
     if (tagIds.length) {
       formData.append('tagIds', tagIds.join(','));
     }
+    
     if (songFile) {
       formData.append('songFile', songFile);
     }
@@ -109,6 +103,21 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
       toast.error(error.message || 'Cập nhật bài hát thất bại.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRemoveSongFile = () => {
+    setSongFile(null);
+    if (songInputRef.current) {
+      songInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImageFile = () => {
+    setImageFile(null);
+    setImagePreviewUrl(song?.imageUrl || null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
     }
   };
 
@@ -204,10 +213,18 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
             type="file"
             hidden
             accept=".mp3"
+            ref={songInputRef}
             onChange={(e) => setSongFile(e.target.files[0])}
           />
         </Button>
-        {songFile && <Typography sx={{ mt: 1 }}>{songFile.name}</Typography>}
+        {songFile && (
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+            <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{songFile.name}</Typography>
+            <IconButton onClick={handleRemoveSongFile} size="small">
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
 
         <Button
           variant="contained"
@@ -220,6 +237,7 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
             type="file"
             hidden
             accept="image/*"
+            ref={imageInputRef}
             onChange={(e) => {
               const file = e.target.files[0];
               setImageFile(file);
@@ -232,9 +250,12 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
           />
         </Button>
         {imageFile && (
-          <Typography sx={{ mt: 1 }}>
-            {imageFile.name}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+            <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{imageFile.name}</Typography>
+            <IconButton onClick={handleRemoveImageFile} size="small">
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
         )}
 
         {imagePreviewUrl && (
@@ -262,4 +283,3 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
 };
 
 export default EditSongForm;
-

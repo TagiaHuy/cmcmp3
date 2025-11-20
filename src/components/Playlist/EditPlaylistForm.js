@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   TextField,
@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 import useArtists from '../../hooks/useArtists';
 import useSearch from '../../hooks/useSearch'; // Import useSearch
 import { toast } from 'react-toastify';
@@ -38,6 +39,7 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
 
   const { updatePlaylistSongsList, getSongsForPlaylist } = usePlaylists();
   const { artists } = useArtists(); // Integrated useArtists hook
+  const imageInputRef = useRef(null);
 
   useEffect(() => {
     const fetchCurrentSongs = async () => {
@@ -103,6 +105,14 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
       await onSubmit(playlist.id, formData);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+  
+  const handleRemoveImageFile = () => {
+    setImageFile(null);
+    setImagePreviewUrl(playlist?.imageUrl || null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
     }
   };
 
@@ -194,6 +204,7 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
             type="file"
             hidden
             accept="image/*"
+            ref={imageInputRef}
             onChange={(e) => {
               const file = e.target.files[0];
               setImageFile(file);
@@ -204,6 +215,14 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
             disabled={isSubmitting}
           />
         </Button>
+        {imageFile && (
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+            <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{imageFile.name}</Typography>
+            <IconButton onClick={handleRemoveImageFile} size="small">
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
         {imagePreviewUrl && (
           <Box sx={{ mt: 2, textAlign: 'center' }}>
             <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />

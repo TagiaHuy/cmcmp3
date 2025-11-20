@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Autocomplete, Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import useArtists from '../../hooks/useArtists';
@@ -18,6 +18,8 @@ const style = {
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
+  maxHeight: '90vh',
+  overflowY: 'auto',
 };
 
 const UploadSongForm = ({ open, handleClose }) => {
@@ -31,6 +33,9 @@ const UploadSongForm = ({ open, handleClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { artists } = useArtists();
   const { tags } = useTags();
+
+  const songInputRef = useRef(null);
+  const imageInputRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -82,6 +87,9 @@ const UploadSongForm = ({ open, handleClose }) => {
         setSelectedTags([]);
         setSongFile(null);
         setImageFile(null);
+        setImagePreviewUrl(null);
+        if (songInputRef.current) songInputRef.current.value = '';
+        if (imageInputRef.current) imageInputRef.current.value = '';
         setTimeout(() => {
           handleClose();
         }, 5000);
@@ -95,6 +103,21 @@ const UploadSongForm = ({ open, handleClose }) => {
       console.error('Network error or unexpected error:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRemoveSongFile = () => {
+    setSongFile(null);
+    if (songInputRef.current) {
+      songInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImageFile = () => {
+    setImageFile(null);
+    setImagePreviewUrl(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
     }
   };
 
@@ -191,10 +214,18 @@ const UploadSongForm = ({ open, handleClose }) => {
               type="file"
               hidden
               accept=".mp3"
+              ref={songInputRef}
               onChange={(e) => setSongFile(e.target.files[0])}
             />
           </Button>
-          {songFile && <Typography sx={{ mt: 1 }} color="text.primary">{songFile.name}</Typography>}
+          {songFile && (
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+              <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{songFile.name}</Typography>
+              <IconButton onClick={handleRemoveSongFile} size="small">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
           <Button
             variant="contained"
             component="label"
@@ -206,6 +237,7 @@ const UploadSongForm = ({ open, handleClose }) => {
               type="file"
               hidden
               accept="image/*"
+              ref={imageInputRef}
               onChange={(e) => {
                 const file = e.target.files[0];
                 setImageFile(file);
@@ -217,7 +249,14 @@ const UploadSongForm = ({ open, handleClose }) => {
               }}
             />
           </Button>
-          {imageFile && <Typography sx={{ mt: 1 }} color="text.primary">{imageFile.name}</Typography>}
+          {imageFile && (
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+              <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{imageFile.name}</Typography>
+              <IconButton onClick={handleRemoveImageFile} size="small">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
           {imagePreviewUrl && (
             <Box sx={{ mt: 2, textAlign: 'center' }}>
               <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Box, TextField, Button, FormControlLabel, Switch, Typography } from '@mui/material';
+import React, { useState, useRef } from 'react';
+import { Box, TextField, Button, FormControlLabel, Switch, Typography, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import Loading from '../Loading/Loading';
 
 const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
@@ -9,6 +10,7 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const imageInputRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,6 +26,14 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
       await onSubmit(formData);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRemoveImageFile = () => {
+    setImageFile(null);
+    setImagePreviewUrl(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
     }
   };
 
@@ -67,6 +77,7 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
             type="file"
             hidden
             accept="image/*"
+            ref={imageInputRef}
             onChange={(e) => {
               const file = e.target.files[0];
               setImageFile(file);
@@ -79,6 +90,14 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
             disabled={isLoading}
           />
         </Button>
+        {imageFile && (
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+              <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{imageFile.name}</Typography>
+              <IconButton onClick={handleRemoveImageFile} size="small">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+        )}
         {imagePreviewUrl && (
           <Box sx={{ mt: 2, textAlign: 'center' }}>
             <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
