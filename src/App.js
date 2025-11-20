@@ -24,6 +24,7 @@ import ArtistsPage from './pages/ArtistsPage'; // New import for ArtistsPage
 import PlaylistsPage from './pages/PlaylistsPage';
 import { useAuth } from './context/AuthContext';
 
+import OtpVerificationPage from './pages/OtpVerificationPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage'; // New import
@@ -81,6 +82,14 @@ function App() {
           element={
             <PublicOnlyRoute isAuthed={isAuthenticated}>
               <RegisterPage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/verify-otp"
+          element={
+            <PublicOnlyRoute isAuthed={isAuthenticated}>
+              <OtpVerificationPage />
             </PublicOnlyRoute>
           }
         />
