@@ -5,6 +5,8 @@ const darkTheme = createTheme({
     mode: 'dark',
     primary: {
       main: '#556cd6',
+      commentbg: '#171925ff',
+      comment: '#1c2133ff'
     },
     secondary: {
       main: '#19857b',
