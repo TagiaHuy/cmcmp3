@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button } from '@mui/material';
-import { toast } from 'react-toastify';
+import { useNotifications } from '../../hooks/useNotifications';
 import { useAuth } from '../../context/AuthContext';
 
 const OtpVerificationForm = ({ displayName, email, password }) => {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { notifySuccess, notifyError } = useNotifications();
 
   const [otp, setOtp] = useState('');
   const [fieldErr, setFieldErr] = useState('');
@@ -41,16 +42,16 @@ const OtpVerificationForm = ({ displayName, email, password }) => {
     setSubmitting(true);
     try {
       await register(displayName, email, password, otp);
-      toast.success('Đăng ký thành công! Bạn sẽ được chuyển tới trang đăng nhập...');
+      notifySuccess('Đăng ký thành công! Bạn sẽ được chuyển tới trang đăng nhập...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
       const errorMessage = err?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
       if (errorMessage.toLowerCase().includes('otp')) {
         // setFieldErr('Mã OTP không hợp lệ hoặc đã hết hạn.'); // Removed field error
         otpRef.current?.focus();
-        toast.error('Mã OTP không hợp lệ hoặc đã hết hạn.'); // Retained toast.error
+        notifyError('Mã OTP không hợp lệ hoặc đã hết hạn.'); // Retained toast.error
       } else {
-        toast.error(errorMessage);
+        notifyError(errorMessage);
       }
     } finally {
       setSubmitting(false);

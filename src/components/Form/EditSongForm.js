@@ -8,9 +8,8 @@ import {
   TextField,
   Typography
 } from '@mui/material';
+import { useNotifications } from '../../hooks/useNotifications';
 import CloseIcon from '@mui/icons-material/Close';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 import useArtists from '../../hooks/useArtists';
 import useTags from '../../hooks/useTags';
@@ -34,6 +33,7 @@ const modalStyle = {
 const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
   const { artists: artistOptions } = useArtists();
   const { tags: tagOptions } = useTags();
+  const { notifySuccess, notifyError, notifyWarning } = useNotifications();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -68,7 +68,7 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
     if (disabled) return;
 
     if (!title.trim()) {
-      toast.warn('Tên bài hát không được để trống.');
+      notifyWarning('Tên bài hát không được để trống.');
       return;
     }
 
@@ -96,11 +96,11 @@ const EditSongForm = ({ open, handleClose, song, onUpdated }) => {
     try {
       setIsLoading(true);
       const updatedSong = await updateUploadedSong(song.id, formData);
-      toast.success('Cập nhật bài hát thành công!');
+      notifySuccess('Cập nhật bài hát thành công!');
       onUpdated?.(updatedSong);
       handleClose();
     } catch (error) {
-      toast.error(error.message || 'Cập nhật bài hát thất bại.');
+      notifyError(error.message || 'Cập nhật bài hát thất bại.');
     } finally {
       setIsLoading(false);
     }

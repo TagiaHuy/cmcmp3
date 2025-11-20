@@ -7,15 +7,16 @@ import {
   IconButton, InputAdornment
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
+import { useNotifications } from '../../hooks/useNotifications';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { toast } from 'react-toastify';
 
 const emailRegex = /^[^\s@]+@gmail\.com$/i;
 
 const LoginForm = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { notifySuccess, notifyError } = useNotifications();
 
   const [form, setForm] = useState({ email: '', password: '' });
   const [fieldErr, setFieldErr] = useState({ email: '', password: '' });
@@ -49,14 +50,14 @@ const LoginForm = () => {
     try {
       setSubmitting(true);
       await login(form.email.trim(), form.password);
-      toast.success('Đăng nhập thành công!');
+      notifySuccess('Đăng nhập thành công!');
       setTimeout(() => navigate('/'), 1500);
     } catch (err) {
       const msg =
         /401/.test(err.message) ? 'Email hoặc mật khẩu không đúng'
         : /403/.test(err.message) ? 'Bạn không có quyền truy cập'
         : err.message || 'Đăng nhập thất bại';
-      toast.error(msg);
+      notifyError(msg);
     } finally {
       setSubmitting(false);
     }

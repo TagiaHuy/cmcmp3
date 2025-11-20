@@ -1,12 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Autocomplete, Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
+import { useNotifications } from '../../hooks/useNotifications';
 import CloseIcon from '@mui/icons-material/Close';
 import useArtists from '../../hooks/useArtists';
 import useTags from '../../hooks/useTags';
 import API_BASE_URL from '../../config';
 import Loading from '../Loading/Loading';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const style = {
   position: 'absolute',
@@ -33,6 +32,7 @@ const UploadSongForm = ({ open, handleClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { artists } = useArtists();
   const { tags } = useTags();
+  const { notifySuccess, notifyError, notifyWarning } = useNotifications();
 
   const songInputRef = useRef(null);
   const imageInputRef = useRef(null);
@@ -41,13 +41,13 @@ const UploadSongForm = ({ open, handleClose }) => {
     event.preventDefault();
 
     if (!title || !songFile || !imageFile) {
-      toast.warn('Vui lòng điền đầy đủ thông tin và chọn tệp.');
+      notifyWarning('Vui lòng điền đầy đủ thông tin và chọn tệp.');
       return;
     }
 
     const token = localStorage.getItem('token');
     if (!token) {
-      toast.error('Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      notifyError('Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
       return;
     }
 
@@ -79,7 +79,7 @@ const UploadSongForm = ({ open, handleClose }) => {
 
       if (response.ok) {
         const result = await response.json();
-        toast.success('Tải bài hát lên thành công!');
+        notifySuccess('Tải bài hát lên thành công!');
         console.log('Upload successful:', result);
         setTitle('');
         setDescription('');
@@ -95,11 +95,11 @@ const UploadSongForm = ({ open, handleClose }) => {
         }, 5000);
       } else {
         const errorData = await response.json();
-        toast.error(`Tải bài hát lên thất bại: ${errorData.message || response.statusText}`);
+        notifyError(`Tải bài hát lên thất bại: ${errorData.message || response.statusText}`);
         console.error('Upload failed:', errorData);
       }
     } catch (error) {
-      toast.error('Đã xảy ra lỗi khi tải bài hát lên.');
+      notifyError('Đã xảy ra lỗi khi tải bài hát lên.');
       console.error('Network error or unexpected error:', error);
     } finally {
       setIsLoading(false);

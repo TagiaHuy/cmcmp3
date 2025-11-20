@@ -137,3 +137,27 @@ export const getMostLikedPlaylists = async (limit = 5, signal) => {
   if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
   return Array.isArray(data) ? data : [];
 };
+
+// 11. Like a playlist
+export const likePlaylist = async (playlistId) => {
+  const res = await fetch(`${BASE_URL}/${playlistId}/like`, {
+    method: 'POST',
+    headers: { ...authHeader() },
+  });
+  if (!res.ok) {
+    const data = await safeJson(res);
+    throw new Error(data?.message || `HTTP ${res.status}`);
+  }
+};
+
+// 12. Unlike a playlist
+export const unlikePlaylist = async (playlistId) => {
+  const res = await fetch(`${BASE_URL}/${playlistId}/like`, {
+    method: 'DELETE',
+    headers: { ...authHeader() },
+  });
+  if (!res.ok) {
+    const data = await safeJson(res);
+    throw new Error(data?.message || `HTTP ${res.status}`);
+  }
+};
