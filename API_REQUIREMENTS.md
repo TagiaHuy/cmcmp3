@@ -251,3 +251,83 @@ This document outlines the API endpoints required for the CMCMP3 music streaming
         ]
     }
     ```
+
+## 7. Notification System
+
+### 7.1 Overview
+
+To provide real-time feedback to users, a notification system is required. This involves both REST endpoints for fetching historical data and a WebSocket connection for live updates.
+
+### 7.2 Notification Object Structure
+
+A notification object should have the following structure:
+
+```json
+{
+    "id": "notif123",
+    "type": "like", // e.g., 'like', 'comment', 'follow'
+    "read": false,
+    "message": "User 'john_doe' liked your playlist 'Chill Vibes'.",
+    "link": "/playlist/playlist456", // Frontend link to the relevant content
+    "createdAt": "2025-11-20T10:00:00Z"
+}
+```
+
+### 7.3 REST API Endpoints
+
+#### 7.3.1 Get All Notifications for User
+
+*   **HTTP Method**: `GET`
+*   **Endpoint**: `/api/me/notifications`
+*   **Description**: Retrieves a list of all notifications for the currently authenticated user, sorted from newest to oldest.
+*   **Authentication**: Required (JWT in `Authorization` header).
+*   **Response Body**:
+    ```json
+    [
+        // Array of notification objects (see 7.2)
+    ]
+    ```
+
+#### 7.3.2 Mark Notifications as Read
+
+*   **HTTP Method**: `POST`
+*   **Endpoint**: `/api/notifications/read`
+*   **Description**: Marks a specific list of notifications as read. Can be used to mark a single notification or multiple.
+*   **Authentication**: Required (JWT in `Authorization` header).
+*   **Request Body**:
+    ```json
+    {
+        "notificationIds": ["notif123", "notif124"]
+    }
+    ```
+*   **Response Body**:
+    ```json
+    {
+        "message": "Notifications marked as read."
+    }
+    ```
+
+### 7.4 WebSocket Events
+
+The backend should host a WebSocket server that the frontend can connect to upon authentication.
+
+#### 7.4.1 Connection
+
+*   The frontend will attempt to connect to the WebSocket server after a user logs in, likely passing the JWT token for authentication during the connection handshake.
+
+#### 7.4.2 Receiving New Notifications
+
+*   **Event Name**: `new_notification`
+*   **Description**: The server sends this event to a specific user when a new notification is generated for them.
+*   **Payload**: The event payload will be a single notification object.
+    ```json
+    // Payload for 'new_notification' event
+    {
+        "id": "notif125",
+        "type": "like",
+        "read": false,
+        "message": "User 'jane_doe' liked your song 'Summer Nights'.",
+        "link": "/song/song789",
+        "createdAt": "2025-11-20T10:05:00Z"
+    }
+    ```
