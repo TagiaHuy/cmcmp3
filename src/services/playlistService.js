@@ -153,7 +153,7 @@ export const likePlaylist = async (playlistId) => {
 // 12. Unlike a playlist
 export const unlikePlaylist = async (playlistId) => {
   const res = await fetch(`${BASE_URL}/${playlistId}/like`, {
-    method: 'DELETE',
+    method: 'POST',
     headers: { ...authHeader() },
   });
   if (!res.ok) {
