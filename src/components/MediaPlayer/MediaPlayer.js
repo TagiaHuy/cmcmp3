@@ -42,7 +42,15 @@ const MediaPlayer = () => {
   // UI STATE
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.5);
+  const [volume, setVolume] = useState(() => {
+    const storedVolume = localStorage.getItem('cmcmp3-volume');
+    return storedVolume !== null ? parseFloat(storedVolume) : 0.5;
+  });
+
+  // Persist volume to localStorage
+  useEffect(() => {
+    localStorage.setItem('cmcmp3-volume', volume);
+  }, [volume]);
 
   // LOAD METADATA & BIND EVENTS
   useEffect(() => {
