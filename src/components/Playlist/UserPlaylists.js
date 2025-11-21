@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Button, CircularProgress, Typography, Modal } from '@mui/material';
+import { Box, Button, CircularProgress, Typography, Modal, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 import PlaylistList from './PlaylistList';
 import usePlaylists from '../../hooks/usePlaylists';
 import CreatePlaylistForm from './CreatePlaylistForm';
@@ -108,9 +109,14 @@ const UserPlaylists = () => {
         aria-describedby="edit-playlist-modal-description"
       >
         <Box sx={style}>
-          <Typography id="edit-playlist-modal-title" variant="h6" component="h2" mb={2} color="text.primary">
-            Chỉnh Sửa Playlist
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography id="edit-playlist-modal-title" variant="h6" component="h2" color="text.primary">
+              Chỉnh Sửa Playlist
+            </Typography>
+            <IconButton onClick={handleCloseEditModal} aria-label="close">
+              <CloseIcon />
+            </IconButton>
+          </Box>
           {currentPlaylist && (
             <EditPlaylistForm
               playlist={currentPlaylist}

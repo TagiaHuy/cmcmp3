@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import PlayableImage from './PlayableImage'; // Re-using the playable image component
+import { Link } from 'react-router-dom';
 
 const SongCard = ({ song, onPlay }) => {
   const { handlePlay, normalizeArtists } = useMediaPlayer();
@@ -61,7 +62,9 @@ const SongCard = ({ song, onPlay }) => {
             noWrap
             sx={{ color: 'text.primary' }}
           >
-            {song.title}
+            <Link to={`/songs/${song.id}`} onClick={(e) => e.stopPropagation()} style={{ textDecoration: 'none', color: 'inherit' }}>
+              {song.title}
+            </Link>
           </Typography>
           <Typography
             variant="caption"
