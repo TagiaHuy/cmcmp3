@@ -8,6 +8,7 @@ import { useTheme, alpha } from "@mui/material/styles";
 import useZingChart from "../../hooks/useZingChart";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import { useMediaPlayer } from "../../context/MediaPlayerContext";
+import { useNavigate } from "react-router-dom";
 
 /* ========== Sub components ========== */
 function RankNumber({ rank }) {
@@ -36,6 +37,7 @@ function RankNumber({ rank }) {
 }
 
 function TopItem({ item, onPlay }) {
+  const navigate = useNavigate();
   if (!item) return null;
 
   const onClickPlay = (e) => {
@@ -43,12 +45,16 @@ function TopItem({ item, onPlay }) {
     onPlay?.(item);
   };
 
+  const handleCardClick = () => {
+    navigate(`/songs/${item.id}`);
+  }
+
   return (
     <Stack
       direction="row"
       alignItems="center"
       spacing={1.2}
-      onClick={() => onPlay?.(item)}
+      onClick={handleCardClick}
       role="button"
       tabIndex={0}
       sx={{

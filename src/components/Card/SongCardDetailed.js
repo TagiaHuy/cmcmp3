@@ -1,6 +1,7 @@
 // src/components/Card/SongCardDetailed.jsx
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import BaseCard from './BaseCard';
 import PlayableImage from './PlayableImage';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
@@ -19,6 +20,7 @@ const FALLBACK_BG =
 
 function SongCardDetailed({ song, onPlay }) {
   const { handlePlay, normalizeArtists } = useMediaPlayer();
+  const navigate = useNavigate();
 
   if (!song) return null;
 
@@ -45,6 +47,10 @@ function SongCardDetailed({ song, onPlay }) {
       // Fallback: play trực tiếp 1 bài
       handlePlay(unifiedTrack);
     }
+  };
+
+  const handleCardClick = () => {
+    navigate(`/songs/${song.id}`);
   };
 
   const {
@@ -82,7 +88,7 @@ function SongCardDetailed({ song, onPlay }) {
   };
 
   return (
-    <BaseCard sx={cardStyle} onClick={handlePlayClick}>
+    <BaseCard sx={cardStyle} onClick={handleCardClick}>
       {/* Nền blur */}
       <Box
         sx={{

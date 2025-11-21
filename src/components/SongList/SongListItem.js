@@ -78,7 +78,7 @@ const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
             size={48}
             borderRadius="4px"
             mediaSrc={mediaUrl}
-            onPlay={(e) => { e.stopPropagation(); onPlay(song); }} // Stop propagation to prevent ListItemButton click
+            onPlay={() => onPlay()} // Stop propagation to prevent ListItemButton click
           />
         </Box>
 

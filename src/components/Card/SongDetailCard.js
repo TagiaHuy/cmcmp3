@@ -8,15 +8,16 @@ import PrimaryPlaybackButton from '../Button/Specific/PrimaryPlaybackButton';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 
 const SongDetailCard = ({ song }) => {
-  const { handlePlay, currentTrack } = useMediaPlayer();
+  const { handlePlay, currentTrack, isPlaying: isPlayerPlaying, setIsPlaying } = useMediaPlayer();
 
   // ⭐ Chuẩn hóa artists về string
   const artistText = normalizeArtists(song?.artists);
 
   // ⭐ Kiểm tra bài đang phát
-  const isPlaying =
+  const isThisSongPlaying =
+    isPlayerPlaying &&
     currentTrack &&
-    currentTrack.mediaSrc === (song.mediaSrc || song.audioUrl);
+    (currentTrack.mediaSrc === (song.mediaSrc || song.filePath || song.audioUrl) || currentTrack.id === song.id);
 
   // ⭐ Kiểm tra đã thích chưa
   const isLiked = song?.isFavorite || false;
@@ -25,9 +26,19 @@ const SongDetailCard = ({ song }) => {
   const unifiedTrack = {
     id: song.id,
     title: song.title,
-    mediaSrc: song.filePath,
+    mediaSrc: song.filePath || song.mediaSrc || song.audioUrl,
     imageUrl: song.imageUrl,
     artists: artistText
+  };
+
+  const handleTogglePlay = () => {
+    // If this song is the current track, toggle play/pause
+    if (currentTrack && currentTrack.id === song.id) {
+        setIsPlaying(prev => !prev);
+    } else {
+        // If it's a different song, start playing it
+        handlePlay(unifiedTrack);
+    }
   };
 
   return (
@@ -81,8 +92,8 @@ const SongDetailCard = ({ song }) => {
 
         {/* ⭐ Play chính → truyền unifiedTrack */}
         <PrimaryPlaybackButton
-          isPlaying={isPlaying}
-          handlePlayPause={() => handlePlay(unifiedTrack)}
+          isPlaying={isThisSongPlaying}
+          handlePlayPause={handleTogglePlay}
         />
 
         <MoreButton />
