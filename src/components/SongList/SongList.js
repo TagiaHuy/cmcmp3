@@ -3,6 +3,7 @@ import { Box, Typography, CircularProgress, List } from '@mui/material';
 import useSongsByIds from '../../hooks/useSongsByIds';
 import { useMediaPlayer, normalizeArtists } from '../../context/MediaPlayerContext';
 import SongListItem from './SongListItem';
+import API_BASE_URL from '../../config';
 
 /* -------------------------------------------------------------------
    ⭐ Renderer — chỉ render UI, không fetch, không dùng hook.
@@ -32,7 +33,7 @@ const SongListRenderer = ({ songs, onPlay, currentTrack, renderActions }) => {
         const unifiedTrack = {
           id: song.id,
           title: song.title,
-          mediaSrc: song.mediaSrc || song.audioUrl,
+          mediaSrc: song.mediaSrc || song.audioUrl || `${API_BASE_URL}/api/songs/stream/${song.id}`,
           imageUrl: song.imageUrl || '',
           artists: artistText,
         };
