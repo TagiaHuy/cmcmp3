@@ -1,7 +1,7 @@
 // src/components/Card/RecentlyPlayed.js
 import React from 'react';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
 
@@ -88,16 +88,22 @@ export default function RecentlyPlayed() {
 
 function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
   const [isHovered, setIsHovered] = React.useState(false);
+  const navigate = useNavigate();
   const mediaUrl = track.mediaSrc || track.audioUrl;
 
   // ⭐ CHUẨN HÓA ARTISTS → luôn là string
   const artistText = normalizeArtists(track.artists);
+
+  const handleCardClick = () => {
+    navigate(`/songs/${track.id}`);
+  }
 
   return (
     <Box
       sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', cursor: 'pointer' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
     >
       {/* Ảnh + nút ▶ */}
       <BasePlayableImage mediaSrc={mediaUrl} onPlay={onPlay} size={IMG_H} isHovered={isHovered}>

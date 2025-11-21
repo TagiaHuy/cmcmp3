@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 import BasePlayableImage from "./Base/BasePlayableImage";
 import { useMediaPlayer } from "../../context/MediaPlayerContext";
@@ -51,14 +51,20 @@ const dataBXH = [
 
 function BXHCard({ item, onPlay, onFavorite }) {
   const [isHovered, setIsHovered] = React.useState(false);
+  const navigate = useNavigate();
 
-  const handlePlay = () => {
+  const handlePlay = (e) => {
+    e.stopPropagation();
     onPlay?.({
       title: item.title,
       artists: item.artists,
       imageUrl: item.cover,
       mediaSrc: item.mediaSrc,
     });
+  };
+
+  const handleCardClick = () => {
+    navigate(`/songs/${item.id}`);
   };
 
   return (
@@ -70,9 +76,11 @@ function BXHCard({ item, onPlay, onFavorite }) {
         borderRadius: 2,
         transition: "background-color 0.2s",
         "&:hover": { backgroundColor: "rgba(255,255,255,0.08)" },
+        cursor: "pointer",
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
     >
       {/* Hình + nút Play */}
       <Box

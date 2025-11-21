@@ -1,7 +1,7 @@
 // src/components/Card/Top100Section.jsx (hoặc đường dẫn bạn đang dùng)
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 
 // Components theo pattern RecommendCard
@@ -69,8 +69,10 @@ const TWEAK_Y = -38;
 
 function Top100Card({ item, onPlay, onFavorite }) {
   const [isHovered, setIsHovered] = React.useState(false);
+  const navigate = useNavigate();
 
-  const handlePlay = () =>
+  const handlePlay = (e) => {
+    e.stopPropagation();
     onPlay?.({
       id: item.id,
       title: item.title,
@@ -78,11 +80,17 @@ function Top100Card({ item, onPlay, onFavorite }) {
       imageUrl: item.cover,
       mediaSrc: item.mediaSrc,
     });
+  }
+
+  const handleCardClick = () => {
+    navigate(`/playlists/${item.id}`);
+  }
 
   return (
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
       sx={{
         width: 160,
         position: "relative",
