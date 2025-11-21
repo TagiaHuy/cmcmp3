@@ -9,6 +9,7 @@ import {
   ListItemAvatar,
   Avatar,
 } from '@mui/material';
+import { Link } from 'react-router-dom'; // Import Link
 
 import FavoriteButton from '../../Button/Specific/FavoriteButton';
 import MoreButton from '../../Button/Specific/MoreButton';
@@ -109,7 +110,9 @@ const SuggestionList = () => {
               }}
             >
               <Typography noWrap fontWeight="bold" color={theme.palette.text.primary}>
-                {track.title}
+                <Link to={`/songs/${track.id}`} onClick={(e) => e.stopPropagation()} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  {track.title}
+                </Link>
               </Typography>
 
               <Typography noWrap color={theme.palette.text.secondary}>
