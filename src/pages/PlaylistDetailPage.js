@@ -6,6 +6,7 @@ import SongList from '../components/SongList/SongList';
 import PlaylistDetailCard from '../components/Card/PlaylistDetailCard';
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 import useSongsByIds from '../hooks/useSongsByIds';
+import Comment from '../components/Comment/Comment';
 
 const PlaylistDetailPage = () => {
   const { playlistId } = useParams();
@@ -49,6 +50,7 @@ const PlaylistDetailPage = () => {
       />
       <Box sx={{width: '100%'}}>
         <SongList songIds={playlist.songs} />
+        <Comment playlistId={playlistId} />
       </Box>
     </Box>
   );
