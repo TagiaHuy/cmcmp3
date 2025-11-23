@@ -13,7 +13,7 @@ const SongDetailPage = () => {
   const { song, loading, error } = useSong(songId);
 
   // ⭐ lấy hàm điều khiển trình phát
-  const { handlePlay, loadQueue } = useMediaPlayer();
+  const { loadQueue } = useMediaPlayer();
 
   /** 
    * ⭐ Khi load bằng URL (F5 / click từ playlist):
@@ -28,6 +28,7 @@ const SongDetailPage = () => {
       imageUrl: song.imageUrl,
       mediaSrc: song.filePath,
       artists: normalizeArtists(song.artists),
+      lyrics: song.lyrics,
     };
 
     // set queue = 1 bài khi vào SongDetail
@@ -58,7 +59,7 @@ const SongDetailPage = () => {
         {/* ⭐ Card chi tiết bài hát */}
         <SongDetailCard song={song} />
 
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: '100%', ml: 3 }}>
           {/* ⭐ Danh sách bài (SongList) */}
           <SongList songIds={[songId]} />
           {/* ⭐ Comment Section */}
