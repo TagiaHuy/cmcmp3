@@ -26,6 +26,8 @@ const MediaPlayer = () => {
     isSidebarRightVisible,
     toggleSidebarRight,
     handleEnded,
+    currentTime,
+    setCurrentTime,
   } = useMediaPlayer();
 
   const { currentTheme } = useContext(ThemeContext);
@@ -43,7 +45,6 @@ const MediaPlayer = () => {
   const listenCountedRef = useRef(false);
 
   // UI STATE
-  const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(() => {
     const storedVolume = localStorage.getItem('cmcmp3-volume');
@@ -76,7 +77,7 @@ const MediaPlayer = () => {
       audio.removeEventListener('play', onPlay);
       audio.removeEventListener('pause', onPause);
     };
-  }, [setIsPlaying]);
+  }, [setIsPlaying, setCurrentTime]);
 
   // SYNC PLAYBACK STATE from context to audio element
   useEffect(() => {

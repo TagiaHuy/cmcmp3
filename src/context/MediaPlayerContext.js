@@ -29,6 +29,7 @@ export const MediaPlayerProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
   const [isSidebarRightVisible, setIsSidebarRightVisible] = useState(true);
+  const [currentTime, setCurrentTime] = useState(0);
 
   // ===== Queue & playback mode =====
   const [queue, setQueue] = useState([]);        
@@ -255,6 +256,8 @@ export const MediaPlayerProvider = ({ children }) => {
     handleEnded,
     updateSongInQueue,
 
+    currentTime,
+    setCurrentTime,
     // thêm vào để dùng ở mọi component
     normalizeArtists
 
@@ -265,7 +268,8 @@ export const MediaPlayerProvider = ({ children }) => {
     isShuffling, repeatMode,
     handlePlay, loadQueue, playPlaylistRandom, playAt,
     prev, next, toggleShuffle, cycleRepeatMode, handleEnded,
-    clearRecentlyPlayed, toggleSidebarRight, updateSongInQueue
+    clearRecentlyPlayed, toggleSidebarRight, updateSongInQueue,
+    currentTime
   ]);
 
   return (
