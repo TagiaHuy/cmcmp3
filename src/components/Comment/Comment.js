@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import useComments from '../../hooks/useComments';
+import useSongComments from '../../hooks/useSongComments';
+import usePlaylistComments from '../../hooks/usePlaylistComments';
 import CommentItem from './CommentItem';
 import {
     Box,
@@ -14,8 +15,11 @@ import {
 import { useTheme } from '@mui/material/styles';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
-const Comment = ({ songId }) => {
-    const { comments, loading, error, pagination, postComment, deleteComment, updateComment, loadMore } = useComments(songId);
+const Comment = ({ songId, playlistId }) => {
+    const useComments = songId ? useSongComments : usePlaylistComments;
+    const id = songId || playlistId;
+
+    const { comments, loading, error, pagination, postComment, deleteComment, updateComment, loadMore } = useComments(id);
     const [newComment, setNewComment] = useState('');
     const theme = useTheme();
 

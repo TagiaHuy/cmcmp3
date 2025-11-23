@@ -1,20 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, Typography, CircularProgress, Tabs, Tab } from '@mui/material';
 import usePlaylist from '../hooks/usePlaylist';
 import SongList from '../components/SongList/SongList';
 import PlaylistDetailCard from '../components/Card/PlaylistDetailCard';
 import { useMediaPlayer } from '../context/MediaPlayerContext';
 import useSongsByIds from '../hooks/useSongsByIds';
+import Comment from '../components/Comment/Comment';
 
 const PlaylistDetailPage = () => {
   const { playlistId } = useParams();
   const { playlist, loading, error } = usePlaylist(playlistId);
   const { songs, loading: songsLoading } = useSongsByIds(playlist?.songs);
   const { loadQueue, queue, isPlaying, setIsPlaying } = useMediaPlayer();
+  const [selectedTab, setSelectedTab] = useState(0);
 
-  console.log('Playlist object:', playlist);
-  console.log('Fetched songs:', songs);
+  const handleTabChange = (event, newValue) => {
+    setSelectedTab(newValue);
+  };
 
   const isPlaylistCurrentlyLoaded = songs && queue.length === songs.length && queue.every((track, index) => songs[index] && track.id === songs[index].id);
 
@@ -48,7 +51,12 @@ const PlaylistDetailPage = () => {
         isPlaying={isPlaylistCurrentlyLoaded && isPlaying} 
       />
       <Box sx={{width: '100%'}}>
-        <SongList songIds={playlist.songs} />
+        <Tabs value={selectedTab} onChange={handleTabChange} centered>
+          <Tab label="Songs" />
+          <Tab label="Comments" />
+        </Tabs>
+        {selectedTab === 0 && <SongList songIds={playlist.songs} />}
+        {selectedTab === 1 && <Comment playlistId={playlistId} />}
       </Box>
     </Box>
   );

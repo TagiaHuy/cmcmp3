@@ -101,6 +101,103 @@ const commentService = {
             console.error('Error updating comment:', error);
             throw error;
         }
+    },
+    getCommentsByPlaylistId: async (playlistId, page = 0, size = 10, signal) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/playlists/${playlistId}/comments?page=${page}&size=${size}`, {
+                method: "GET",
+                headers: {
+                    ...authHeader(),
+                    Accept: "application/json",
+                },
+                signal,
+            });
+
+            const data = await safeJson(res);
+
+            if (!res.ok) {
+                const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+                throw new Error(msg);
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching playlist comments:', error);
+            throw error;
+        }
+    },
+    postPlaylistComment: async (playlistId, content, signal) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/playlists/${playlistId}/comments`, {
+                method: "POST",
+                headers: {
+                    ...authHeader(),
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                body: JSON.stringify({ content }),
+                signal,
+            });
+
+            const data = await safeJson(res);
+
+            if (!res.ok) {
+                const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+                throw new Error(msg);
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error posting playlist comment:', error);
+            throw error;
+        }
+    },
+    updatePlaylistComment: async (playlistId, commentId, content, signal) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/playlists/${playlistId}/comments/${commentId}`, {
+                method: "PUT",
+                headers: {
+                    ...authHeader(),
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                body: JSON.stringify({ content }),
+                signal,
+            });
+
+            const data = await safeJson(res);
+
+            if (!res.ok) {
+                const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+                throw new Error(msg);
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error updating playlist comment:', error);
+            throw error;
+        }
+    },
+    deletePlaylistComment: async (playlistId, commentId, signal) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/playlists/${playlistId}/comments/${commentId}`, {
+                method: "DELETE",
+                headers: {
+                    ...authHeader(),
+                    Accept: "application/json",
+                },
+                signal,
+            });
+
+            if (!res.ok) {
+                const data = await safeJson(res);
+                const msg = (data && (data.message || data.error)) || `HTTP ${res.status}`;
+                throw new Error(msg);
+            }
+        } catch (error) {
+            console.error('Error deleting playlist comment:', error);
+            throw error;
+        }
     }
 };
 

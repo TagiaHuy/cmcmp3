@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import commentService from '../services/commentService';
 
-const useComments = (songId) => {
+const useSongComments = (songId) => {
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -85,4 +85,4 @@ const useComments = (songId) => {
     return { comments, loading, error, pagination, postComment, deleteComment, updateComment, fetchComments, loadMore };
 };
 
-export default useComments;
+export default useSongComments;
