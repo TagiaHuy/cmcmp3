@@ -7,14 +7,13 @@ import SongDetailCard from '../components/Card/SongDetailCard';
 import SongList from '../components/SongList/SongList';
 import { useMediaPlayer, normalizeArtists } from '../context/MediaPlayerContext';
 import Comment from '../components/Comment/Comment'; // Import the Comment component
-import LyricsDisplay from '../components/LyricsDisplay';
 
 const SongDetailPage = () => {
   const { songId } = useParams();
   const { song, loading, error } = useSong(songId);
 
   // ⭐ lấy hàm điều khiển trình phát
-  const { loadQueue, currentTrack, currentTime } = useMediaPlayer();
+  const { loadQueue } = useMediaPlayer();
 
   /** 
    * ⭐ Khi load bằng URL (F5 / click từ playlist):
@@ -61,9 +60,6 @@ const SongDetailPage = () => {
         <SongDetailCard song={song} />
 
         <Box sx={{ width: '100%', ml: 3 }}>
-          {/* ⭐ Lyrics */}
-          <LyricsDisplay lyrics={currentTrack?.lyrics} currentTime={currentTime} />
-          
           {/* ⭐ Danh sách bài (SongList) */}
           <SongList songIds={[songId]} />
           {/* ⭐ Comment Section */}

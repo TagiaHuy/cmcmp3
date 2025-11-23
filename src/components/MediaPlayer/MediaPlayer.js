@@ -3,6 +3,7 @@ import { Box, IconButton, Slider, Typography, Stack, Paper } from '@mui/material
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
+import MicIcon from '@mui/icons-material/Mic';
 
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { useMediaActions } from '../../hooks/useMediaActions';
@@ -14,6 +15,7 @@ import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+import LyricsModal from '../Lyric/LyricsModal';
 
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
 
@@ -28,6 +30,8 @@ const MediaPlayer = () => {
     handleEnded,
     currentTime,
     setCurrentTime,
+    toggleLyrics,
+    setMediaPlayerHeight,
   } = useMediaPlayer();
 
   const { currentTheme } = useContext(ThemeContext);
@@ -43,6 +47,7 @@ const MediaPlayer = () => {
 
   const audioRef = useRef(null);
   const listenCountedRef = useRef(false);
+  const playerRef = useRef(null);
 
   // UI STATE
   const [duration, setDuration] = useState(0);
@@ -50,6 +55,12 @@ const MediaPlayer = () => {
     const storedVolume = localStorage.getItem('cmcmp3-volume');
     return storedVolume !== null ? parseFloat(storedVolume) : 0.5;
   });
+
+  useEffect(() => {
+    if (playerRef.current) {
+      setMediaPlayerHeight(playerRef.current.clientHeight);
+    }
+  }, [setMediaPlayerHeight]);
 
   // Persist volume to localStorage
   useEffect(() => {
@@ -152,87 +163,138 @@ const MediaPlayer = () => {
   const textColor = currentTheme === 'dark' ? '#eee' : '#222';
 
   return (
-    <Paper
-      elevation={6}
-      sx={{
-        width: '100%',
-        px: 3,
-        py: 1.5,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backdropFilter: 'blur(14px)',
-        background: currentTheme === 'dark'
-          ? 'rgba(20, 20, 20, 0.65)'
-          : 'rgba(255, 255, 255, 0.65)',
-        borderTop: currentTheme === 'dark' ? '1px solid #333' : '1px solid #ddd',
-        transition: '0.3s ease',
-      }}
-    >
-      {/* LEFT SECTION — Song Info */}
-      <Box
+    <>
+      <LyricsModal />
+      <Paper
+        ref={playerRef}
+        elevation={6}
         sx={{
-          width: '25%',
+          width: '100%',
+          px: 3,
+          py: 1.5,
           display: 'flex',
           alignItems: 'center',
-          gap: 1.8,
-          opacity: 0,
-          animation: 'fadeIn 0.6s ease forwards',
+          justifyContent: 'space-between',
+          backdropFilter: 'blur(14px)',
+          background: currentTheme === 'dark'
+            ? 'rgba(20, 20, 20, 0.65)'
+            : 'rgba(255, 255, 255, 0.65)',
+          borderTop: currentTheme === 'dark' ? '1px solid #333' : '1px solid #ddd',
+          transition: '0.3s ease',
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
-        <CurrentSongCard
-          songImage={currentTrack?.imageUrl || cmcmp3Logo}
-          songTitle={currentTrack?.title || 'No song playing'}
-          songAuthor={currentTrack?.artists || 'Unknown'}
-        />
-        <FavoriteButton songId={currentTrack?.id} isFavorite={currentTrack?.isFavorite} />
-        <MoreButton />
-      </Box>
+        {/* LEFT SECTION — Song Info */}
+        <Box
+          sx={{
+            width: '25%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.8,
+            opacity: 0,
+            animation: 'fadeIn 0.6s ease forwards',
+          }}
+        >
+          <CurrentSongCard
+            songImage={currentTrack?.imageUrl || cmcmp3Logo}
+            songTitle={currentTrack?.title || 'No song playing'}
+            songAuthor={currentTrack?.artists || 'Unknown'}
+          />
+          <FavoriteButton songId={currentTrack?.id} isFavorite={currentTrack?.isFavorite} />
+          <MoreButton />
+        </Box>
 
-      {/* CENTER SECTION — Controls */}
-      <Stack
-        sx={{
-          flexGrow: 1,
-          alignItems: 'center',
-          px: 2,
-          opacity: 0,
-          animation: 'fadeIn 0.8s ease forwards',
-        }}
-      >
-        <PlaybackControls
-          isPlaying={isPlaying}
-          repeatMode={repeatMode}
-          isShuffleActive={isShuffling}
-          handlePlayPause={handlePlayPause}
-          handlePrevious={prev}
-          handleNext={next}
-          handleShuffle={toggleShuffle}
-          handleRepeat={cycleRepeatMode}
-        />
-
-        {/* Progress Bar */}
-        <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-          <audio
-            ref={audioRef}
-            src={currentPlayingSrc || undefined}
-            preload="metadata"
-            onEnded={onEnded}
+        {/* CENTER SECTION — Controls */}
+        <Stack
+          sx={{
+            flexGrow: 1,
+            alignItems: 'center',
+            px: 2,
+            opacity: 0,
+            animation: 'fadeIn 0.8s ease forwards',
+          }}
+        >
+          <PlaybackControls
+            isPlaying={isPlaying}
+            repeatMode={repeatMode}
+            isShuffleActive={isShuffling}
+            handlePlayPause={handlePlayPause}
+            handlePrevious={prev}
+            handleNext={next}
+            handleShuffle={toggleShuffle}
+            handleRepeat={cycleRepeatMode}
           />
 
-          <Typography variant="body2" sx={{ color: textColor, width: 40 }}>
-            {format(safeCurrent)}
-          </Typography>
+          {/* Progress Bar */}
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+            <audio
+              ref={audioRef}
+              src={currentPlayingSrc || undefined}
+              preload="metadata"
+              onEnded={onEnded}
+            />
+
+            <Typography variant="body2" sx={{ color: textColor, width: 40 }}>
+              {format(safeCurrent)}
+            </Typography>
+
+            <Slider
+              value={safeCurrent}
+              min={0}
+              max={safeDuration}
+              step={1}
+              onChange={handleSeek}
+              sx={{
+                color: '#9353FF',
+                flexGrow: 1,
+                '& .MuiSlider-track': { border: 'none' },
+                '& .MuiSlider-thumb': {
+                  width: 14,
+                  height: 14,
+                  backgroundColor: '#fff',
+                  border: '2px solid #9353FF',
+                  '&:hover': { boxShadow: '0 0 0 8px rgba(147, 83, 255, 0.16)' },
+                },
+              }}
+            />
+
+            <Typography variant="body2" sx={{ color: textColor, width: 40, textAlign: 'right' }}>
+              {format(safeDuration)}
+            </Typography>
+          </Stack>
+        </Stack>
+
+        {/* RIGHT SECTION — Volume + Playlist */}
+        <Box
+          sx={{
+            width: '25%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 1.8,
+            marginRight: 6
+          }}
+        >
+          <IconButton onClick={toggleLyrics} sx={{ color: textColor }}>
+            <MicIcon />
+          </IconButton>
+          <IconButton onClick={toggleMute} sx={{ color: textColor }}>
+            {volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}
+          </IconButton>
 
           <Slider
-            value={safeCurrent}
+            value={volume}
             min={0}
-            max={safeDuration}
-            step={1}
-            onChange={handleSeek}
+            max={1}
+            step={0.01}
+            onChange={(_e, v) => setVolume(v)}
             sx={{
+              width: 110,
               color: '#9353FF',
-              flexGrow: 1,
-              '& .MuiSlider-track': { border: 'none' },
               '& .MuiSlider-thumb': {
                 width: 14,
                 height: 14,
@@ -243,65 +305,26 @@ const MediaPlayer = () => {
             }}
           />
 
-          <Typography variant="body2" sx={{ color: textColor, width: 40, textAlign: 'right' }}>
-            {format(safeDuration)}
-          </Typography>
-        </Stack>
-      </Stack>
+          <IconButton
+            onClick={toggleSidebarRight}
+            sx={{
+              color: isSidebarRightVisible ? '#9353FF' : textColor,
+              transition: '0.2s',
+            }}
+          >
+            <QueueMusicIcon />
+          </IconButton>
+        </Box>
 
-      {/* RIGHT SECTION — Volume + Playlist */}
-      <Box
-        sx={{
-          width: '25%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: 1.8,
-          marginRight: 6
-        }}
-      >
-        <IconButton onClick={toggleMute} sx={{ color: textColor }}>
-          {volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}
-        </IconButton>
-
-        <Slider
-          value={volume}
-          min={0}
-          max={1}
-          step={0.01}
-          onChange={(_e, v) => setVolume(v)}
-          sx={{
-            width: 110,
-            color: '#9353FF',
-            '& .MuiSlider-thumb': {
-              width: 14,
-              height: 14,
-              backgroundColor: '#fff',
-              border: '2px solid #9353FF',
-              '&:hover': { boxShadow: '0 0 0 8px rgba(147, 83, 255, 0.16)' },
-            },
-          }}
-        />
-
-        <IconButton
-          onClick={toggleSidebarRight}
-          sx={{
-            color: isSidebarRightVisible ? '#9353FF' : textColor,
-            transition: '0.2s',
-          }}
-        >
-          <QueueMusicIcon />
-        </IconButton>
-      </Box>
-
-      {/* Fade-in Animation Keyframes */}
-      <style>{`
+        {/* Fade-in Animation Keyframes */}
+        <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-    </Paper>
+      </Paper>
+    </>
   );
 };
 
