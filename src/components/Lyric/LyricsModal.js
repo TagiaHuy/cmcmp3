@@ -70,6 +70,7 @@ const LyricsModal = () => {
                     }}
                 >
                     <LyricsDisplay
+                        songId={currentTrack?.id}
                         lyrics={currentTrack?.lyrics}
                         currentTime={currentTime}
                         imageUrl={null} // ❗ Không lặp lại ảnh bên phải nữa
