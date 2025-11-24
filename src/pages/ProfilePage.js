@@ -21,7 +21,6 @@ const ProfilePage = () => {
   const [success, setSuccess] = useState('');
   const fileInputRef = useRef(null);
   const navigate = useNavigate(); // Initialize useNavigate
-
   useEffect(() => {
     if (user) {
       setFormData({
@@ -157,9 +156,9 @@ const ProfilePage = () => {
                 value={formData.gender}
                 onChange={handleInputChange}
               >
-                <FormControlLabel value="male" control={<Radio />} label="Nam" />
-                <FormControlLabel value="female" control={<Radio />} label="Nữ" />
-                <FormControlLabel value="other" control={<Radio />} label="Khác" />
+                <FormControlLabel value="Nam" control={<Radio />} label="Nam" />
+                <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
+                <FormControlLabel value="Khác" control={<Radio />} label="Khác" />
               </RadioGroup>
             </FormControl>
 
