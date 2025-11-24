@@ -49,39 +49,61 @@ const RegisterForm = () => {
 
   const validate = () => {
     const e = { displayName: '', email: '', password: '', confirmPassword: '' };
+    let isValid = true;
 
-    if (!form.displayName.trim()) e.displayName = 'Vui lòng nhập tên hiển thị';
-    else if (form.displayName.trim().length < 2) e.displayName = 'Tên hiển thị tối thiểu 2 ký tự';
+    if (!form.displayName.trim()) {
+      isValid = false;
+    } else if (form.displayName.trim().length < 2) {
+      e.displayName = 'Tên hiển thị tối thiểu 2 ký tự';
+      isValid = false;
+    }
 
     const email = form.email.trim();
-    if (!email) e.email = 'Vui lòng nhập email';
-    else if (!emailRegex.test(email)) e.email = 'Email không hợp lệ';
+    if (!email) {
+      isValid = false;
+    } else if (!emailRegex.test(email)) {
+      e.email = 'Email không hợp lệ';
+      isValid = false;
+    }
 
-    if (!form.password) e.password = 'Vui lòng nhập mật khẩu';
-    else if (form.password.length < 6) e.password = 'Mật khẩu tối thiểu 6 ký tự';
+    if (!form.password) {
+      isValid = false;
+    } else if (form.password.length < 6) {
+      e.password = 'Mật khẩu tối thiểu 6 ký tự';
+      isValid = false;
+    }
 
-    if (!form.confirmPassword) e.confirmPassword = 'Vui lòng xác nhận mật khẩu';
-    else if (form.confirmPassword !== form.password) e.confirmPassword = 'Mật khẩu không khớp';
+    if (!form.confirmPassword) {
+      isValid = false;
+    } else if (form.confirmPassword !== form.password) {
+      e.confirmPassword = 'Mật khẩu không khớp';
+      isValid = false;
+    }
 
     setFieldErr(e);
-    return e;
+    return isValid;
   };
 
-  const focusFirstError = (e) => {
+  const focusFirstError = (e) => { // Keep this for other errors
     for (const k of ['displayName', 'email', 'password', 'confirmPassword']) {
       if (e[k]) { refs[k].current?.focus(); break; }
     }
   };
 
-  const onBlurValidate = () => validate();
+  const onBlurValidate = () => validate(); // This will not show errors for empty fields on blur anymore
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const e = validate();
-    if (Object.values(e).some(Boolean)) {
-      focusFirstError(e);
-      return;
+    const currentErrors = validate(); // Call validate to update fieldErr state
+    // Now check if there are any error messages or if isValid is false from validate
+    if (!currentErrors) { // If validate returns false (meaning something is invalid or empty)
+        // Optionally, if you still want to focus on the first truly invalid field,
+        // you would need to re-evaluate 'e' here based on current state after setFieldErr.
+        // For now, based on user request, we just prevent submission without
+        // displaying "Vui lòng nhập" for empty fields.
+        return;
     }
 
     setSubmitting(true);

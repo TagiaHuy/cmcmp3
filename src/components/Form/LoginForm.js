@@ -30,16 +30,25 @@ const LoginForm = () => {
 
   const validate = () => {
     const e = { email: '', password: '' };
+    let isValid = true;
 
     const email = form.email.trim();
-    if (!email) e.email = 'Vui lòng nhập email';
-    else if (!emailRegex.test(email)) e.email = 'Email không hợp lệ';
+    if (!email) {
+      isValid = false;
+    } else if (!emailRegex.test(email)) {
+      e.email = 'Email không hợp lệ';
+      isValid = false;
+    }
 
-    if (!form.password) e.password = 'Vui lòng nhập mật khẩu';
-    else if (form.password.length < 6) e.password = 'Mật khẩu tối thiểu 6 ký tự';
+    if (!form.password) {
+      isValid = false;
+    } else if (form.password.length < 6) {
+      e.password = 'Mật khẩu tối thiểu 6 ký tự';
+      isValid = false;
+    }
 
     setFieldErr(e);
-    return !e.email && !e.password;
+    return isValid;
   };
 
   const handleSubmit = async (event) => {
