@@ -27,6 +27,7 @@ function SidebarLeft() {
           { section: 'Admin' },
           { text: 'Quản lý tài khoản', icon: <PeopleAltRoundedIcon />, to: '/admin/users' },
           { text: 'Quản lý bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs' },
+          { text: 'Kiểm duyệt bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs/moderation' },
         ]
       : [];
 

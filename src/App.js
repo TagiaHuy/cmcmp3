@@ -23,6 +23,7 @@ import AdminManageSongsPage from './pages/AdminManageSongsPage';
 import LibraryPage from './pages/LibraryPage'; // New import
 import ArtistsPage from './pages/ArtistsPage'; // New import for ArtistsPage
 import PlaylistsPage from './pages/PlaylistsPage';
+import AdminSongModerationPage from './pages/AdminSongModerationPage'; // New import
 import { useAuth } from './context/AuthContext';
 
 import OtpVerificationPage from './pages/OtpVerificationPage';
@@ -150,6 +151,17 @@ function App() {
                   <PrivateRoute isAuthed={isAuthenticated}>
                       <AdminRoute isAdmin={isAdmin}>
                           <AdminManageSongsPage />
+                      </AdminRoute>
+                  </PrivateRoute>
+              }
+          />
+
+          <Route
+              path="/admin/songs/moderation" // New route path
+              element={
+                  <PrivateRoute isAuthed={isAuthenticated}>
+                      <AdminRoute isAdmin={isAdmin}>
+                          <AdminSongModerationPage /> {/* New component */}
                       </AdminRoute>
                   </PrivateRoute>
               }
