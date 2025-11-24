@@ -171,15 +171,17 @@ const ProfilePage = () => {
                 sx={{ display: 'flex', gap: 1 }}
               >
                 {loading && <CircularProgress size={20} />}
-                Lưu thay đổi
+                 Lưu thay đổi
               </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => navigate('/change-password')}
-              >
-                Đổi mật khẩu
-              </Button>
+              {user.provider === 'LOCAL' && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => navigate('/change-password')}
+                >
+                  Đổi mật khẩu
+                </Button>
+              )}
             </Box>
           </Box>
         </Box>
