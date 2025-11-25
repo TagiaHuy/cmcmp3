@@ -79,7 +79,7 @@ const UploadSongForm = ({ open, handleClose }) => {
 
       if (response.ok) {
         const result = await response.json();
-        notifySuccess('Tải bài hát lên thành công!');
+        notifySuccess('Tải bài hát lên thành công, đang chờ kiểm duyệt');
         console.log('Upload successful:', result);
         setTitle('');
         setDescription('');
@@ -92,7 +92,7 @@ const UploadSongForm = ({ open, handleClose }) => {
         if (imageInputRef.current) imageInputRef.current.value = '';
         setTimeout(() => {
           handleClose();
-        }, 5000);
+        }, 2000);
       } else {
         const errorData = await response.json();
         notifyError(`Tải bài hát lên thất bại: ${errorData.message || response.statusText}`);
