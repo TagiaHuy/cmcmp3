@@ -4,10 +4,11 @@ import {
   FormControl, Select, MenuItem
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import UploadSongForm from '../Form/UploadSongForm';
 import EditSongForm from '../Form/EditSongForm';
 import SongList from '../SongList/SongList';
-import { getUploadedSongs, updateUploadedSongStatus } from '../../services/songService';
+import { getUploadedSongs, updateUploadedSongStatus, deleteSong } from '../../services/songService';
 import { useNotifications } from '../../hooks/useNotifications';
 
 const UploadedSongs = () => {
@@ -71,7 +72,7 @@ const UploadedSongs = () => {
   const handleStatusChange = async (songId, newStatus) => {
     try {
       const updatedSong = await updateUploadedSongStatus(songId, newStatus);
-      setSongs((prevSongs) => 
+      setSongs((prevSongs) =>
         prevSongs.map((s) => (s.id === songId ? updatedSong : s))
       );
       notifySuccess('Cập nhật trạng thái bài hát thành công!');
@@ -80,6 +81,21 @@ const UploadedSongs = () => {
       // Optional: Re-fetch to revert optimistic update on failure
       const ac = new AbortController();
       fetchUploadedSongs(ac.signal);
+    }
+  };
+
+  const handleDeleteSong = async (songId) => {
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa bài hát này?');
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteSong(songId);
+      setSongs((prevSongs) => prevSongs.filter((song) => song.id !== songId));
+      notifySuccess('Xóa bài hát thành công!');
+    } catch (err) {
+      notifyError(err.message || 'Lỗi khi xóa bài hát.');
     }
   };
 
@@ -108,6 +124,13 @@ const UploadedSongs = () => {
       >
         <EditIcon fontSize="small" />
       </IconButton>
+      <IconButton
+        size="small"
+        color="error"
+        onClick={() => handleDeleteSong(song.id)}
+      >
+        <DeleteIcon fontSize="small" />
+      </IconButton>
       {defaultActions}
     </Stack>
   );
@@ -124,7 +147,7 @@ const UploadedSongs = () => {
     if (error) {
       return <Typography color="error" sx={{ textAlign: 'center', py: 5 }}>{error}</Typography>;
     }
-    
+
     if (songs.length === 0) {
       return <Typography sx={{ textAlign: 'center', py: 5 }}>Bạn chưa có bài hát nào được tải lên.</Typography>;
     }
