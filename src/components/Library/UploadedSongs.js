@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Button, Typography, CircularProgress, Stack, IconButton } from '@mui/material';
+import {
+  Box, Button, Typography, CircularProgress, Stack, IconButton,
+  FormControl, Select, MenuItem
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import UploadSongForm from '../Form/UploadSongForm';
 import EditSongForm from '../Form/EditSongForm';
 import SongList from '../SongList/SongList';
-import { getUploadedSongs } from '../../services/songService';
+import { getUploadedSongs, updateUploadedSongStatus } from '../../services/songService';
+import { useNotifications } from '../../hooks/useNotifications';
 
 const UploadedSongs = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -12,6 +16,7 @@ const UploadedSongs = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingSong, setEditingSong] = useState(null);
+  const { notifySuccess, notifyError } = useNotifications();
 
   const fetchUploadedSongs = useCallback(async (signal) => {
     try {
@@ -58,10 +63,44 @@ const UploadedSongs = () => {
     setSongs((prev) =>
       prev.map((song) => (song.id === updatedSong.id ? updatedSong : song))
     );
+    // also refetch to be sure
+    const ac = new AbortController();
+    fetchUploadedSongs(ac.signal);
+  };
+
+  const handleStatusChange = async (songId, newStatus) => {
+    try {
+      const updatedSong = await updateUploadedSongStatus(songId, newStatus);
+      setSongs((prevSongs) => 
+        prevSongs.map((s) => (s.id === songId ? updatedSong : s))
+      );
+      notifySuccess('Cập nhật trạng thái bài hát thành công!');
+    } catch (err) {
+      notifyError(err.message || 'Lỗi khi cập nhật trạng thái.');
+      // Optional: Re-fetch to revert optimistic update on failure
+      const ac = new AbortController();
+      fetchUploadedSongs(ac.signal);
+    }
   };
 
   const renderSongActions = (song, defaultActions) => (
     <Stack direction="row" spacing={1} alignItems="center">
+      <FormControl size="small" sx={{ minWidth: 120 }}>
+        <Select
+          value={song.status || ''}
+          onChange={(e) => handleStatusChange(song.id, e.target.value)}
+          displayEmpty
+          inputProps={{ 'aria-label': 'Song status' }}
+          // A user can only change status of their approved songs
+          // to public or private. Admin moderation handles other states.
+          disabled={song.status !== 'PUBLIC' && song.status !== 'PRIVATE'}
+        >
+          <MenuItem value="PUBLIC">Công khai</MenuItem>
+          <MenuItem value="PRIVATE">Riêng tư</MenuItem>
+          <MenuItem value="PENDING" disabled>Đang chờ</MenuItem>
+          <MenuItem value="REJECTED" disabled>Bị từ chối</MenuItem>
+        </Select>
+      </FormControl>
       <IconButton
         size="small"
         color="primary"
@@ -106,9 +145,7 @@ const UploadedSongs = () => {
         open={Boolean(editingSong)}
         handleClose={handleEditClose}
         song={editingSong}
-        onUpdated={(updatedSong) => {
-          handleSongUpdated(updatedSong);
-        }}
+        onUpdated={handleSongUpdated}
       />
 
       {renderContent()}

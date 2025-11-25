@@ -5,6 +5,7 @@ import BaseCard from './BaseCard';
 import CardTag from './CardTag';
 import PlayableImage from './PlayableImage';
 import { useNavigate } from 'react-router-dom';
+import LockIcon from '@mui/icons-material/Lock';
 
 // Fallback nền blur mượt
 const FALLBACK_BG =
@@ -160,6 +161,9 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default', isLoading }) 
           fontWeight="bold"
           color={variant === 'simple' ? 'text.primary' : 'white'}
         >
+          {playlist.privacy === 'PRIVATE' && (
+            <LockIcon sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+          )}
           {title}
         </Typography>
 

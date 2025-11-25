@@ -5,9 +5,11 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { getUnapprovedSongs, approveSong, rejectSong } from '../services/songService';
+import { useNotifications } from '../hooks/useNotifications';
 
 export default function AdminSongModerationPage() {
   const theme = useTheme();
+  const { notifySuccess, notifyError } = useNotifications();
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,20 +45,22 @@ export default function AdminSongModerationPage() {
   const handleApprove = async (songId) => {
     try {
       await approveSong(songId);
+      notifySuccess('Duyệt bài hát thành công');
       // Refresh the list after approval
       fetchUnapprovedSongs();
     } catch (error) {
-      setErr('Lỗi khi phê duyệt bài hát: ' + error.message);
+      notifyError('Lỗi khi phê duyệt bài hát: ' + error.message);
     }
   };
 
   const handleReject = async (songId) => {
     try {
       await rejectSong(songId);
+      notifySuccess('Từ chối bài hát thành công');
       // Refresh the list after rejection
       fetchUnapprovedSongs();
     } catch (error) {
-      setErr('Lỗi khi từ chối bài hát: ' + error.message);
+      notifyError('Lỗi khi từ chối bài hát: ' + error.message);
     }
   };
 
