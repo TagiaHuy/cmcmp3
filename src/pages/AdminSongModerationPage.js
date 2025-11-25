@@ -7,8 +7,6 @@ import { useTheme } from '@mui/material/styles';
 import { getUnapprovedSongs, approveSong, rejectSong } from '../services/songService';
 import { useNotifications } from '../hooks/useNotifications';
 
-import { useNotifications } from '../hooks/useNotifications';
-
 export default function AdminSongModerationPage() {
   const theme = useTheme();
   const { notifySuccess, notifyError } = useNotifications();
