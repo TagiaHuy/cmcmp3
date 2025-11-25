@@ -19,6 +19,15 @@ const toArray = (value) => {
   return [value];
 };
 
+// 🟢 Chuẩn hóa tags (tránh bị object)
+const normalizeTags = (tags) => {
+  if (!tags) return "Không có";
+  if (typeof tags === "string") return tags;
+  if (Array.isArray(tags)) return tags.map(t => t.name || t).join(", ");
+  if (typeof tags === "object") return tags.name || JSON.stringify(tags);
+  return String(tags);
+};
+
 const mapSong = (song) => {
   if (!song) return null;
   const artistEntities = toArray(song.artists);
@@ -28,6 +37,7 @@ const mapSong = (song) => {
     artistEntities,
     tagEntities,
     artists: normalizeArtists(song.artists),
+    tags: normalizeTags(song.tags), // Add this line
     mediaSrc: song.filePath,
   };
 };
@@ -321,4 +331,92 @@ export const updateUploadedSong = async (id, formData) => {
     console.error(`Error updating uploaded song ${id}:`, error);
     throw error;
   }
+};
+
+export const getSongsByUserId = async (userId, page = 0, size = 10, signal) => {
+    const queryParams = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+    }).toString();
+
+    const res = await fetch(`${API_BASE_URL}/api/users/${userId}/songs?${queryParams}`, {
+        method: "GET",
+        headers: {
+            ...authHeader(),
+            Accept: "application/json",
+        },
+        signal,
+    });
+
+    const data = await safeJson(res);
+
+    if (!res.ok) {
+        const msg = data?.message || data?.error || `HTTP ${res.status}`;
+        throw new Error(msg);
+    }
+
+    return data;
+};
+
+
+export const getUnapprovedSongs = async (page = 0, size = 10, signal) => {
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+  }).toString();
+
+  const res = await fetch(`${API_BASE_URL}/api/admin/songs/pending?${queryParams}`, {
+    method: "GET",
+    headers: {
+      ...authHeader(),
+      Accept: "application/json",
+    },
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg = data?.message || data?.error || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+
+  return {
+    content: Array.isArray(data.content) ? data.content.map(mapSong) : [],
+    totalPages: data.totalPages || 0,
+  };
+};
+
+export const approveSong = async (songId) => {
+  const res = await fetch(`${API_BASE_URL}/api/admin/songs/${songId}/approve`, {
+    method: "POST",
+    headers: {
+      ...authHeader(),
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await safeJson(res);
+  if (!res.ok) {
+    const msg = data?.message || data?.error || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return mapSong(data);
+};
+
+export const rejectSong = async (songId) => {
+  const res = await fetch(`${API_BASE_URL}/api/admin/songs/${songId}/reject`, {
+    method: "POST",
+    headers: {
+      ...authHeader(),
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await safeJson(res);
+  if (!res.ok) {
+    const msg = data?.message || data?.error || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return mapSong(data);
 };
