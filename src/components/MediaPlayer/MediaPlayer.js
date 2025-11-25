@@ -55,6 +55,13 @@ const MediaPlayer = () => {
     const storedVolume = localStorage.getItem('cmcmp3-volume');
     return storedVolume !== null ? parseFloat(storedVolume) : 0.5;
   });
+  const [selectedLyric, setSelectedLyric] = useState(null);
+
+  const handleCardTimeUpdate = (index, startTime, endTime) => {
+    // Here you would typically update the lyrics in your state management
+    // For now, we'll just log it
+    console.log(`Lyric ${index} updated: ${startTime} - ${endTime}`);
+  };
 
   useEffect(() => {
     if (playerRef.current) {
@@ -237,6 +244,10 @@ const MediaPlayer = () => {
             duration={duration}
             onSeek={handleSeek}
             textColor={textColor}
+            lyrics={currentTrack?.lyrics}
+            onCardTimeUpdate={handleCardTimeUpdate}
+            selectedLyric={selectedLyric}
+            onSelectLyric={setSelectedLyric}
           />
         </Stack>
 
