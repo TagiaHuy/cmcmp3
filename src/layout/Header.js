@@ -1,6 +1,6 @@
 // src/layout/Header.js
-import React, { useState } from 'react';
-import { AppBar, Toolbar, Box, IconButton } from '@mui/material';
+import React from 'react';
+import { AppBar, Toolbar, Box } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import Search from '../components/Search/Search';
 import UpgradeButton from '../components/Button/Specific/UpgradeButton';
@@ -8,16 +8,9 @@ import SettingButton from '../components/Button/Specific/SettingButton';
 import Navigation from '../components/Navigation/Navigation';
 import ThemeToggleButton from '../components/Button/Specific/ThemeToggleButton';
 import UserAvatarMenu from '../components/MenuItem/UserAvatarMenu';
-import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
-import NotificationHistory from '../components/Notification/NotificationHistory';
+import NotificationBell from '../components/Notification/NotificationBell';
 
 function Header() {
-  const [showNotifications, setShowNotifications] = useState(false);
-
-  const toggleNotifications = () => {
-    setShowNotifications((prev) => !prev);
-  };
-
   return (
     <AppBar
       position="sticky"
@@ -36,10 +29,7 @@ function Header() {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <UpgradeButton />
-          <IconButton sx={{ color: (theme) => theme.palette.text.primary }} onClick={toggleNotifications}>
-            <NotificationsNoneOutlinedIcon />
-          </IconButton>
-          {showNotifications && <NotificationHistory onClose={toggleNotifications} />}
+          <NotificationBell />
           <SettingButton />
           {/* ✅ Luôn hiển thị icon tài khoản; menu bên trong sẽ tự phân nhánh theo trạng thái đăng nhập */}
           <UserAvatarMenu />
