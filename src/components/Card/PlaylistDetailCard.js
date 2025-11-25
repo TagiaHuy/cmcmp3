@@ -1,13 +1,14 @@
 import React from 'react';
-import { Box, Typography, Stack, Divider } from '@mui/material';
+import { Box, Typography, Stack, Divider, Button } from '@mui/material';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic'; // Icon Lượt Nghe
 import FavoriteIcon from '@mui/icons-material/Favorite'; // Icon Lượt Thích
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // Icon Số Bài hát
+import LockIcon from '@mui/icons-material/Lock'; // Icon cho playlist riêng tư
 import FavoritePlaylistButton from '../Button/Specific/FavoritePlaylistButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import PlayallButton from '../Button/Specific/PlayallButton'; // Thường là nút nổi bật
 
-const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying }) => {
+const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying, isOwner, onDelete, onEdit }) => {
   // Giả định thêm trường 'creator' hoặc 'author' vào object playlist
   const creatorName = playlist.creator || "Người dùng"; // Mặc định nếu không có
 
@@ -59,6 +60,7 @@ const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying }) => {
             color="text.primary" 
             fontWeight={800} // Cực kỳ đậm
           >
+            {playlist.status === 'PRIVATE' && <LockIcon fontSize="large" sx={{ verticalAlign: 'middle', mr: 1 }} />}
             {playlist.title}
           </Typography>
 
@@ -124,6 +126,12 @@ const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying }) => {
         
         {/* Các nút phụ (Kích thước tiêu chuẩn) */}
         <FavoritePlaylistButton playlistId={playlist.id} isFavorite={playlist.isFavorite} />
+        {isOwner && (
+          <>
+            <Button variant="outlined" color="primary" onClick={onEdit}>Chỉnh sửa</Button>
+            <Button variant="outlined" color="error" onClick={onDelete}>Xóa</Button>
+          </>
+        )}
         <MoreButton />
       </Box>
       
