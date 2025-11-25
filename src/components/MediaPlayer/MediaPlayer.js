@@ -15,10 +15,10 @@ import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+import AdvancedSeekHandle from './AdvancedSeekHandle';
 import LyricsModal from '../Lyric/LyricsModal';
 
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
-
 const MediaPlayer = () => {
   const {
     currentPlayingSrc,
@@ -150,9 +150,6 @@ const MediaPlayer = () => {
     handleEnded();
   };
 
-  const safeDuration = Number.isFinite(duration) ? duration : 0;
-  const safeCurrent = Math.min(Number.isFinite(currentTime) ? currentTime : 0, safeDuration);
-
   const format = (t) => {
     if (!Number.isFinite(t) || t <= 0) return '0:00';
     const m = Math.floor(t / 60);
@@ -229,43 +226,18 @@ const MediaPlayer = () => {
             handleRepeat={cycleRepeatMode}
           />
 
-          {/* Progress Bar */}
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-            <audio
-              ref={audioRef}
-              src={currentPlayingSrc || undefined}
-              preload="metadata"
-              onEnded={onEnded}
-            />
-
-            <Typography variant="body2" sx={{ color: textColor, width: 40 }}>
-              {format(safeCurrent)}
-            </Typography>
-
-            <Slider
-              value={safeCurrent}
-              min={0}
-              max={safeDuration}
-              step={1}
-              onChange={handleSeek}
-              sx={{
-                color: '#9353FF',
-                flexGrow: 1,
-                '& .MuiSlider-track': { border: 'none' },
-                '& .MuiSlider-thumb': {
-                  width: 14,
-                  height: 14,
-                  backgroundColor: '#fff',
-                  border: '2px solid #9353FF',
-                  '&:hover': { boxShadow: '0 0 0 8px rgba(147, 83, 255, 0.16)' },
-                },
-              }}
-            />
-
-            <Typography variant="body2" sx={{ color: textColor, width: 40, textAlign: 'right' }}>
-              {format(safeDuration)}
-            </Typography>
-          </Stack>
+          <audio
+            ref={audioRef}
+            src={currentPlayingSrc || undefined}
+            preload="metadata"
+            onEnded={onEnded}
+          />
+          <AdvancedSeekHandle
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={handleSeek}
+            textColor={textColor}
+          />
         </Stack>
 
         {/* RIGHT SECTION — Volume + Playlist */}
