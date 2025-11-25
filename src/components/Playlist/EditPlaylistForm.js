@@ -25,7 +25,7 @@ import usePlaylists from '../../hooks/usePlaylists';
 const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
   const [name, setName] = useState(playlist.title);
   const [description, setDescription] = useState(playlist.description || '');
-  const [isPrivate, setIsPrivate] = useState(playlist.status === 'PRIVATE');
+  const [isPrivate, setIsPrivate] = useState(playlist.privacy === 'PRIVATE');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(playlist.imageUrl || null);
   const [currentSongs, setCurrentSongs] = useState([]);
@@ -94,7 +94,7 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
     const formData = new FormData();
     formData.append('title', name);
     formData.append('description', description);
-    formData.append('status', isPrivate ? 'PRIVATE' : 'PUBLIC');
+    formData.append('privacy', isPrivate ? 'PRIVATE' : 'PUBLIC');
     if (imageFile) {
       formData.append('imageFile', imageFile);
     }

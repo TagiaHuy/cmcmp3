@@ -161,7 +161,7 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default', isLoading }) 
           fontWeight="bold"
           color={variant === 'simple' ? 'text.primary' : 'white'}
         >
-          {playlist.status === 'PRIVATE' && (
+          {playlist.privacy === 'PRIVATE' && (
             <LockIcon sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
           )}
           {title}

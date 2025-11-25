@@ -18,7 +18,7 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('description', description);
-    formData.append('status', isPrivate ? 'PRIVATE' : 'PUBLIC');
+    formData.append('privacy', isPrivate ? 'PRIVATE' : 'PUBLIC');
     if (imageFile) {
       formData.append('imageFile', imageFile);
     }

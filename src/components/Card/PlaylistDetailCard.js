@@ -60,7 +60,7 @@ const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying, isOwner, 
             color="text.primary" 
             fontWeight={800} // Cực kỳ đậm
           >
-            {playlist.status === 'PRIVATE' && <LockIcon fontSize="large" sx={{ verticalAlign: 'middle', mr: 1 }} />}
+            {playlist.privacy === 'PRIVATE' && <LockIcon fontSize="large" sx={{ verticalAlign: 'middle', mr: 1 }} />}
             {playlist.title}
           </Typography>
 

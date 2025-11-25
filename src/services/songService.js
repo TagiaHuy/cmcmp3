@@ -333,6 +333,29 @@ export const updateUploadedSong = async (id, formData) => {
   }
 };
 
+export const updateUploadedSongStatus = async (id, status) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/uploaded/${id}?status=${status}`, {
+      method: "PUT",
+      headers: {
+        ...authHeader(),
+      },
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) {
+      const msg = data?.message || data?.error || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    return mapSong(data);
+  } catch (error) {
+    console.error(`Error updating status for uploaded song ${id}:`, error);
+    throw error;
+  }
+};
+
+
 export const getSongsByUserId = async (userId, page = 0, size = 10, signal) => {
     const queryParams = new URLSearchParams({
         page: page.toString(),
