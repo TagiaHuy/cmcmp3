@@ -1,4 +1,3 @@
-import { NotificationProvider } from './context/NotificationContext';
 // src/App.js
 import React, { useEffect } from 'react';
 import './App.css';
@@ -58,7 +57,6 @@ function App() {
   }, [theme]);
 
   return (
-    <NotificationProvider>
       <MainLayout>
         <Routes>
           {/* Public */}
@@ -183,7 +181,6 @@ function App() {
           theme="colored"
         />
       </MainLayout>
-    </NotificationProvider>
   );
 }
 
