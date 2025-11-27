@@ -18,7 +18,6 @@ function RankNumber({ rank }) {
       : rank === 2
       ? "linear-gradient(90deg,#43e97b,#fef9a7)"
       : "linear-gradient(90deg,#fa709a,#fee140)"
-      : undefined;
 
   return (
     <Typography
@@ -201,6 +200,8 @@ export default function ZingChartSection() {
     
     // Find the index of the clicked song within the top3 array
     const startIndex = top3.findIndex(s => s.id === item.id || s.rank === item.rank);
+
+    console.log("Playing Zing Chart song:", item.title, "mediaSrc:", item.mediaSrc);
 
     // Load the entire top3 list into the queue and start playing from the clicked song
     loadQueue(top3.map(s => ({
