@@ -8,28 +8,27 @@ import vnCover from "../assets/vn.png";
 import usukCover from "../assets/usuk.png";
 import kpopCover from "../assets/kpop.png";
 
-// Removed local artist/song specific assets as per user's request to use API images.
-// These were used for patching covers and mediaSrc, which will now come directly from API.
-
-// ----- cấu hình lịch cập nhật -----
+// ----- cấu hình lịch cập nhật theo mốc 2 giờ -----
 const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 
-// ms đến mốc 2 giờ chẵn tiếp theo: 00:00, 02:00, 04:00, ...
+// Tính ms đến mốc 2 giờ chẵn tiếp theo: 00:00, 02:00, 04:00, ...
 function msUntilNextEvenHour() {
   const now = new Date();
   const currHour = now.getHours();
+
+  // Giờ chẵn tiếp theo (0,2,4,...,22)
   const nextEvenHour = (Math.floor(currHour / 2) * 2 + 2) % 24;
 
   const next = new Date(now);
   next.setHours(nextEvenHour, 0, 0, 0);
-  // nếu qua ngày (VD 23:xx → nextEvenHour = 0)
-  if (next <= now) next.setDate(next.getDate() + 1);
+
+  // Nếu đã quá giờ đó thì nhảy sang ngày hôm sau
+  if (next <= now) {
+    next.setDate(next.getDate() + 1);
+  }
 
   return next - now;
 }
-
-/* ---------- utils ---------- */
-// Removed as no longer used (norm, TITLE_TO_MP3)
 
 export default function useZingChart() {
   const [loading, setLoading] = useState(true);
@@ -40,49 +39,56 @@ export default function useZingChart() {
   const timeoutRef  = useRef(null);
   const mountedRef  = useRef(true);
 
-  // tiles banner dưới
+  // tiles banner dưới (fake, theo đúng UI hiện tại)
   const tiles = useMemo(
     () => [
-      { code: "vn", cover: vnCover },
+      { code: "vn",   cover: vnCover },
       { code: "usuk", cover: usukCover },
       { code: "kpop", cover: kpopCover },
     ],
     []
   );
 
-  // pickCover function removed as per user's request to use API images
-
-  // gọi API + patch top3 (cover, mediaSrc, percent)
+  // Gọi API + patch thêm mediaSrc cho top3 & items
   const fetchData = useCallback(
     async (signal) => {
       try {
         setError(null);
         const realtime = await getRealtimeChart(signal); // GET /api/charts/realtime
-        if (!realtime) return; // phòng case ETag trả 304
 
-        // Ensure mediaSrc is present for playable items, with a fallback if Backend doesn't provide it
+        // Phòng case dùng ETag / cache control trả 304
+        if (!realtime) return;
+
         const patchedRealtime = {
           ...realtime,
-                      top3: (realtime?.top3 ?? []).map(s => ({
-                        ...s,
-                        mediaSrc: `${API_BASE_URL}/api/songs/stream/${s.id}`
-                      })),
-                      items: (realtime?.items ?? []).map(s => ({
-                        ...s,
-                        mediaSrc: `${API_BASE_URL}/api/songs/stream/${s.id}`
-                      })),        };
-        if (mountedRef.current) setData(patchedRealtime);
+          top3: (realtime?.top3 ?? []).map((s) => ({
+            ...s,
+            mediaSrc: `${API_BASE_URL}/api/songs/stream/${s.id}`,
+          })),
+          items: (realtime?.items ?? []).map((s) => ({
+            ...s,
+            mediaSrc: `${API_BASE_URL}/api/songs/stream/${s.id}`,
+          })),
+        };
+
+        if (mountedRef.current) {
+          setData(patchedRealtime);
+        }
       } catch (err) {
-        if (err instanceof Error && err.name === 'AbortError') {
-          // Request was aborted, no need to set error.
-        } else {
-          if (mountedRef.current) setError(err instanceof Error ? err.message : "Fetch failed");
+        // Bị abort do unmount / đổi tab → bỏ qua
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+        if (mountedRef.current) {
+          setError(err instanceof Error ? err.message : "Fetch failed");
         }
       } finally {
-        if (mountedRef.current) setLoading(false);
+        if (mountedRef.current) {
+          setLoading(false);
+        }
       }
     },
-    [] // Dependencies adjusted as pickCover is removed
+    []
   );
 
   // căn mốc 2 tiếng: fetch ngay, chờ tới mốc 2h tiếp theo → fetch, rồi lặp 2h/lần
@@ -91,53 +97,78 @@ export default function useZingChart() {
     const ac = new AbortController();
 
     const clearTimers = () => {
-      if (timeoutRef.current)  { clearTimeout(timeoutRef.current);  timeoutRef.current = null; }
-      if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
 
-    // 1) lần đầu
+    // 1) lần đầu: load ngay
     setLoading(true);
     fetchData(ac.signal);
 
     // 2) chờ đến mốc 2 giờ tiếp theo, sau đó setInterval 2 giờ
     const schedule = () => {
       clearTimers();
+
+      // chờ tới mốc 2h chẵn tiếp theo
       timeoutRef.current = setTimeout(() => {
-        fetchData(); // đến mốc → refresh
+        // đến mốc → refresh 1 lần
+        fetchData();
+
+        // rồi cứ 2h/lần
         intervalRef.current = setInterval(() => {
           fetchData();
-        }, TWO_HOURS_MS); // lặp đều mỗi 2 giờ
+        }, TWO_HOURS_MS);
       }, msUntilNextEvenHour());
     };
+
     schedule();
 
-    // 3) tự cập nhật khi tab visible
+    // 3) tự cập nhật khi tab visible lại
     const onVisibility = () => {
       if (document.visibilityState === "visible") {
-        fetchData();   // quay lại tab → làm mới
-        schedule();    // căn lại lịch (phòng máy ngủ/đổi giờ)
+        fetchData();   // quay lại tab → refresh ngay
+        schedule();    // căn lại lịch phòng máy sleep / đổi giờ
       }
     };
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
       mountedRef.current = false;
+      ac.abort();      // hủy request đầu tiên nếu còn đang chạy
       clearTimers();
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [fetchData]);
 
-  // làm mới thủ công
+  // Làm mới thủ công (nút "refresh" nếu sau này bạn thêm)
   const refresh = useCallback(() => {
     const ac = new AbortController();
     fetchData(ac.signal);
   }, [fetchData]);
 
-  // dữ liệu đã map sẵn cho Recharts
+  // Dataset cho Recharts: dùng trực tiếp lineChartData từ BE
   const chartDataset = useMemo(() => {
-    // Use lineChartData directly as provided by Backend
     return data?.lineChartData || [];
   }, [data]);
 
-  return { loading, data, chartDataset, tiles, error, refresh, lineChartMetadata: data?.lineChartMetadata };
+  // Metadata cho từng line: tên bài, nghệ sĩ, cover,...
+  const lineChartMetadata = useMemo(() => {
+    return data?.lineChartMetadata || {};
+  }, [data]);
+
+  return {
+    loading,
+    data,
+    chartDataset,       // dùng cho <LineChart data={chartDataset} ... />
+    tiles,
+    error,
+    refresh,
+    lineChartMetadata,  // dùng cho tooltip hiển thị tên bài / ảnh
+  };
 }

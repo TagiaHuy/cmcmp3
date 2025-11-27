@@ -1,9 +1,25 @@
 // src/components/Chart/ZingChartSection.jsx
 import React, { useMemo } from "react";
-import { Box, Paper, Typography, Button, Stack, Skeleton, IconButton, Tooltip as MuiTooltip, Avatar } from "@mui/material";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer
-} from "recharts"; // Removed ReferenceLine
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Stack,
+  Skeleton,
+  IconButton,
+  Tooltip as MuiTooltip,
+  Avatar,
+} from "@mui/material";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as ReTooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { useTheme, alpha } from "@mui/material/styles";
 import useZingChart from "../../hooks/useZingChart";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
@@ -17,7 +33,7 @@ function RankNumber({ rank }) {
       ? "linear-gradient(90deg,#4facfe,#38f9d7)"
       : rank === 2
       ? "linear-gradient(90deg,#43e97b,#fef9a7)"
-      : "linear-gradient(90deg,#fa709a,#fee140)"
+      : "linear-gradient(90deg,#fa709a,#fee140)";
 
   return (
     <Typography
@@ -115,8 +131,12 @@ function TopItem({ item, onPlay }) {
       </Box>
 
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography noWrap sx={{ fontWeight: 700 }}>{item.title}</Typography>
-        <Typography noWrap variant="body2" color="text.secondary">{item.artists}</Typography>
+        <Typography noWrap sx={{ fontWeight: 700 }}>
+          {item.title}
+        </Typography>
+        <Typography noWrap variant="body2" color="text.secondary">
+          {item.artists}
+        </Typography>
       </Box>
 
       <Typography sx={{ fontWeight: 800 }}>{item.percent}%</Typography>
@@ -125,17 +145,18 @@ function TopItem({ item, onPlay }) {
 }
 
 /* --- Tooltip hiển thị theo tên bài hát Top 3 --- */
-function SongTooltip({ active, payload, label, metadata }) { // Changed 'series' to 'metadata'
+function SongTooltip({ active, payload, label, metadata }) {
   if (!active || !payload?.length) return null;
+
   const rows = [...payload].sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
   return (
     <Paper elevation={3} sx={{ p: 1, borderRadius: 1.5, minWidth: 220 }}>
       <Typography variant="caption">⏱ {label}</Typography>
-      <Stack spacing={0.6} sx={{ mt: .6 }}>
+      <Stack spacing={0.6} sx={{ mt: 0.6 }}>
         {rows.map((p) => {
-          const key = p.dataKey; // e.g., 'song_52'
-          const songMeta = metadata?.[key] || {}; // Use metadata to get song info
+          const key = p.dataKey; // e.g. "song_52"
+          const songMeta = metadata?.[key] || {};
           return (
             <Stack key={key} direction="row" spacing={1} alignItems="center">
               {songMeta.cover ? <Avatar src={songMeta.cover} sx={{ width: 22, height: 22 }} /> : null}
@@ -151,21 +172,20 @@ function SongTooltip({ active, payload, label, metadata }) { // Changed 'series'
   );
 }
 
-// Helper to generate consistent colors for the lines
+// Palette màu cho line
 const lineColors = [
-  "#8884d8", // Purple
-  "#82ca9d", // Green
-  "#ffc658", // Yellow
-  "#ff7300", // Orange
-  "#00c49f", // Teal
-  "#d0ed57", // Lime
-  "#a4de6c", // Light Green
-  "#ff9800", // Deep Orange
-  "#f44336", // Red
-  "#2196f3", // Blue
+  "#8884d8",
+  "#82ca9d",
+  "#ffc658",
+  "#ff7300",
+  "#00c49f",
+  "#d0ed57",
+  "#a4de6c",
+  "#ff9800",
+  "#f44336",
+  "#2196f3",
 ];
 
-// Simple hashing to get consistent color for a given key, or cycle through palette
 const getColor = (key) => {
   let hash = 0;
   for (let i = 0; i < key.length; i++) {
@@ -175,13 +195,18 @@ const getColor = (key) => {
   return lineColors[index];
 };
 
-
 /* ========== Main ========== */
 export default function ZingChartSection() {
   const { loading, data, tiles, chartDataset, lineChartMetadata } = useZingChart();
   const theme = useTheme();
   const { loadQueue, currentTrack } = useMediaPlayer();
   const navigate = useNavigate();
+
+  // 🔹 Hook phải nằm TRƯỚC mọi return
+  const lineKeys = useMemo(
+    () => (lineChartMetadata ? Object.keys(lineChartMetadata) : []),
+    [lineChartMetadata]
+  );
 
   if (loading) {
     return (
@@ -192,19 +217,18 @@ export default function ZingChartSection() {
   }
   if (!data) return null;
 
-  // Top 3 từ BE → dùng làm nhãn + ảnh
   const top3 = Array.isArray(data?.top3) ? data.top3 : [];
 
   const onPlayTop = (item) => {
-    if (!item) return;
-    
-    // Find the index of the clicked song within the top3 array
-    const startIndex = top3.findIndex(s => s.id === item.id || s.rank === item.rank);
+    if (!item || !top3.length) return;
+
+    const startIndex = top3.findIndex(
+      (s) => s.id === item.id || s.rank === item.rank
+    );
 
     console.log("Playing Zing Chart song:", item.title, "mediaSrc:", item.mediaSrc);
 
-    // Load the entire top3 list into the queue and start playing from the clicked song
-    loadQueue(top3.map(s => ({
+    const queue = top3.map((s) => ({
       id: s.id ?? `zingchart-${s.rank}`,
       title: s.title,
       artists: s.artists,
@@ -213,7 +237,9 @@ export default function ZingChartSection() {
       percent: s.percent,
       rank: s.rank,
       source: "zingchart",
-    })), startIndex !== -1 ? startIndex : 0);
+    }));
+
+    loadQueue?.(queue, startIndex !== -1 ? startIndex : 0);
   };
 
   return (
@@ -221,9 +247,13 @@ export default function ZingChartSection() {
       {/* Khối lớn: top3 + line chart */}
       <Paper
         sx={{
-          p: 2, borderRadius: 3,
+          p: 2,
+          borderRadius: 3,
           background: (t) =>
-            `linear-gradient(135deg, ${alpha(t.palette.primary.dark, .25)} 0%, ${alpha(t.palette.secondary.dark, .25)} 100%)`,
+            `linear-gradient(135deg, ${alpha(
+              t.palette.primary.dark,
+              0.25
+            )} 0%, ${alpha(t.palette.secondary.dark, 0.25)} 100%)`,
         }}
       >
         <Stack direction="row" spacing={2}>
@@ -274,8 +304,8 @@ export default function ZingChartSection() {
                         boxShadow: "0 0 0 0 rgba(255,255,255,.35)",
                       },
                       "@keyframes pulse": {
-                        "0%":   { boxShadow: "0 0 0 0 rgba(255,255,255,.35)" },
-                        "70%":  { boxShadow: "0 0 0 10px rgba(255,255,255,0)" },
+                        "0%": { boxShadow: "0 0 0 0 rgba(255,255,255,.35)" },
+                        "70%": { boxShadow: "0 0 0 10px rgba(255,255,255,0)" },
                         "100%": { boxShadow: "0 0 0 0 rgba(255,255,255,0)" },
                       },
                     }}
@@ -296,7 +326,13 @@ export default function ZingChartSection() {
                   cover: displayCover,
                 };
 
-                return <TopItem key={item.rank} item={displayItem} onPlay={onPlayTop} />;
+                return (
+                  <TopItem
+                    key={item.rank}
+                    item={displayItem}
+                    onPlay={onPlayTop}
+                  />
+                );
               })}
             </Stack>
 
@@ -304,7 +340,7 @@ export default function ZingChartSection() {
               variant="outlined"
               size="small"
               sx={{ mt: 2, borderRadius: 999 }}
-              onClick={() => navigate('/zing-chart')}
+              onClick={() => navigate("/zing-chart")}
             >
               Xem thêm
             </Button>
@@ -313,7 +349,10 @@ export default function ZingChartSection() {
           {/* Right: chart */}
           <Box sx={{ flex: 1, minWidth: 0, height: 320 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartDataset} margin={{ left: 8, right: 16, top: 10, bottom: 10 }}>
+              <LineChart
+                data={chartDataset}
+                margin={{ left: 8, right: 16, top: 10, bottom: 10 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.15} />
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} unit="%" domain={[0, 100]} />
@@ -321,16 +360,16 @@ export default function ZingChartSection() {
                 {/* Tooltip hiển thị theo tên bài hát + ảnh */}
                 <ReTooltip content={<SongTooltip metadata={lineChartMetadata} />} />
 
-                {/* Dynamically generate Lines from lineChartMetadata */}
-                {lineChartMetadata && Object.keys(lineChartMetadata).map((key) => { // Removed index
-                  const songMeta = lineChartMetadata[key];
+                {/* Vẽ line theo các key song_xxx từ BE */}
+                {lineKeys.map((key) => {
+                  const songMeta = lineChartMetadata?.[key] || {};
                   return (
                     <Line
                       key={key}
-                      name={`${songMeta.title} - ${songMeta.artists}`}
+                      name={`${songMeta.title || key} - ${songMeta.artists || ""}`}
                       type="monotone"
-                      dataKey={key} // e.g., song_52
-                      stroke={getColor(key)} // Dynamic color
+                      dataKey={key}
+                      stroke={getColor(key)}
                       dot={{ r: 2 }}
                       activeDot={{ r: 4 }}
                       strokeWidth={2}
@@ -362,7 +401,13 @@ export default function ZingChartSection() {
               alignItems: "flex-end",
             }}
           >
-            <Typography sx={{ fontWeight: 900, color: "#fff", textShadow: "0 1px 2px rgba(0,0,0,.5)" }}>
+            <Typography
+              sx={{
+                fontWeight: 900,
+                color: "#fff",
+                textShadow: "0 1px 2px rgba(0,0,0,.5)",
+              }}
+            >
               {t.title}
             </Typography>
           </Paper>
