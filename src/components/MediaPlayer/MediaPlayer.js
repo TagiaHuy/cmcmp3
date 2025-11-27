@@ -34,6 +34,7 @@ const MediaPlayer = () => {
     toggleLyrics,
     setMediaPlayerHeight,
     updateSongInQueue,
+    isEditingLyrics,
   } = useMediaPlayer();
 
   const { currentTheme } = useContext(ThemeContext);
@@ -256,22 +257,24 @@ const MediaPlayer = () => {
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+          zIndex: (theme) => theme.zIndex.modal + 21,
         }}
       >
-        <AdvancedSeekHandle
-            currentTime={currentTime}
-            duration={duration}
-            onSeek={handleSeek}
-            textColor={textColor}
-            lyrics={currentTrack?.lyrics}
-            onCardTimeUpdate={handleCardTimeUpdate}
-            selectedLyric={selectedLyric}
-            onSelectLyric={setSelectedLyric}
-            onCardTextUpdate={handleCardTextUpdate}
-            onCardAdd={handleCardAdd}
-            onCardDelete={handleCardDelete}
-        />
+        {isEditingLyrics && (
+          <AdvancedSeekHandle
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={handleSeek}
+              textColor={textColor}
+              lyrics={currentTrack?.lyrics}
+              onCardTimeUpdate={handleCardTimeUpdate}
+              selectedLyric={selectedLyric}
+              onSelectLyric={setSelectedLyric}
+              onCardTextUpdate={handleCardTextUpdate}
+              onCardAdd={handleCardAdd}
+              onCardDelete={handleCardDelete}
+          />
+        )}
         <Box
         sx={{
           width: '100%',

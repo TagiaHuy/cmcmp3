@@ -1,22 +1,16 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import {
     Box,
     Typography,
     IconButton,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-    DialogActions,
-    Button
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
-import UploadSongLyricEditor from '../Form/UploadSongLyricEditor';
+import { useMediaPlayer } from "../../context/MediaPlayerContext";
 
 const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
     const theme = useTheme();
-    const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const { toggleLyricsEditor } = useMediaPlayer();
 
     const containerRef = useRef(null);
     const lyricRefs = useRef([]);
@@ -26,7 +20,8 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
      * ============================== */
     useEffect(() => {
         if (!lyrics || lyrics.length === 0) return;
-        if (isEditorOpen) return;
+        // No longer checking isEditorOpen as the modal is removed
+        // if (isEditorOpen) return;
 
         const activeIndex = lyrics.findIndex((lyric, i) => {
             const nextTime = lyrics[i + 1]?.time ?? Infinity;
@@ -47,10 +42,9 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
                 behavior: "smooth",
             });
         }
-    }, [currentTime, lyrics, isEditorOpen]);
+    }, [currentTime, lyrics]); // Removed isEditorOpen from dependencies
 
-    const handleOpenEditor = () => setIsEditorOpen(true);
-    const handleCloseEditor = () => setIsEditorOpen(false);
+    // handleOpenEditor and handleCloseEditor are no longer needed
 
     /** =============================
      *  NO LYRICS UI
@@ -70,36 +64,12 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
 
                 {songId && (
                     <IconButton
-                        onClick={handleOpenEditor}
+                        onClick={toggleLyricsEditor} // Directly call toggleLyricsEditor
                         sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
                     >
                         <EditIcon />
                     </IconButton>
                 )}
-
-                <Dialog open={isEditorOpen} onClose={handleCloseEditor} maxWidth="md" fullWidth>
-                    <DialogTitle>
-                        Edit Lyrics
-                        <IconButton
-                            aria-label="close"
-                            onClick={handleCloseEditor}
-                            sx={{
-                                position: "absolute",
-                                right: 8,
-                                top: 8,
-                                color: (theme) => theme.palette.grey[500]
-                            }}
-                        >
-                            <CloseIcon />
-                        </IconButton>
-                    </DialogTitle>
-                    <DialogContent dividers>
-                        <UploadSongLyricEditor songId={songId} />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseEditor}>Close</Button>
-                    </DialogActions>
-                </Dialog>
             </Box>
         );
     }
@@ -136,7 +106,7 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
         >
             {songId && (
                 <IconButton
-                    onClick={handleOpenEditor}
+                    onClick={toggleLyricsEditor} // Directly call toggleLyricsEditor
                     sx={{ position: "absolute", top: 8, right: 16, zIndex: 10, color: "white" }}
                 >
                     <EditIcon />
@@ -175,31 +145,6 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
                     </Typography>
                 );
             })}
-
-            {/* Editor Modal */}
-            <Dialog open={isEditorOpen} onClose={handleCloseEditor} maxWidth="md" fullWidth>
-                <DialogTitle>
-                    Edit Lyrics
-                    <IconButton
-                        aria-label="close"
-                        onClick={handleCloseEditor}
-                        sx={{
-                            position: "absolute",
-                            right: 8,
-                            top: 8,
-                            color: (theme) => theme.palette.grey[500]
-                        }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent dividers>
-                    <UploadSongLyricEditor songId={songId} />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseEditor}>Done</Button>
-                </DialogActions>
-            </Dialog>
         </Box>
     );
 };

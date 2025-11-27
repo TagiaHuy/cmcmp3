@@ -4,6 +4,7 @@
   position: relative;
   cursor: pointer;
   margin-top: 10px;
+  z-index: 1321; /* To appear above the lyrics modal */
 }
 
 .advanced-seek-handle-canvas {
