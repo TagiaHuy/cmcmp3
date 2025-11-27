@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import LyricResizableCardList from './LyricResizableCardList';
 import useResizeObserver from '../../hooks/useResizeObserver';
 import './AdvancedSeekHandle.css';
+import { useMediaPlayer } from '../../context/MediaPlayerContext';
+import { updateSongLyrics } from '../../services/songService';
 
 const drawRuler = (canvas, duration, width, textColor) => {
     if (!canvas || !duration || width === 0) return;
@@ -44,6 +46,7 @@ const drawRuler = (canvas, duration, width, textColor) => {
 const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, onCardTimeUpdate, selectedLyric, onSelectLyric, onCardTextUpdate, onCardAdd, onCardDelete }) => {
   const canvasRef = useRef(null);
   const { ref: containerRef, width } = useResizeObserver();
+  const { currentTrack } = useMediaPlayer();
 
   useEffect(() => {
     drawRuler(canvasRef.current, duration, width, textColor);
@@ -60,6 +63,18 @@ const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, 
   const handleInteraction = (e) => {
     if (e.buttons === 1) { // If left mouse button is down
       handleSeek(e);
+    }
+  };
+
+  const handlePostLyrics = async () => {
+    if (currentTrack && lyrics) {
+      try {
+        await updateSongLyrics(currentTrack.id, lyrics);
+        alert('Lyrics updated successfully!');
+      } catch (error) {
+        console.error('Failed to update lyrics:', error);
+        alert('Failed to update lyrics.');
+      }
     }
   };
 
@@ -90,6 +105,9 @@ const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, 
         onCardAdd={onCardAdd}
         onCardDelete={onCardDelete}
       />
+      <div className="lyrics-actions">
+        <button className="lyrics-action-btn" onClick={handlePostLyrics}>Post Lyrics</button>
+      </div>
     </div>
   );
 };

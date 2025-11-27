@@ -20,3 +20,21 @@
   transform: translateX(-50%);
   z-index: 10;
 }
+
+.lyrics-actions {
+  display: flex;
+  gap: 10px; /* Space between buttons */
+  margin-top: 10px;
+  justify-content: flex-end; /* Align buttons to the right */
+  padding-right: 10px; /* Padding from the right edge */
+}
+
+.lyrics-action-btn {
+  padding: 8px 12px;
+  background-color: #9353FF;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 20;
+}
