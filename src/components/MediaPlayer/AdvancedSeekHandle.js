@@ -5,6 +5,15 @@ import './AdvancedSeekHandle.css';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { updateSongLyrics } from '../../services/songService';
 
+// Helper function to format time (seconds to MM:SS)
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  const formattedMinutes = String(minutes).padStart(2, '0');
+  const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+  return `${formattedMinutes}:${formattedSeconds}`;
+};
+
 const drawRuler = (canvas, duration, width, textColor) => {
     if (!canvas || !duration || width === 0) return;
 
@@ -92,7 +101,9 @@ const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, 
         <div
           className="advanced-seek-handle-scrubber"
           style={{ left: `${scrubberPosition}px` }}
-        />
+        >
+          <div className="scrubber-time">{formatTime(currentTime)}</div>
+        </div>
       )}
       <LyricResizableCardList 
         lyrics={lyrics} 
@@ -105,7 +116,7 @@ const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, 
         onCardAdd={onCardAdd}
         onCardDelete={onCardDelete}
       />
-      <div className="lyrics-actions">
+      <div className="lyrics-actions" style={{display: 'flex', justifyContent: 'flex-end', marginRight: 30}}>
         <button className="lyrics-action-btn" onClick={handlePostLyrics}>Post Lyrics</button>
       </div>
     </div>
