@@ -227,7 +227,7 @@ export const likeSong = async (id) => {
       const errorData = await res.json().catch(() => ({ message: `HTTP error! status: ${res.status}` }));
       throw new Error(errorData.message);
     }
-    if (res.status === 204 || res.status === 200) { 
+    if (res.status === 204 || res.status === 200) {
         return { success: true };
     }
     return await res.json();
