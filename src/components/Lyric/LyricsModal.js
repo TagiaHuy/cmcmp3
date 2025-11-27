@@ -16,12 +16,12 @@ const LyricsModal = () => {
                     width: '100%',
                     height: `calc(100vh - ${mediaPlayerHeight}px)`,
 
-                    // 🌈 Gradient + Blur giống hình
+                    // Mềm hơn và dễ nhìn hơn
                     background: `
-                        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15), rgba(0,0,0,0) 70%),
-                        linear-gradient(135deg, #3e1f6d 0%, #1b1032 100%)
+                        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.12), rgba(0,0,0,0) 70%),
+                        linear-gradient(135deg, #432b79 0%, #1b1032 100%)
                     `,
-                    backdropFilter: 'blur(20px)',
+                    backdropFilter: 'blur(22px)',
 
                     display: 'flex',
                     flexDirection: 'row',
@@ -29,13 +29,13 @@ const LyricsModal = () => {
                     justifyContent: 'center',
 
                     px: 6,
-                    zIndex: (t) => t.zIndex.modal + 10,
+                    zIndex: (t) => t.zIndex.modal + 20,
                 }}
             >
-                {/* LEFT — Album artwork */}
+                {/* LEFT — Artwork */}
                 <Box
                     sx={{
-                        flex: '0 0 380px',
+                        flex: '0 0 320px',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -46,20 +46,27 @@ const LyricsModal = () => {
                         src={currentTrack?.imageUrl}
                         alt="Artwork"
                         style={{
-                            width: '380px',
-                            height: '380px',
-                            borderRadius: '12px',
+                            width: '320px',
+                            height: '320px',
+                            borderRadius: '16px',
                             objectFit: 'cover',
-                            boxShadow: '0 12px 35px rgba(0,0,0,0.45)',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.55)',
                         }}
                     />
                 </Box>
 
-                {/* RIGHT — Lyrics */}
+                {/* RIGHT — Lyrics Center UI */}
                 <Box
                     sx={{
                         flex: 1,
-                        maxHeight: '75vh',
+                        height: '80vh',
+
+                        display: 'flex',
+                        justifyContent: 'center',
+
+                        // Để lyrics được nằm chính giữa khi ít text
+                        alignItems: 'center',
+
                         overflowY: 'auto',
                         pr: 4,
                         '&::-webkit-scrollbar': { width: '8px' },
@@ -69,12 +76,23 @@ const LyricsModal = () => {
                         },
                     }}
                 >
-                    <LyricsDisplay
-                        songId={currentTrack?.id}
-                        lyrics={currentTrack?.lyrics}
-                        currentTime={currentTime}
-                        imageUrl={null} // ❗ Không lặp lại ảnh bên phải nữa
-                    />
+                    {/* Wrapping layer để giữ center khi lyrics ít */}
+                    <Box
+                        sx={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <LyricsDisplay
+                            songId={currentTrack?.id}
+                            lyrics={currentTrack?.lyrics}
+                            currentTime={currentTime}
+
+                            // Không cần ảnh trong lyrics
+                            imageUrl={null}
+                        />
+                    </Box>
                 </Box>
             </Box>
         </Slide>

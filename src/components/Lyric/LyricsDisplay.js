@@ -1,5 +1,14 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Box, Typography, IconButton, Dialog, DialogContent, DialogTitle, DialogActions, Button } from "@mui/material";
+import {
+    Box,
+    Typography,
+    IconButton,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogActions,
+    Button
+} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
@@ -12,10 +21,12 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
     const containerRef = useRef(null);
     const lyricRefs = useRef([]);
 
-    // Auto-scroll & auto-center the active line
+    /** =============================
+     *  AUTO-CENTER ACTIVE LYRIC
+     * ============================== */
     useEffect(() => {
         if (!lyrics || lyrics.length === 0) return;
-        if (isEditorOpen) return; // Do not scroll when editor is open
+        if (isEditorOpen) return;
 
         const activeIndex = lyrics.findIndex((lyric, i) => {
             const nextTime = lyrics[i + 1]?.time ?? Infinity;
@@ -27,10 +38,9 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
 
         if (container && activeEl) {
             const containerCenter = container.clientHeight / 2;
-            const elTop = activeEl.offsetTop;
-            const elHeight = activeEl.offsetHeight;
+            const elementOffset = activeEl.offsetTop + activeEl.offsetHeight / 2;
 
-            const newScroll = elTop - containerCenter + elHeight / 2;
+            const newScroll = elementOffset - containerCenter;
 
             container.scrollTo({
                 top: newScroll,
@@ -38,33 +48,46 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
             });
         }
     }, [currentTime, lyrics, isEditorOpen]);
-    
+
     const handleOpenEditor = () => setIsEditorOpen(true);
     const handleCloseEditor = () => setIsEditorOpen(false);
 
+    /** =============================
+     *  NO LYRICS UI
+     * ============================== */
     if (!lyrics || lyrics.length === 0) {
         return (
-            <Box sx={{ mt: 2, p: 2, textAlign: "center", color: theme.palette.text.secondary, position: 'relative' }}>
+            <Box
+                sx={{
+                    mt: 2,
+                    p: 2,
+                    textAlign: "center",
+                    color: theme.palette.text.secondary,
+                    position: "relative"
+                }}
+            >
                 <Typography variant="h5">No lyrics available.</Typography>
+
                 {songId && (
                     <IconButton
                         onClick={handleOpenEditor}
-                        sx={{ position: 'absolute', top: 8, right: 8, color: 'white' }}
+                        sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
                     >
                         <EditIcon />
                     </IconButton>
                 )}
-                 <Dialog open={isEditorOpen} onClose={handleCloseEditor} maxWidth="md" fullWidth>
+
+                <Dialog open={isEditorOpen} onClose={handleCloseEditor} maxWidth="md" fullWidth>
                     <DialogTitle>
                         Edit Lyrics
                         <IconButton
                             aria-label="close"
                             onClick={handleCloseEditor}
                             sx={{
-                                position: 'absolute',
+                                position: "absolute",
                                 right: 8,
                                 top: 8,
-                                color: (theme) => theme.palette.grey[500],
+                                color: (theme) => theme.palette.grey[500]
                             }}
                         >
                             <CloseIcon />
@@ -81,14 +104,25 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
         );
     }
 
+    /** =============================
+     *  MAIN LYRIC DISPLAY
+     * ============================== */
     return (
         <Box
             ref={containerRef}
             sx={{
+                marginTop: 20,
                 width: "100%",
-                height: "75vh",
+                height: "80vh",
                 overflowY: "auto",
+                overflowX: "hidden",
                 pr: 2,
+
+                // Giữ vị trí when few lines → center vertically
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: lyrics.length < 6 ? "center" : "flex-start",
+
                 position: "relative",
 
                 "&::-webkit-scrollbar": {
@@ -97,13 +131,13 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
                 "&::-webkit-scrollbar-thumb": {
                     background: "rgba(255,255,255,0.25)",
                     borderRadius: "10px",
-                },
+                }
             }}
         >
             {songId && (
                 <IconButton
                     onClick={handleOpenEditor}
-                    sx={{ position: 'absolute', top: 8, right: 16, zIndex: 10, color: 'white' }}
+                    sx={{ position: "absolute", top: 8, right: 16, zIndex: 10, color: "white" }}
                 >
                     <EditIcon />
                 </IconButton>
@@ -118,15 +152,23 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
                     <Typography
                         key={index}
                         ref={(el) => (lyricRefs.current[index] = el)}
-                        variant="h3"
+                        variant="h4"
                         sx={{
                             fontWeight: isActive ? 700 : 400,
                             opacity: isActive ? 1 : 0.35,
                             color: "white",
+
+                            textAlign: "center",   // ⬅ CANH GIỮA NGANG
                             my: 3,
-                            transition: "all 0.4s ease",
-                            textAlign: "left",
+
                             lineHeight: 1.3,
+                            transition: "all 0.35s ease",
+
+                            // ACTIVE LINE EFFECT
+                            transform: isActive ? "scale(1.15)" : "scale(1)",
+                            textShadow: isActive
+                                ? "0px 0px 25px rgba(255,255,255,0.4)"
+                                : "none",
                         }}
                     >
                         {lyric.text}
@@ -134,6 +176,7 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
                 );
             })}
 
+            {/* Editor Modal */}
             <Dialog open={isEditorOpen} onClose={handleCloseEditor} maxWidth="md" fullWidth>
                 <DialogTitle>
                     Edit Lyrics
@@ -141,10 +184,10 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
                         aria-label="close"
                         onClick={handleCloseEditor}
                         sx={{
-                            position: 'absolute',
+                            position: "absolute",
                             right: 8,
                             top: 8,
-                            color: (theme) => theme.palette.grey[500],
+                            color: (theme) => theme.palette.grey[500]
                         }}
                     >
                         <CloseIcon />
