@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { IconButton } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-const ResizableCard = ({ children, width, left, onResize, isSelected }) => {
+const ResizableCard = ({ children, width, left, onResize, isSelected, onTextChange }) => {
     const handleMouseDownRight = (e) => {
       e.stopPropagation();
       const startX = e.clientX;
@@ -44,7 +47,12 @@ const ResizableCard = ({ children, width, left, onResize, isSelected }) => {
   
     return (
       <div style={{ width: `${width}px`, left: `${left}px`, border: isSelected ? '2px solid #9353FF' : '1px solid black', position: 'absolute', height: '50px', top: '35px' }}>
-        <div style={{ padding: '5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div 
+          style={{ padding: '5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', height: '100%', boxSizing: 'border-box' }}
+          contentEditable
+          suppressContentEditableWarning={true}
+          onBlur={e => onTextChange(e.target.innerText)}
+        >
             {children}
         </div>
         <div
@@ -75,7 +83,7 @@ const ResizableCard = ({ children, width, left, onResize, isSelected }) => {
     );
   };
 
-const LyricResizableCardList = ({ lyrics, duration, containerWidth, onCardTimeUpdate, selectedLyric, onSelectLyric }) => {
+const LyricResizableCardList = ({ lyrics, duration, containerWidth, onCardTimeUpdate, selectedLyric, onSelectLyric, onCardTextUpdate, onCardAdd, onCardDelete }) => {
   const [cards, setCards] = useState([]);
 
   useEffect(() => {
@@ -115,23 +123,71 @@ const LyricResizableCardList = ({ lyrics, duration, containerWidth, onCardTimeUp
     onCardTimeUpdate(index, newStartTime, newEndTime);
   };
 
+  const handleTextChange = (index, newText) => {
+    if (onCardTextUpdate) {
+        onCardTextUpdate(index, newText);
+    }
+
+    const newCards = [...cards];
+    if (newCards[index]) {
+        newCards[index].text = newText;
+        setCards(newCards);
+    }
+  };
+
+  const handleAddCard = () => {
+    if (onCardAdd) {
+      if (selectedLyric) {
+        const selectedIndex = cards.findIndex(c => c.id === selectedLyric.id);
+        if (selectedIndex !== -1) {
+          onCardAdd(selectedIndex);
+        } else {
+          onCardAdd(null);
+        } 
+      } else {
+        onCardAdd(null);
+      }
+    }
+  };
+
+  const handleDeleteCard = () => {
+    if (!selectedLyric) return;
+    
+    const selectedIndex = cards.findIndex(c => c.id === selectedLyric.id);
+    if (selectedIndex === -1) return;
+
+    if (onCardDelete) {
+      onCardDelete(selectedIndex);
+    }
+  };
+
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100px' }}>
-      {cards.map((card, index) => (
-        <div key={card.id} onClick={() => onSelectLyric(card)}>
-          <ResizableCard
-            width={card.width}
-            left={card.left}
-            onResize={(updates) => handleResize(index, updates)}
-            isSelected={selectedLyric && selectedLyric.id === card.id}
-          >
-            {card.text}
-          </ResizableCard>
-        </div>
-      ))}
+    <div>
+      <div style={{ marginBottom: '10px' }}>
+        <IconButton onClick={handleAddCard} color="primary" sx={{ marginRight: '10px' }}>
+          <AddIcon />
+        </IconButton>
+        <IconButton onClick={handleDeleteCard} disabled={!selectedLyric} color="error">
+          <DeleteIcon />
+        </IconButton>
+      </div>      <div style={{ position: 'relative', width: '100%', height: '100px' }}>
+        {cards.map((card, index) => (
+          <div key={card.id} onClick={() => onSelectLyric(card)}>
+            <ResizableCard
+              width={card.width}
+              left={card.left}
+              onResize={(updates) => handleResize(index, updates)}
+              isSelected={selectedLyric && selectedLyric.id === card.id}
+              onTextChange={(text) => handleTextChange(index, text)}
+            >
+              {card.text}
+            </ResizableCard>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
-export default LyricResizableCardList;
+export default LyricResizableCardList;  

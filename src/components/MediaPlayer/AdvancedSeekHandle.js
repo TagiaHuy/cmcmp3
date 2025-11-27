@@ -41,7 +41,7 @@ const drawRuler = (canvas, duration, width, textColor) => {
     }
 };
 
-const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, onCardTimeUpdate, selectedLyric, onSelectLyric }) => {
+const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, onCardTimeUpdate, selectedLyric, onSelectLyric, onCardTextUpdate, onCardAdd, onCardDelete }) => {
   const canvasRef = useRef(null);
   const { ref: containerRef, width } = useResizeObserver();
 
@@ -86,6 +86,9 @@ const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, 
         onCardTimeUpdate={onCardTimeUpdate}
         selectedLyric={selectedLyric}
         onSelectLyric={onSelectLyric}
+        onCardTextUpdate={onCardTextUpdate}
+        onCardAdd={onCardAdd}
+        onCardDelete={onCardDelete}
       />
     </div>
   );

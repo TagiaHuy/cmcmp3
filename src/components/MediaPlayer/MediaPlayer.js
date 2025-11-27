@@ -16,6 +16,7 @@ import CurrentSongCard from '../Card/CurrentSongCard';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import AdvancedSeekHandle from './AdvancedSeekHandle';
+import SeekHandle from './SeekHandle';
 import LyricsModal from '../Lyric/LyricsModal';
 
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
@@ -32,6 +33,7 @@ const MediaPlayer = () => {
     setCurrentTime,
     toggleLyrics,
     setMediaPlayerHeight,
+    updateSongInQueue,
   } = useMediaPlayer();
 
   const { currentTheme } = useContext(ThemeContext);
@@ -57,10 +59,97 @@ const MediaPlayer = () => {
   });
   const [selectedLyric, setSelectedLyric] = useState(null);
 
-  const handleCardTimeUpdate = (index, startTime, endTime) => {
-    // Here you would typically update the lyrics in your state management
-    // For now, we'll just log it
-    console.log(`Lyric ${index} updated: ${startTime} - ${endTime}`);
+  const handleCardTimeUpdate = (lyricIndex, newStartTime, newEndTime) => {
+    if (!currentTrack || !currentTrack.lyrics) return;
+
+    const newLyrics = currentTrack.lyrics.map((lyric, index) => {
+        if (index === lyricIndex) {
+            return { ...lyric, time: newStartTime };
+        }
+        return lyric;
+    });
+
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+  };
+
+  const handleCardTextUpdate = (lyricIndex, newText) => {
+    if (!currentTrack || !currentTrack.lyrics) return;
+
+    const newLyrics = currentTrack.lyrics.map((lyric, index) => {
+        if (index === lyricIndex) {
+            return { ...lyric, text: newText };
+        }
+        return lyric;
+    });
+
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+  };
+
+  const handleCardAdd = (selectedIndex) => {
+    if (!currentTrack || !currentTrack.lyrics) {
+        return;
+    }
+
+    const currentLyrics = currentTrack.lyrics;
+    let newLyrics = [...currentLyrics];
+
+    if (selectedIndex === null) {
+      // Add to the end
+      const lastLyric = currentLyrics[currentLyrics.length - 1];
+      // Default to 0 if no lyrics, otherwise 5 seconds after the last lyric's estimated end time
+      // The `duration` prop from MediaPlayer is the total track duration
+      const newTime = lastLyric ? (lastLyric.time + 5) : 0; 
+
+      const newLyric = {
+        id: Date.now(),
+        text: "New Lyric",
+        time: newTime,
+      };
+      newLyrics.push(newLyric);
+      setSelectedLyric(newLyric); // Select the newly added lyric
+    } else {
+      // Existing logic for splitting
+      if (selectedIndex < 0 || selectedIndex >= currentLyrics.length) {
+          return;
+      }
+
+      const selectedLyric = currentLyrics[selectedIndex];
+      const nextLyric = currentLyrics[selectedIndex + 1];
+
+      const selectedLyricEndTime = nextLyric ? nextLyric.time : duration;
+
+      const midTime = selectedLyric.time + (selectedLyricEndTime - selectedLyric.time) / 2;
+
+      if (midTime <= selectedLyric.time) {
+          return;
+      }
+
+      const newLyric = {
+          id: Date.now(),
+          text: "New Lyric",
+          time: midTime,
+      };
+
+      newLyrics = [
+          ...currentLyrics.slice(0, selectedIndex + 1),
+          newLyric,
+          ...currentLyrics.slice(selectedIndex + 1)
+      ];
+      setSelectedLyric(newLyric); // Select the newly added lyric
+    }
+
+    newLyrics.sort((a, b) => a.time - b.time); // Always sort to maintain order
+
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+  };
+
+  const handleCardDelete = (lyricIndex) => {
+    if (!currentTrack || !currentTrack.lyrics) return;
+
+    const newLyrics = currentTrack.lyrics.filter((_, index) => index !== lyricIndex);
+
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+    setSelectedLyric(null);
   };
 
   useEffect(() => {
@@ -169,6 +258,7 @@ const MediaPlayer = () => {
   return (
     <>
       <LyricsModal />
+      
       <Paper
         ref={playerRef}
         elevation={6}
@@ -177,6 +267,7 @@ const MediaPlayer = () => {
           px: 3,
           py: 1.5,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'space-between',
           backdropFilter: 'blur(14px)',
@@ -192,6 +283,24 @@ const MediaPlayer = () => {
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
+        <AdvancedSeekHandle
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={handleSeek}
+            textColor={textColor}
+            lyrics={currentTrack?.lyrics}
+            onCardTimeUpdate={handleCardTimeUpdate}
+            selectedLyric={selectedLyric}
+            onSelectLyric={setSelectedLyric}
+            onCardTextUpdate={handleCardTextUpdate}
+            onCardAdd={handleCardAdd}
+            onCardDelete={handleCardDelete}
+        />
+        <Box
+        sx={{
+          width: '100%',
+          display: 'flex'
+        }}>
         {/* LEFT SECTION — Song Info */}
         <Box
           sx={{
@@ -239,15 +348,13 @@ const MediaPlayer = () => {
             preload="metadata"
             onEnded={onEnded}
           />
-          <AdvancedSeekHandle
+          
+          <SeekHandle
             currentTime={currentTime}
             duration={duration}
             onSeek={handleSeek}
             textColor={textColor}
-            lyrics={currentTrack?.lyrics}
-            onCardTimeUpdate={handleCardTimeUpdate}
-            selectedLyric={selectedLyric}
-            onSelectLyric={setSelectedLyric}
+            format={format}
           />
         </Stack>
 
@@ -306,6 +413,7 @@ const MediaPlayer = () => {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+      </Box>
       </Paper>
     </>
   );
