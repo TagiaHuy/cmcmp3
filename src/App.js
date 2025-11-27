@@ -29,6 +29,7 @@ import OtpVerificationPage from './pages/OtpVerificationPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage'; // New import
+import ChartListPage from './pages/ChartListPage';
 
 /** Chặn trang công khai (login/register) nếu đã đăng nhập */
 const PublicOnlyRoute = ({ isAuthed, children }) =>
@@ -61,6 +62,7 @@ function App() {
         <Routes>
           {/* Public */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/zing-chart" element={<ChartListPage />} />
           <Route path="/test" element={<TestPage />} />
           <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
           <Route path="/recently-played" element={<RecentlyPlayedPage />} />

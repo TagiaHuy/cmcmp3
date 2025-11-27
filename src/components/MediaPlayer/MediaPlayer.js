@@ -115,7 +115,7 @@ const MediaPlayer = () => {
     listenCountedRef.current = false; // Reset for new track
 
     const handleTimeUpdate = () => {
-      if (audio.currentTime > 15 && !listenCountedRef.current) {
+      if (audio.currentTime > 30 && !listenCountedRef.current) {
         listenCountedRef.current = true; // Prevent multiple calls
         increaseListenCount(currentTrack.id);
       }

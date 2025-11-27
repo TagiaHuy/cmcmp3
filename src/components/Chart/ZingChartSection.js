@@ -2,8 +2,8 @@
 import React, { useMemo } from "react";
 import { Box, Paper, Typography, Button, Stack, Skeleton, IconButton, Tooltip as MuiTooltip, Avatar } from "@mui/material";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer, ReferenceLine
-} from "recharts";
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer
+} from "recharts"; // Removed ReferenceLine
 import { useTheme, alpha } from "@mui/material/styles";
 import useZingChart from "../../hooks/useZingChart";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
@@ -17,7 +17,8 @@ function RankNumber({ rank }) {
       ? "linear-gradient(90deg,#4facfe,#38f9d7)"
       : rank === 2
       ? "linear-gradient(90deg,#43e97b,#fef9a7)"
-      : "linear-gradient(90deg,#fa709a,#fee140)";
+      : "linear-gradient(90deg,#fa709a,#fee140)"
+      : undefined;
 
   return (
     <Typography
@@ -47,7 +48,7 @@ function TopItem({ item, onPlay }) {
 
   const handleCardClick = () => {
     navigate(`/songs/${item.id}`);
-  }
+  };
 
   return (
     <Stack
@@ -63,7 +64,7 @@ function TopItem({ item, onPlay }) {
         bgcolor: "rgba(255,255,255,0.06)",
         cursor: "pointer",
         transition: "transform .12s ease, background .12s ease",
-        "&:hover": { transform: "translateY(-1px)", bgcolor: "rgba(255,255,255,0.12)" },
+        "&:hover": { transform: "translateY(-2px)", bgcolor: "rgba(255,255,255,0.12)" },
         "&:focus-visible": { outline: "2px solid", outlineColor: "primary.main" },
       }}
     >
@@ -125,7 +126,7 @@ function TopItem({ item, onPlay }) {
 }
 
 /* --- Tooltip hiển thị theo tên bài hát Top 3 --- */
-function SongTooltip({ active, payload, label, series }) {
+function SongTooltip({ active, payload, label, metadata }) { // Changed 'series' to 'metadata'
   if (!active || !payload?.length) return null;
   const rows = [...payload].sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
@@ -134,13 +135,13 @@ function SongTooltip({ active, payload, label, series }) {
       <Typography variant="caption">⏱ {label}</Typography>
       <Stack spacing={0.6} sx={{ mt: .6 }}>
         {rows.map((p) => {
-          const key = p.dataKey; // 'vn' | 'usuk' | 'kpop'
-          const meta = series?.[key] || {};
+          const key = p.dataKey; // e.g., 'song_52'
+          const songMeta = metadata?.[key] || {}; // Use metadata to get song info
           return (
             <Stack key={key} direction="row" spacing={1} alignItems="center">
-              {meta.cover ? <Avatar src={meta.cover} sx={{ width: 22, height: 22 }} /> : null}
+              {songMeta.cover ? <Avatar src={songMeta.cover} sx={{ width: 22, height: 22 }} /> : null}
               <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }} noWrap>
-                {meta.name || key}
+                {songMeta.title || key} - {songMeta.artists}
               </Typography>
               <Typography variant="body2">{p.value ?? 0}%</Typography>
             </Stack>
@@ -151,17 +152,37 @@ function SongTooltip({ active, payload, label, series }) {
   );
 }
 
+// Helper to generate consistent colors for the lines
+const lineColors = [
+  "#8884d8", // Purple
+  "#82ca9d", // Green
+  "#ffc658", // Yellow
+  "#ff7300", // Orange
+  "#00c49f", // Teal
+  "#d0ed57", // Lime
+  "#a4de6c", // Light Green
+  "#ff9800", // Deep Orange
+  "#f44336", // Red
+  "#2196f3", // Blue
+];
+
+// Simple hashing to get consistent color for a given key, or cycle through palette
+const getColor = (key) => {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = key.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % lineColors.length;
+  return lineColors[index];
+};
+
+
 /* ========== Main ========== */
 export default function ZingChartSection() {
-  const { loading, data, tiles } = useZingChart();
+  const { loading, data, tiles, chartDataset, lineChartMetadata } = useZingChart();
   const theme = useTheme();
-  const { handlePlay, loadQueue } = useMediaPlayer();
-
-  const colors = useMemo(() => ({
-    vn:   theme.palette.mode === "dark" ? "#73B5FF" : "#1976d2",
-    usuk: theme.palette.mode === "dark" ? "#FF6EA9" : "#d81b60",
-    kpop: theme.palette.mode === "dark" ? "#6EE7B7" : "#2e7d32",
-  }), [theme.palette.mode]);
+  const { loadQueue, currentTrack } = useMediaPlayer();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -172,42 +193,12 @@ export default function ZingChartSection() {
   }
   if (!data) return null;
 
-  // Dữ liệu line chart
-  const tl   = data?.timeline ?? [];
-  const vn   = data?.vn ?? [];
-  const usuk = data?.usuk ?? [];
-  const kpop = data?.kpop ?? [];
-
-  const chartData = tl.map((t, i) => ({
-    time: t,
-    vn:   vn[i]   ?? 0,
-    usuk: usuk[i] ?? 0,
-    kpop: kpop[i] ?? 0,
-  }));
-
   // Top 3 từ BE → dùng làm nhãn + ảnh
   const top3 = Array.isArray(data?.top3) ? data.top3 : [];
 
-  const series = {
-    vn:   { name: top3[0]?.title || "Top 1", cover: top3[0]?.cover },
-    usuk: { name: top3[1]?.title || "Top 2", cover: top3[1]?.cover },
-    kpop: { name: top3[2]?.title || "Top 3", cover: top3[2]?.cover },
-  };
-
-  // Chuẩn hoá object truyền vào MediaPlayer
   const onPlayTop = (item) => {
     if (!item) return;
-    const songToPlay = {
-      id: item.id ?? `zingchart-${item.rank}`,
-      title: item.title,
-      artists: item.artists,
-      imageUrl: item.cover,
-      mediaSrc: item.mediaSrc,
-      percent: item.percent,
-      rank: item.rank,
-      source: "zingchart",
-    };
-
+    
     // Find the index of the clicked song within the top3 array
     const startIndex = top3.findIndex(s => s.id === item.id || s.rank === item.rank);
 
@@ -223,11 +214,6 @@ export default function ZingChartSection() {
       source: "zingchart",
     })), startIndex !== -1 ? startIndex : 0);
   };
-
-
-
-  // thời điểm hiện tại (nếu BE có lastUpdated)
-  const lastTime = tl[tl.length - 1];
 
   return (
     <Box sx={{ display: "grid", gap: 2 }}>
@@ -300,12 +286,25 @@ export default function ZingChartSection() {
             </Box>
 
             <Stack spacing={1.1}>
-              {top3.map((item) => (
-                <TopItem key={item.rank} item={item} onPlay={onPlayTop} />
-              ))}
+              {top3.map((item) => {
+                const isCurrentlyPlaying = item && currentTrack?.id === item.id;
+                const displayCover = isCurrentlyPlaying ? currentTrack.imageUrl : item.cover;
+
+                const displayItem = {
+                  ...item,
+                  cover: displayCover,
+                };
+
+                return <TopItem key={item.rank} item={displayItem} onPlay={onPlayTop} />;
+              })}
             </Stack>
 
-            <Button variant="outlined" size="small" sx={{ mt: 2, borderRadius: 999 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{ mt: 2, borderRadius: 999 }}
+              onClick={() => navigate('/zing-chart')}
+            >
               Xem thêm
             </Button>
           </Box>
@@ -313,27 +312,31 @@ export default function ZingChartSection() {
           {/* Right: chart */}
           <Box sx={{ flex: 1, minWidth: 0, height: 320 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ left: 8, right: 16, top: 10, bottom: 10 }}>
+              <LineChart data={chartDataset} margin={{ left: 8, right: 16, top: 10, bottom: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.15} />
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} unit="%" domain={[0, 100]} />
 
                 {/* Tooltip hiển thị theo tên bài hát + ảnh */}
-                <ReTooltip content={<SongTooltip series={series} />} />
+                <ReTooltip content={<SongTooltip metadata={lineChartMetadata} />} />
 
-                {/* Vạch dọc thời điểm hiện tại */}
-                {lastTime && (
-                  <ReferenceLine
-                    x={lastTime}
-                    stroke={alpha(colors.usuk, 0.6)}
-                    strokeDasharray="4 4"
-                  />
-                )}
-
-                {/* Tắt animation cho mượt */}
-                <Line name={series.vn.name}   type="monotone" dataKey="vn"   stroke={colors.vn}   dot={{ r: 2 }} activeDot={{ r: 4 }} strokeWidth={2} isAnimationActive={false} />
-                <Line name={series.usuk.name} type="monotone" dataKey="usuk" stroke={colors.usuk} dot={{ r: 2 }} activeDot={{ r: 4 }} strokeWidth={2} isAnimationActive={false} />
-                <Line name={series.kpop.name} type="monotone" dataKey="kpop" stroke={colors.kpop} dot={{ r: 2 }} activeDot={{ r: 4 }} strokeWidth={2} isAnimationActive={false} />
+                {/* Dynamically generate Lines from lineChartMetadata */}
+                {lineChartMetadata && Object.keys(lineChartMetadata).map((key) => { // Removed index
+                  const songMeta = lineChartMetadata[key];
+                  return (
+                    <Line
+                      key={key}
+                      name={`${songMeta.title} - ${songMeta.artists}`}
+                      type="monotone"
+                      dataKey={key} // e.g., song_52
+                      stroke={getColor(key)} // Dynamic color
+                      dot={{ r: 2 }}
+                      activeDot={{ r: 4 }}
+                      strokeWidth={2}
+                      isAnimationActive={false}
+                    />
+                  );
+                })}
               </LineChart>
             </ResponsiveContainer>
           </Box>
