@@ -86,61 +86,37 @@ const MediaPlayer = () => {
   };
 
   const handleCardAdd = (selectedIndex) => {
-    if (!currentTrack || !currentTrack.lyrics) {
+    if (!currentTrack || !currentTrack.lyrics || selectedIndex < 0 || selectedIndex >= currentTrack.lyrics.length) {
         return;
     }
 
-    const currentLyrics = currentTrack.lyrics;
-    let newLyrics = [...currentLyrics];
+    const selectedLyric = currentTrack.lyrics[selectedIndex];
+    const nextLyric = currentTrack.lyrics[selectedIndex + 1];
 
-    if (selectedIndex === null) {
-      // Add to the end
-      const lastLyric = currentLyrics[currentLyrics.length - 1];
-      // Default to 0 if no lyrics, otherwise 5 seconds after the last lyric's estimated end time
-      // The `duration` prop from MediaPlayer is the total track duration
-      const newTime = lastLyric ? (lastLyric.time + 5) : 0; 
+    const selectedLyricEndTime = nextLyric ? nextLyric.time : duration;
 
-      const newLyric = {
-        id: Date.now(),
-        text: "New Lyric",
-        time: newTime,
-      };
-      newLyrics.push(newLyric);
-      setSelectedLyric(newLyric); // Select the newly added lyric
-    } else {
-      // Existing logic for splitting
-      if (selectedIndex < 0 || selectedIndex >= currentLyrics.length) {
-          return;
-      }
+    const midTime = selectedLyric.time + (selectedLyricEndTime - selectedLyric.time) / 2;
 
-      const selectedLyric = currentLyrics[selectedIndex];
-      const nextLyric = currentLyrics[selectedIndex + 1];
-
-      const selectedLyricEndTime = nextLyric ? nextLyric.time : duration;
-
-      const midTime = selectedLyric.time + (selectedLyricEndTime - selectedLyric.time) / 2;
-
-      if (midTime <= selectedLyric.time) {
-          return;
-      }
-
-      const newLyric = {
-          id: Date.now(),
-          text: "New Lyric",
-          time: midTime,
-      };
-
-      newLyrics = [
-          ...currentLyrics.slice(0, selectedIndex + 1),
-          newLyric,
-          ...currentLyrics.slice(selectedIndex + 1)
-      ];
-      setSelectedLyric(newLyric); // Select the newly added lyric
+    if (midTime <= selectedLyric.time) {
+        return;
     }
 
-    newLyrics.sort((a, b) => a.time - b.time); // Always sort to maintain order
+    const newLyric = {
+        id: Date.now(),
+        text: "New Lyric",
+        time: midTime,
+    };
+
+    let newLyrics = [
+        ...currentTrack.lyrics.slice(0, selectedIndex + 1),
+        newLyric,
+        ...currentTrack.lyrics.slice(selectedIndex + 1)
+    ];
+
+    newLyrics.sort((a, b) => a.time - b.time);
 
     updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+    setSelectedLyric(newLyric);
   };
 
   const handleCardDelete = (lyricIndex) => {

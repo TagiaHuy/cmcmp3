@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from '@mui/icons-material/Remove';
 
-const ResizableCard = ({ children, width, left, onResize, isSelected, onTextChange }) => {
+const ResizableCard = ({ children, width, left, onResize, isSelected, onTextChange, onAdd, onDelete }) => {
     const handleMouseDownRight = (e) => {
       e.stopPropagation();
       const startX = e.clientX;
@@ -47,6 +47,16 @@ const ResizableCard = ({ children, width, left, onResize, isSelected, onTextChan
   
     return (
       <div style={{ width: `${width}px`, left: `${left}px`, border: isSelected ? '2px solid #9353FF' : '1px solid black', position: 'absolute', height: '50px', top: '35px' }}>
+        {isSelected && (
+          <div style={{ position: 'absolute', top: -15, right: -15, zIndex: 11, backgroundColor: 'white', borderRadius: '50px', display: 'flex', border: '1px solid #ddd' }}>
+            <IconButton onClick={onAdd} color="primary" size="small" style={{ padding: '2px' }}>
+              <AddIcon fontSize="small" />
+            </IconButton>
+            <IconButton onClick={onDelete} color="error" size="small" style={{ padding: '2px', color:'red' }}>
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </div>
+        )}
         <div 
           style={{ padding: '5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', height: '100%', boxSizing: 'border-box' }}
           contentEditable
@@ -135,43 +145,9 @@ const LyricResizableCardList = ({ lyrics, duration, containerWidth, onCardTimeUp
     }
   };
 
-  const handleAddCard = () => {
-    if (onCardAdd) {
-      if (selectedLyric) {
-        const selectedIndex = cards.findIndex(c => c.id === selectedLyric.id);
-        if (selectedIndex !== -1) {
-          onCardAdd(selectedIndex);
-        } else {
-          onCardAdd(null);
-        } 
-      } else {
-        onCardAdd(null);
-      }
-    }
-  };
-
-  const handleDeleteCard = () => {
-    if (!selectedLyric) return;
-    
-    const selectedIndex = cards.findIndex(c => c.id === selectedLyric.id);
-    if (selectedIndex === -1) return;
-
-    if (onCardDelete) {
-      onCardDelete(selectedIndex);
-    }
-  };
-
-
   return (
-    <div>
-      <div style={{ marginBottom: '10px' }}>
-        <IconButton onClick={handleAddCard} color="primary" sx={{ marginRight: '10px' }}>
-          <AddIcon />
-        </IconButton>
-        <IconButton onClick={handleDeleteCard} disabled={!selectedLyric} color="error">
-          <DeleteIcon />
-        </IconButton>
-      </div>      <div style={{ position: 'relative', width: '100%', height: '100px' }}>
+    <div style={{ marginTop: '20px' }}>
+      <div style={{ position: 'relative', width: '100%', height: '100px' }}>
         {cards.map((card, index) => (
           <div key={card.id} onClick={() => onSelectLyric(card)}>
             <ResizableCard
@@ -180,6 +156,8 @@ const LyricResizableCardList = ({ lyrics, duration, containerWidth, onCardTimeUp
               onResize={(updates) => handleResize(index, updates)}
               isSelected={selectedLyric && selectedLyric.id === card.id}
               onTextChange={(text) => handleTextChange(index, text)}
+              onAdd={() => onCardAdd(index)}
+              onDelete={() => onCardDelete(index)}
             >
               {card.text}
             </ResizableCard>
@@ -190,4 +168,4 @@ const LyricResizableCardList = ({ lyrics, duration, containerWidth, onCardTimeUp
   );
 };
 
-export default LyricResizableCardList;  
+export default LyricResizableCardList;
