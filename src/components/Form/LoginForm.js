@@ -1,7 +1,7 @@
 // src/pages/Auth/LoginForm.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { loginAndSendOtp } from '../../services/authService';
 import {
   Box, TextField, Button, Divider, Typography,
   IconButton, InputAdornment
@@ -10,11 +10,13 @@ import GoogleIcon from '@mui/icons-material/Google';
 import { useNotifications } from '../../hooks/useNotifications';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useAuth } from '../../context/AuthContext';
+import Loading from '../Loading/Loading'; // Import the Loading component
 
 const emailRegex = /^[^\s@]+@gmail\.com$/i;
 
 const LoginForm = () => {
-  const { login } = useAuth();
+  const { completeLogin } = useAuth(); // Get completeLogin from AuthContext
   const navigate = useNavigate();
   const { notifySuccess, notifyError } = useNotifications();
 
@@ -53,20 +55,27 @@ const LoginForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     if (!validate()) return;
-
+    setSubmitting(true);
     try {
-      setSubmitting(true);
-      await login(form.email.trim(), form.password);
-      notifySuccess('Đăng nhập thành công!');
-      setTimeout(() => navigate('/'), 1500);
+      const response = await loginAndSendOtp(form.email.trim(), form.password);
+      
+      // Check if the response contains a token (2FA is disabled)
+      if (response.token) {
+        completeLogin(response);
+        notifySuccess('Đăng nhập thành công!');
+        navigate('/');
+      } else {
+        // No token, so proceed with 2FA
+        notifySuccess('Xác thực thành công, vui lòng nhập mã OTP.');
+        navigate('/verify-login-otp', {
+          state: {
+            email: form.email.trim(),
+          },
+        });
+      }
     } catch (err) {
-      const msg =
-        /401/.test(err.message) ? 'Email hoặc mật khẩu không đúng'
-        : /403/.test(err.message) ? 'Bạn không có quyền truy cập'
-        : err.message || 'Đăng nhập thất bại';
-      notifyError(msg);
+      notifyError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }
@@ -88,7 +97,8 @@ const LoginForm = () => {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }} noValidate>
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%', position: 'relative' }} noValidate>
+      {submitting && <Loading message="Đang xử lý..." />}
       <TextField
         margin="normal"
         required
@@ -106,6 +116,7 @@ const LoginForm = () => {
         helperTextProps={helperTextProps}
         sx={errorFieldSx}
       />
+
 
       <TextField
         margin="normal"
@@ -148,7 +159,7 @@ const LoginForm = () => {
           }
         }}
       >
-        {submitting ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+        Đăng Nhập
       </Button>
 
       <Divider sx={{ my: 2 }}>

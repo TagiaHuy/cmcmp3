@@ -7,7 +7,9 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { updateUserProfile, updateUserAvatar } from '../services/authService';
+import { updateTwoFactorPreference } from '../services/userService'; // Import the new service
 import API_BASE_URL from '../config';
+import { Divider, Switch, FormGroup } from '@mui/material'; // Import Switch and FormGroup
 
 const ProfilePage = () => {
   const { user, token, setUser } = useAuth();
@@ -16,11 +18,13 @@ const ProfilePage = () => {
     gender: '',
     phoneNumber: '',
   });
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const fileInputRef = useRef(null);
   const navigate = useNavigate(); // Initialize useNavigate
+  
   useEffect(() => {
     if (user) {
       setFormData({
@@ -28,6 +32,7 @@ const ProfilePage = () => {
         gender: user.gender || '',
         phoneNumber: user.phoneNumber || '',
       });
+      setIsTwoFactorEnabled(user.twoFactorEnabled || false);
     }
   }, [user]);
 
@@ -44,6 +49,29 @@ const ProfilePage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTwoFactorChange = async (event) => {
+    const { checked } = event.target;
+    const originalState = isTwoFactorEnabled;
+    setIsTwoFactorEnabled(checked); // Optimistic update
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      if (!token) {
+        throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
+      }
+      const updatedUser = await updateTwoFactorPreference(token); // Call without 'checked'
+      setUser(updatedUser); // Update user in context with the full updated object
+      setSuccess(`Xác thực hai bước đã được ${updatedUser.twoFactorEnabled ? 'bật' : 'tắt'}.`);
+    } catch (err) {
+      setIsTwoFactorEnabled(originalState); // Revert on error
+      setError(err.message || 'Không thể cập nhật cài đặt xác thực hai bước.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -162,7 +190,7 @@ const ProfilePage = () => {
               </RadioGroup>
             </FormControl>
 
-            <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+            <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <Button
                 type="submit"
                 variant="contained"
@@ -183,11 +211,34 @@ const ProfilePage = () => {
                 </Button>
               )}
             </Box>
+
+            {user.provider === 'LOCAL' && (
+              <>
+                <Divider sx={{ my: 3 }} />
+                <Typography variant="h6" gutterBottom>
+                  Cài đặt bảo mật
+                </Typography>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={isTwoFactorEnabled}
+                        onChange={handleTwoFactorChange}
+                        disabled={loading}
+                      />
+                    }
+                    label="Xác thực hai bước (Đăng nhập với OTP)"
+                  />
+                </FormGroup>
+              </>
+            )}
+
           </Box>
         </Box>
       </Paper>
     </Box>
   );
 };
+
 
 export default ProfilePage;
