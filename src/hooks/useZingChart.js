@@ -1,6 +1,7 @@
 // src/hooks/useZingChart.js
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { getRealtimeChart } from "../services/chartService";
+import API_BASE_URL from "../config";
 
 // Banner tuần (FE)
 import vnCover from "../assets/vn.png";
@@ -62,15 +63,14 @@ export default function useZingChart() {
         // Ensure mediaSrc is present for playable items, with a fallback if Backend doesn't provide it
         const patchedRealtime = {
           ...realtime,
-          top3: (realtime?.top3 ?? []).map(s => ({
-            ...s,
-            mediaSrc: s.mediaSrc || s.audioUrl || "" // Fallback to empty string if no mediaSrc from backend
-          })),
-          items: (realtime?.items ?? []).map(s => ({
-            ...s,
-            mediaSrc: s.mediaSrc || s.audioUrl || "" // Fallback to empty string if no mediaSrc from backend
-          })),
-        };
+                      top3: (realtime?.top3 ?? []).map(s => ({
+                        ...s,
+                        mediaSrc: `${API_BASE_URL}/api/songs/stream/${s.id}`
+                      })),
+                      items: (realtime?.items ?? []).map(s => ({
+                        ...s,
+                        mediaSrc: `${API_BASE_URL}/api/songs/stream/${s.id}`
+                      })),        };
         if (mountedRef.current) setData(patchedRealtime);
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
