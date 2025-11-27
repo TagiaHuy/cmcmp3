@@ -25,8 +25,8 @@ const LoginOtpVerificationForm = ({ email }) => {
       setFieldErr('Vui lòng nhập mã OTP');
       return false;
     }
-    if (otp.length < 6) {
-      setFieldErr('Mã OTP phải có 6 chữ số');
+    if (otp.trim().length !== 6) {
+      setFieldErr('Mã OTP phải có đúng 6 chữ số');
       return false;
     }
     return true;
@@ -50,7 +50,7 @@ const LoginOtpVerificationForm = ({ email }) => {
       const errorMessage = err?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
       if (errorMessage.toLowerCase().includes('otp')) {
         otpRef.current?.focus();
-        notifyError('Mã OTP không hợp lệ hoặc đã hết hạn.');
+        notifyError('Nhập sai OTP, vui lòng nhập lại.');
       } else {
         notifyError(errorMessage);
       }

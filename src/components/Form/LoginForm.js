@@ -59,18 +59,14 @@ const LoginForm = () => {
     setSubmitting(true);
     try {
       await loginAndSendOtp(form.email.trim(), form.password);
-      notifySuccess('Đã gửi mã OTP thành công, vui lòng nhập mã OTP để hoàn tất đăng nhập.');
+      notifySuccess('Đang gửi OTP về email của bạn, vui lòng đợi chuyển hướng...');
       navigate('/verify-login-otp', {
         state: {
           email: form.email.trim(),
         },
       });
     } catch (err) {
-      const msg =
-        /401/.test(err.message) ? 'Email hoặc mật khẩu không đúng'
-        : /403/.test(err.message) ? 'Bạn không có quyền truy cập'
-        : err.message || 'Đăng nhập thất bại';
-      notifyError(msg);
+      notifyError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }
