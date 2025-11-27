@@ -29,6 +29,7 @@ import OtpVerificationPage from './pages/OtpVerificationPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage'; // New import
+import LoginOtpVerificationPage from './pages/LoginOtpVerificationPage';
 
 /** Chặn trang công khai (login/register) nếu đã đăng nhập */
 const PublicOnlyRoute = ({ isAuthed, children }) =>
@@ -91,6 +92,14 @@ function App() {
             element={
               <PublicOnlyRoute isAuthed={isAuthenticated}>
                 <OtpVerificationPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/verify-login-otp"
+            element={
+              <PublicOnlyRoute isAuthed={isAuthenticated}>
+                <LoginOtpVerificationPage />
               </PublicOnlyRoute>
             }
           />

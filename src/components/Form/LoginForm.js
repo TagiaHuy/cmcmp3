@@ -1,7 +1,7 @@
 // src/pages/Auth/LoginForm.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { loginAndSendOtp } from '../../services/authService';
 import {
   Box, TextField, Button, Divider, Typography,
   IconButton, InputAdornment
@@ -10,11 +10,11 @@ import GoogleIcon from '@mui/icons-material/Google';
 import { useNotifications } from '../../hooks/useNotifications';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Loading from '../Loading/Loading'; // Import the Loading component
 
 const emailRegex = /^[^\s@]+@gmail\.com$/i;
 
 const LoginForm = () => {
-  const { login } = useAuth();
   const navigate = useNavigate();
   const { notifySuccess, notifyError } = useNotifications();
 
@@ -56,11 +56,15 @@ const LoginForm = () => {
 
     if (!validate()) return;
 
+    setSubmitting(true);
     try {
-      setSubmitting(true);
-      await login(form.email.trim(), form.password);
-      notifySuccess('Đăng nhập thành công!');
-      setTimeout(() => navigate('/'), 1500);
+      await loginAndSendOtp(form.email.trim(), form.password);
+      notifySuccess('Đã gửi mã OTP thành công, vui lòng nhập mã OTP để hoàn tất đăng nhập.');
+      navigate('/verify-login-otp', {
+        state: {
+          email: form.email.trim(),
+        },
+      });
     } catch (err) {
       const msg =
         /401/.test(err.message) ? 'Email hoặc mật khẩu không đúng'
@@ -88,7 +92,8 @@ const LoginForm = () => {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }} noValidate>
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%', position: 'relative' }} noValidate>
+      {submitting && <Loading message="Đang gửi OTP..." />}
       <TextField
         margin="normal"
         required
@@ -148,7 +153,7 @@ const LoginForm = () => {
           }
         }}
       >
-        {submitting ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+        Đăng Nhập
       </Button>
 
       <Divider sx={{ my: 2 }}>
