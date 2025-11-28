@@ -4,7 +4,7 @@ import { Box, Typography, Menu } from '@mui/material';
 import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
-import ShareMenu from '../MenuItem/Specific/ShareMenu';
+import ShareMenu from '../../MenuItem/Specific/ShareMenu';
 
 function PlaylistCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
   const [isHovered, setIsHovered] = useState(false);
