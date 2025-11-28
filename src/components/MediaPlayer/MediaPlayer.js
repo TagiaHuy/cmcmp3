@@ -21,6 +21,7 @@ import AdvancedSeekHandle from './AdvancedSeekHandle';
 import SeekHandle from './SeekHandle';
 import LyricsModal from '../Lyric/LyricsModal';
 import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
 const MediaPlayer = () => {
@@ -343,6 +344,7 @@ const MediaPlayer = () => {
             }}
           >
             <DownloadMenuItem songId={currentTrack?.id} songTitle={currentTrack?.title} onCloseMenu={handleMenuClose} />
+            <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={currentTrack?.id} />
           </Menu>
         </Box>
 
