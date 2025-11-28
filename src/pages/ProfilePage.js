@@ -5,6 +5,7 @@ import {
   Box, Typography, Paper, TextField, Button, Avatar,
   CircularProgress, Alert, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel
 } from '@mui/material';
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded"; // Import the icon
 import { useNavigate } from 'react-router-dom';
 import { updateUserProfile, updateUserAvatar } from '../services/authService';
 import { updateTwoFactorPreference } from '../services/userService'; // Import the new service
@@ -22,6 +23,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isImageLoaded, setIsImageLoaded] = useState(false); // New state to track if image is loaded
   const fileInputRef = useRef(null);
   const navigate = useNavigate(); // Initialize useNavigate
   
@@ -109,6 +111,7 @@ const ProfilePage = () => {
     setLoading(true);
     setError('');
     setSuccess('');
+    setIsImageLoaded(false); // Set to false before upload
     try {
       if (!token) {
         setError('Không có token xác thực. Vui lòng đăng nhập lại.');
@@ -117,6 +120,7 @@ const ProfilePage = () => {
       }
       const updatedUser = await updateUserAvatar(token, avatarFormData);
       setUser(updatedUser); // Update user in context
+      setIsImageLoaded(true); // Set to true after successful upload
       setSuccess('Cập nhật avatar thành công!');
     } catch (err) {
       setError(err.message || 'Có lỗi xảy ra khi tải lên avatar.');
@@ -139,9 +143,19 @@ const ProfilePage = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <Avatar
               src={user.avatarUrl}
-              sx={{ width: 150, height: 150, cursor: 'pointer', border: '2px solid' }}
+              sx={{
+                width: 150,
+                height: 150,
+                cursor: 'pointer',
+                border: '2px solid',
+                opacity: isImageLoaded ? 1 : 0,
+                clipPath: isImageLoaded ? 'inset(0% 0% 0% 0%)' : 'inset(95% 0% 0% 0%)', // Reveal from bottom
+                transition: 'opacity 0.7s ease-out, clip-path 0.7s ease-out', // Smooth transition for both
+              }}
               onClick={handleAvatarClick}
+              imgProps={{ onLoad: () => setIsImageLoaded(true) }} // Set isImageLoaded on img load
             />
+
             <Button variant="outlined" onClick={handleAvatarClick}>Đổi Avatar</Button>
             <input
               type="file"
