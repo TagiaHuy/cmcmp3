@@ -358,6 +358,34 @@ export const updateUploadedSong = async (id, formData) => {
   }
 };
 
+/* ==========================================================
+    11) UPDATE SONG LYRICS
+========================================================== */
+export const updateSongLyrics = async (songId, lyrics) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/${songId}/lyrics`, {
+      method: "POST",
+      headers: {
+        ...authHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ lyrics }),
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) {
+      const msg = data?.message || data?.error || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    return mapSong(data);
+  } catch (error) {
+    console.error(`Error updating lyrics for song with ID ${songId}:`, error);
+    throw error;
+  }
+};
+
+
 export const updateUploadedSongStatus = async (id, status) => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/songs/uploaded/${id}?status=${status}`, {
