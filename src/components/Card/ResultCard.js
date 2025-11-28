@@ -5,6 +5,7 @@ import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 
 function ResultCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -86,6 +87,7 @@ function ResultCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
           }}
         >
           <DownloadMenuItem songId={id} songTitle={title} onCloseMenu={handleMenuClose} />
+          <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={id} />
         </Menu>
       </Box>
     </Box>

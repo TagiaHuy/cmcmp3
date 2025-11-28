@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { Box, Typography, Menu } from '@mui/material'; // Add Menu import
 import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 
 // Đồng bộ với Top100 / Base
 import BasePlayableImage from './Base/BasePlayableImage';
@@ -191,6 +192,7 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
               }}
             >
               <DownloadMenuItem songId={track.id} songTitle={track.title} onCloseMenu={handleMenuClose} />
+              <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={track.id} />
             </Menu>
           </Box>
         </Box>

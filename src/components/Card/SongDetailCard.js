@@ -10,6 +10,8 @@ import FavoriteButton from '../Button/Specific/FavoriteButton';
 // Removed downloadSong and useNotifications
 import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
 
+import ShareMenu from '../MenuItem/Specific/ShareMenu'; // Import ShareMenu
+
 const SongDetailCard = ({ song }) => {
   const { handlePlay, currentTrack, isPlaying: isPlayerPlaying, setIsPlaying } = useMediaPlayer();
   // Removed useNotifications
@@ -123,6 +125,7 @@ const SongDetailCard = ({ song }) => {
           }}
         >
           <DownloadMenuItem songId={song.id} songTitle={song.title} onCloseMenu={handleMenuClose} />
+          <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={song.id} />
         </Menu>
       </Stack>
 
