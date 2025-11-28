@@ -1,9 +1,9 @@
-// src/components/Card/RecentlyPlayed.js
-import React from 'react';
+import React, { useState } from 'react'; // Added useState import
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Menu } from '@mui/material'; // Add Menu import
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
 
 // Đồng bộ với Top100 / Base
 import BasePlayableImage from './Base/BasePlayableImage';
@@ -87,9 +87,21 @@ export default function RecentlyPlayed() {
 }
 
 function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
-  const [isHovered, setIsHovered] = React.useState(false);
+  const [isHovered, setIsHovered] = useState(false); // Changed React.useState to useState
   const navigate = useNavigate();
   const mediaUrl = track.mediaSrc || track.audioUrl;
+
+  const [anchorEl, setAnchorEl] = useState(null); // Changed React.useState to useState
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    event.stopPropagation(); // Prevent card click
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   // ⭐ CHUẨN HÓA ARTISTS → luôn là string
   const artistText = normalizeArtists(track.artists);
@@ -168,9 +180,18 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
               pointerEvents: 'auto',
               cursor: 'pointer',
             }}
-            onClick={(e) => { e.stopPropagation(); console.log('More:', track.title); }}
           >
-            <MoreButton visible={isHovered} />
+            <MoreButton visible={isHovered} onClick={handleMenuOpen} />
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleMenuClose}
+              MenuListProps={{
+                'aria-labelledby': 'more-button-recently-played',
+              }}
+            >
+              <DownloadMenuItem songId={track.id} songTitle={track.title} onCloseMenu={handleMenuClose} />
+            </Menu>
           </Box>
         </Box>
       </Box>

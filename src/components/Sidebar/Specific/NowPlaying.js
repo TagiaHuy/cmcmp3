@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react'; // Import useState
 import { useMediaPlayer } from '../../../context/MediaPlayerContext';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -7,18 +7,32 @@ import {
   Avatar,
   ListItem,
   ListItemAvatar,
-  Paper
+  Paper,
+  Menu // Import Menu
 } from '@mui/material';
 
 import FavoriteButton from '../../Button/Specific/FavoriteButton';
 import MoreButton from '../../Button/Specific/MoreButton';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
+import DownloadMenuItem from '../../MenuItem/Specific/DownloadMenuItem'; // Import DownloadMenuItem
 
 const ACTION_WIDTH = 96;
 
 const NowPlaying = () => {
   const { currentTrack, handlePlay, normalizeArtists } = useMediaPlayer();
   const theme = useTheme();
+
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    event.stopPropagation(); // Prevent other click events
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   if (!currentTrack) return null;
 
@@ -130,7 +144,17 @@ const NowPlaying = () => {
             }}
           >
             <FavoriteButton songId={currentTrack?.id} isFavorite={currentTrack?.isFavorite} size="small" aria-label="Yêu thích" />
-            <MoreButton size="small" aria-label="Thêm" />
+            <MoreButton size="small" aria-label="Thêm" onClick={handleMenuOpen} />
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleMenuClose}
+              MenuListProps={{
+                'aria-labelledby': 'more-button-now-playing',
+              }}
+            >
+              <DownloadMenuItem songId={currentTrack?.id} songTitle={currentTrack?.title} onCloseMenu={handleMenuClose} />
+            </Menu>
           </Box>
         </ListItem>
       </Paper>

@@ -1,15 +1,17 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
-import { Box, IconButton, Slider, Typography, Stack, Paper } from '@mui/material';
+import { Box, IconButton, Slider, Typography, Stack, Paper, Menu } from '@mui/material'; // Removed MenuItem, ListItemIcon, ListItemText
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import MicIcon from '@mui/icons-material/Mic';
+// Removed DownloadOutlinedIcon
 
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { useMediaActions } from '../../hooks/useMediaActions';
 import { ThemeContext } from '../../theme/ThemeContext';
+import { useNotifications } from '../../hooks/useNotifications'; // Import notifications
 
-import { increaseListenCount } from '../../services/songService';
+import { increaseListenCount } from '../../services/songService'; // Removed downloadSong import
 
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
@@ -18,6 +20,7 @@ import MoreButton from '../Button/Specific/MoreButton';
 import AdvancedSeekHandle from './AdvancedSeekHandle';
 import SeekHandle from './SeekHandle';
 import LyricsModal from '../Lyric/LyricsModal';
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
 
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
 const MediaPlayer = () => {
@@ -38,6 +41,7 @@ const MediaPlayer = () => {
   } = useMediaPlayer();
 
   const { currentTheme } = useContext(ThemeContext);
+  const { notifySuccess, notifyError } = useNotifications(); // Initialize notifications
 
   const {
     prev,
@@ -52,7 +56,18 @@ const MediaPlayer = () => {
   const listenCountedRef = useRef(false);
   const playerRef = useRef(null);
 
-  // UI STATE
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Removed handleDownload function
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(() => {
     const storedVolume = localStorage.getItem('cmcmp3-volume');
@@ -311,7 +326,17 @@ const MediaPlayer = () => {
             songAuthor={currentTrack?.artists || 'Unknown'}
           />
           <FavoriteButton songId={currentTrack?.id} isFavorite={currentTrack?.isFavorite} />
-          <MoreButton />
+          <MoreButton onClick={handleMenuOpen} />
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleMenuClose}
+            MenuListProps={{
+              'aria-labelledby': 'more-button-media-player',
+            }}
+          >
+            <DownloadMenuItem songId={currentTrack?.id} songTitle={currentTrack?.title} onCloseMenu={handleMenuClose} />
+          </Menu>
         </Box>
 
         {/* CENTER SECTION — Controls */}

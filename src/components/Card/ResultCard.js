@@ -1,13 +1,26 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Menu } from '@mui/material'; // Add Menu import
 import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
 
 function ResultCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
+
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    event.stopPropagation(); // Prevent card click
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   const handlePlayClick = (e) => {
     // e.stopPropagation(); // Ngăn card click event
@@ -63,7 +76,17 @@ function ResultCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
 
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: 88, justifyContent: 'flex-end' }}>
         <FavoriteButton visible={isHovered} />
-        <MoreButton visible={isHovered} />
+        <MoreButton visible={isHovered} onClick={handleMenuOpen} />
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          MenuListProps={{
+            'aria-labelledby': 'more-button-result-card',
+          }}
+        >
+          <DownloadMenuItem songId={id} songTitle={title} onCloseMenu={handleMenuClose} />
+        </Menu>
       </Box>
     </Box>
   );

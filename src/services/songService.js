@@ -285,6 +285,41 @@ export const increaseListenCount = async (id) => {
   }
 };
 
+/* ==========================================================
+    DOWNLOAD SONG (NEW)
+========================================================== */
+export const downloadSong = async (songId, songTitle) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/${songId}/download`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await safeJson(res);
+      throw new Error(errorData?.message || `Failed to download song: HTTP ${res.status}`);
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${songTitle}.mp3`; // Or use Content-Disposition filename from header
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    return { success: true };
+
+  } catch (error) {
+    console.error(`Error downloading song ${songId}:`, error);
+    throw error;
+  }
+};
+
+
 export const getSongsAdmin = async (page = 0, size = 10, signal) => {
     const queryParams = new URLSearchParams({
         page: page.toString(),
