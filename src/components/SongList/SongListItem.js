@@ -15,6 +15,7 @@ import PlayableImage from '../Card/PlayableImage';
 import { normalizeArtists } from '../../context/MediaPlayerContext';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import DownloadMenuItem
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 
 const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
   const navigate = useNavigate(); // Initialize useNavigate
@@ -54,6 +55,7 @@ const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
         }}
       >
         <DownloadMenuItem songId={song.id} songTitle={song.title} onCloseMenu={handleMenuClose} />
+        <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={song.id} />
       </Menu>
     </Stack>
   );

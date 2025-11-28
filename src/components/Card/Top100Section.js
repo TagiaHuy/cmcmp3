@@ -8,6 +8,7 @@ import BasePlayableImage from "./Base/BasePlayableImage";
 import FavoriteButton from "../Button/Specific/FavoriteButton";
 import MoreButton from "../Button/Specific/MoreButton";
 import DownloadMenuItem from "../MenuItem/Specific/DownloadMenuItem"; // Import the new reusable component
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 
 // Context player
 import { useMediaPlayer } from "../../context/MediaPlayerContext";
@@ -199,6 +200,7 @@ function Top100Card({ item, onPlay, onFavorite }) {
               }}
             >
               <DownloadMenuItem songId={item.id} songTitle={item.title} onCloseMenu={handleMenuClose} />
+              <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="playlist" id={item.id} />
             </Menu>
           </Box>
         </Box>

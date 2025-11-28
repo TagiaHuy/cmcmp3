@@ -15,6 +15,7 @@ import FavoriteButton from '../../Button/Specific/FavoriteButton';
 import MoreButton from '../../Button/Specific/MoreButton';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import DownloadMenuItem from '../../MenuItem/Specific/DownloadMenuItem'; // Import DownloadMenuItem
+import ShareMenu from '../../MenuItem/Specific/ShareMenu';
 
 const ACTION_WIDTH = 96;
 
@@ -154,6 +155,7 @@ const NowPlaying = () => {
               }}
             >
               <DownloadMenuItem songId={currentTrack?.id} songTitle={currentTrack?.title} onCloseMenu={handleMenuClose} />
+              <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={currentTrack?.id} />
             </Menu>
           </Box>
         </ListItem>
