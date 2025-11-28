@@ -9,6 +9,7 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
   const [isPrivate, setIsPrivate] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [isImageLoaded, setIsImageLoaded] = useState(false); // New state for image load effect
   const [isLoading, setIsLoading] = useState(false);
   const imageInputRef = useRef(null);
 
@@ -83,8 +84,10 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
               setImageFile(file);
               if (file) {
                 setImagePreviewUrl(URL.createObjectURL(file));
+                setIsImageLoaded(false); // Reset load state for new image
               } else {
                 setImagePreviewUrl(null);
+                setIsImageLoaded(false);
               }
             }}
             disabled={isLoading}
@@ -99,8 +102,21 @@ const CreatePlaylistForm = ({ onSubmit, onCancel }) => {
             </Box>
         )}
         {imagePreviewUrl && (
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
+          <Box sx={{ mt: 2, textAlign: 'center', overflow: 'hidden' }}>
+            <img
+              src={imagePreviewUrl}
+              alt="Image Preview"
+              onLoad={() => setIsImageLoaded(true)}
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+                maxHeight: '200px',
+                borderRadius: '8px',
+                opacity: isImageLoaded ? 1 : 0,
+                clipPath: isImageLoaded ? 'inset(0% 0% 0% 0%)' : 'inset(95% 0% 0% 0%)', // Reveal from bottom
+                transition: 'opacity 0.7s ease-out, clip-path 0.7s ease-out', // Smooth transition for both
+              }}
+            />
           </Box>
         )}
         <FormControlLabel
