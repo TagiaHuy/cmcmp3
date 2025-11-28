@@ -5,6 +5,7 @@ import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import HistoryIcon from '@mui/icons-material/History';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
+import CommentIcon from '@mui/icons-material/Comment'; // Import CommentIcon
 import LogoButton from '../../Button/Specific/LogoButton';
 import { useAuth } from '../../../context/AuthContext';
 import {ThemeContext} from "../../../theme/ThemeContext";
@@ -28,6 +29,7 @@ function SidebarLeft() {
           { text: 'Quản lý tài khoản', icon: <PeopleAltRoundedIcon />, to: '/admin/users' },
           { text: 'Quản lý bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs' },
           { text: 'Kiểm duyệt bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs/moderation' },
+          { text: 'Kiểm duyệt bình luận', icon: <CommentIcon />, to: '/admin/comments/moderation' }, // New admin link
         ]
       : [];
 

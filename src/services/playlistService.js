@@ -31,134 +31,200 @@ export const getPlaylistsMe = async (signal) => {
 
 // 2. Create a new playlist
 export const createPlaylist = async (playlistData) => {
-  const res = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { ...authHeader() },
-    body: playlistData,
-  });
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return data;
+  try {
+    const res = await fetch(BASE_URL, {
+      method: 'POST',
+      headers: { ...authHeader() },
+      body: playlistData,
+    });
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error creating playlist:', error);
+    throw error;
+  }
 };
 
 // 3. Delete a playlist
 export const deletePlaylist = async (playlistId) => {
-  const res = await fetch(`${BASE_URL}/${playlistId}`, {
-    method: 'DELETE',
-    headers: { ...authHeader() },
-  });
-  if (!res.ok) {
-    const data = await safeJson(res);
-    throw new Error(data?.message || `HTTP ${res.status}`);
+  try {
+    const res = await fetch(`${BASE_URL}/${playlistId}`, {
+      method: 'DELETE',
+      headers: { ...authHeader() },
+    });
+    if (!res.ok) {
+      const data = await safeJson(res);
+      throw new Error(data?.message || `HTTP ${res.status}`);
+    }
+    // No content on success
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error deleting playlist:', error);
+    throw error;
   }
-  // No content on success
 };
 
 // 4. Get songs in a specific playlist
 export const getPlaylistSongs = async (playlistId, signal) => {
-  const res = await fetch(`${BASE_URL}/${playlistId}/songs`, {
-    method: 'GET',
-    headers: { ...authHeader(), Accept: 'application/json' },
-    signal,
-  });
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return Array.isArray(data) ? data : [];
+  try {
+    const res = await fetch(`${BASE_URL}/${playlistId}/songs`, {
+      method: 'GET',
+      headers: { ...authHeader(), Accept: 'application/json' },
+      signal,
+    });
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error fetching playlist songs:', error);
+    throw error;
+  }
 };
 
 // 5. Add/remove songs from a playlist
 export const updatePlaylistSongs = async (playlistId, songUpdates) => {
-  const res = await fetch(`${BASE_URL}/${playlistId}/songs`, {
-    method: 'PATCH',
-    headers: { ...authHeader(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(songUpdates),
-  });
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return data;
+  try {
+    const res = await fetch(`${BASE_URL}/${playlistId}/songs`, {
+      method: 'PATCH',
+      headers: { ...authHeader(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(songUpdates),
+    });
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error updating playlist songs:', error);
+    throw error;
+  }
 };
 
 // 6. Update playlist details (name, privacy)
 export const updatePlaylist = async (playlistId, playlistData) => {
-  const res = await fetch(`${BASE_URL}/${playlistId}`, {
-    method: 'PUT',
-    headers: { ...authHeader() },
-    body: playlistData,
-  });
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return data;
+  try {
+    const res = await fetch(`${BASE_URL}/${playlistId}`, {
+      method: 'PUT',
+      headers: { ...authHeader() },
+      body: playlistData,
+    });
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error updating playlist:', error);
+    throw error;
+  }
 };
 
 // 7. Get a single playlist by ID
 export const getPlaylistById = async (playlistId, signal) => {
-  const res = await fetch(`${BASE_URL}/${playlistId}`, {
-    method: 'GET',
-    headers: { ...authHeader(), Accept: 'application/json' },
-    signal,
-  });
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return data;
+  try {
+    const res = await fetch(`${BASE_URL}/${playlistId}`, {
+      method: 'GET',
+      headers: { ...authHeader(), Accept: 'application/json' },
+      signal,
+    });
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+    return data;
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error fetching playlist by ID:', error);
+    throw error;
+  }
 };
 
 // 8. Get Top Playlists
 export const getTopPlaylists = async (limit = 5, signal) => {
-  const res = await fetch(`${BASE_URL}/top?limit=${limit}`, {
-    method: 'GET',
-    headers: { ...authHeader(), Accept: 'application/json' },
-    signal,
-  });
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return Array.isArray(data) ? data : [];
+  try {
+    const res = await fetch(`${BASE_URL}/top?limit=${limit}`, {
+      method: 'GET',
+      headers: { ...authHeader(), Accept: 'application/json' },
+      signal,
+    });
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error fetching TOP playlists:', error);
+    throw error;
+  }
 };
 
 // 9. Get New Release Playlists
 export const getNewReleasePlaylists = async (limit = 5, signal) => {
-  const res = await fetch(`${BASE_URL}/top/new-releases?limit=${limit}`, {
-    method: 'GET',
-    headers: { ...authHeader(), Accept: 'application/json' },
-    signal,
-  });
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return Array.isArray(data) ? data : [];
+  try {
+    const res = await fetch(`${BASE_URL}/top/new-releases?limit=${limit}`, {
+      method: 'GET',
+      headers: { ...authHeader(), Accept: 'application/json' },
+      signal,
+    });
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error fetching TOP new playlists:', error);
+    throw error;
+  }
 };
 
 // 10. Get Most Liked Playlists
 export const getMostLikedPlaylists = async (limit = 5, signal) => {
-  const res = await fetch(`${BASE_URL}/top/most-liked?limit=${limit}`, {
-    method: 'GET',
-    headers: { ...authHeader(), Accept: 'application/json' },
-    signal,
-  });
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-  return Array.isArray(data) ? data : [];
+  try {
+    const res = await fetch(`${BASE_URL}/top/most-liked?limit=${limit}`, {
+      method: 'GET',
+      headers: { ...authHeader(), Accept: 'application/json' },
+      signal,
+    });
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error fetching TOP liked playlists:', error);
+    throw error;
+  }
 };
 
 // 11. Like a playlist
 export const likePlaylist = async (playlistId) => {
-  const res = await fetch(`${BASE_URL}/${playlistId}/like`, {
-    method: 'POST',
-    headers: { ...authHeader() },
-  });
-  if (!res.ok) {
-    const data = await safeJson(res);
-    throw new Error(data?.message || `HTTP ${res.status}`);
+  try {
+    const res = await fetch(`${BASE_URL}/${playlistId}/like`, {
+      method: 'POST',
+      headers: { ...authHeader() },
+    });
+    if (!res.ok) {
+      const data = await safeJson(res);
+      throw new Error(data?.message || `HTTP ${res.status}`);
+    }
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error liking playlist:', error);
+    throw error;
   }
 };
 
 // 12. Unlike a playlist
 export const unlikePlaylist = async (playlistId) => {
-  const res = await fetch(`${BASE_URL}/${playlistId}/like`, {
-    method: 'POST',
-    headers: { ...authHeader() },
-  });
-  if (!res.ok) {
-    const data = await safeJson(res);
-    throw new Error(data?.message || `HTTP ${res.status}`);
+  try {
+    const res = await fetch(`${BASE_URL}/${playlistId}/like`, {
+      method: 'POST',
+      headers: { ...authHeader() },
+    });
+    if (!res.ok) {
+      const data = await safeJson(res);
+      throw new Error(data?.message || `HTTP ${res.status}`);
+    }
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error unliking playlist:', error);
+    throw error;
   }
 };
 

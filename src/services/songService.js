@@ -68,6 +68,7 @@ export const getAllSongs = async (page = 0, size = 10, sortBy = 'createdAt', dir
 
     return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error("Error fetching songs:", error);
     return [];
   }
@@ -92,8 +93,9 @@ export const getSongById = async (id, signal) => {
 
     return mapSong(data);
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error(`Error fetching song with ID ${id}:`, error);
-    return null;
+    throw error;
   }
 };
 
@@ -116,6 +118,7 @@ export const getSongsByArtist = async (artistId, signal) => {
 
     return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     return [];
   }
 };
@@ -139,6 +142,7 @@ export const getTopSongs = async (limit = 10, signal) => {
 
     return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error("Error fetching TOP songs:", error);
     return [];
   }
@@ -163,6 +167,7 @@ export const getNewestSongs = async (limit = 9, signal) => {
 
     return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error("Error fetching TOP new songs:", error);
     return [];
   }
@@ -187,6 +192,7 @@ export const getSongsByLikes = async (limit = 9, signal) => {
 
     return (Array.isArray(data) ? data : []).map(mapSong);
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error("Error fetching TOP liked songs:", error);
     return [];
   }
@@ -232,6 +238,7 @@ export const likeSong = async (id) => {
     }
     return await res.json();
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error(`Error liking song with ID ${id}:`, error);
     throw error;
   }
@@ -257,6 +264,7 @@ export const unlikeSong = async (id) => {
     }
     return await res.json();
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error(`Error unliking song with ID ${id}:`, error);
     throw error;
   }
@@ -280,6 +288,7 @@ export const increaseListenCount = async (id) => {
     // Listen count endpoint might not return a body
     return { success: true };
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error(`Error increasing listen count for song with ID ${id}:`, error);
     // Don't re-throw, as this is a background task and shouldn't interrupt user.
   }
@@ -331,6 +340,7 @@ export const deleteSong = async (id) => {
 
     return data;
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error(`Error deleting song ${id}:`, error);
     throw error;
   }
@@ -353,6 +363,7 @@ export const updateUploadedSong = async (id, formData) => {
 
     return mapSong(data);
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error(`Error updating uploaded song ${id}:`, error);
     throw error;
   }
@@ -375,6 +386,7 @@ export const updateUploadedSongStatus = async (id, status) => {
 
     return mapSong(data);
   } catch (error) {
+    if (error.name === 'AbortError') throw error;
     console.error(`Error updating status for uploaded song ${id}:`, error);
     throw error;
   }
