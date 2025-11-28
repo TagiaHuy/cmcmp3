@@ -117,6 +117,7 @@ const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, 
         onCardDelete={onCardDelete}
       />
       <div className="lyrics-actions" style={{display: 'flex', justifyContent: 'flex-end', marginRight: 30}}>
+        <button className="lyrics-action-btn" onClick={onCardAdd}>Add New Card</button>
         <button className="lyrics-action-btn" onClick={handlePostLyrics}>Post Lyrics</button>
       </div>
     </div>

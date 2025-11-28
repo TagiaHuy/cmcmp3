@@ -87,35 +87,49 @@ const MediaPlayer = () => {
   };
 
   const handleCardAdd = (selectedIndex) => {
-    if (!currentTrack || !currentTrack.lyrics || selectedIndex < 0 || selectedIndex >= currentTrack.lyrics.length) {
-        return;
+    if (!currentTrack || !currentTrack.lyrics) {
+      return;
     }
-
-    const selectedLyric = currentTrack.lyrics[selectedIndex];
-    const nextLyric = currentTrack.lyrics[selectedIndex + 1];
-
-    const selectedLyricEndTime = nextLyric ? nextLyric.time : duration;
-
-    const midTime = selectedLyric.time + (selectedLyricEndTime - selectedLyric.time) / 2;
-
-    if (midTime <= selectedLyric.time) {
-        return;
-    }
-
-    const newLyric = {
+  
+    let newLyric;
+    let newLyrics;
+  
+    // Case 1: Called from a specific card with an index
+    if (typeof selectedIndex === 'number' && selectedIndex >= 0 && selectedIndex < currentTrack.lyrics.length) {
+      const selectedLyric = currentTrack.lyrics[selectedIndex];
+      const nextLyric = currentTrack.lyrics[selectedIndex + 1];
+      const selectedLyricEndTime = nextLyric ? nextLyric.time : duration;
+  
+      const midTime = selectedLyric.time + (selectedLyricEndTime - selectedLyric.time) / 2;
+  
+      if (midTime <= selectedLyric.time) {
+        return; // Not enough space
+      }
+  
+      newLyric = {
         id: Date.now(),
         text: "New Lyric",
         time: midTime,
-    };
-
-    let newLyrics = [
+      };
+  
+      newLyrics = [
         ...currentTrack.lyrics.slice(0, selectedIndex + 1),
         newLyric,
         ...currentTrack.lyrics.slice(selectedIndex + 1)
-    ];
-
+      ];
+    } 
+    // Case 2: Called from the global "Add" button (or no valid index)
+    else {
+      newLyric = {
+        id: Date.now(),
+        text: "New Lyric",
+        time: currentTime,
+      };
+      newLyrics = [...currentTrack.lyrics, newLyric];
+    }
+  
     newLyrics.sort((a, b) => a.time - b.time);
-
+  
     updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
     setSelectedLyric(newLyric);
   };
