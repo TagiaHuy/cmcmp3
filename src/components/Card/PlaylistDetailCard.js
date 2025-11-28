@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, Typography, Stack, Divider, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Stack, Divider, Button, Menu } from '@mui/material';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic'; // Icon Lượt Nghe
 import FavoriteIcon from '@mui/icons-material/Favorite'; // Icon Lượt Thích
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // Icon Số Bài hát
@@ -7,10 +7,22 @@ import LockIcon from '@mui/icons-material/Lock'; // Icon cho playlist riêng tư
 import FavoritePlaylistButton from '../Button/Specific/FavoritePlaylistButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import PlayallButton from '../Button/Specific/PlayallButton'; // Thường là nút nổi bật
+import ShareMenu from '../MenuItem/Specific/ShareMenu'; // Import ShareMenu
 
 const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying, isOwner, onDelete, onEdit }) => {
   // Giả định thêm trường 'creator' hoặc 'author' vào object playlist
   const creatorName = playlist.creator || "Người dùng"; // Mặc định nếu không có
+
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Box 
@@ -132,7 +144,17 @@ const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying, isOwner, 
             <Button variant="outlined" color="error" onClick={onDelete}>Xóa</Button>
           </>
         )}
-        <MoreButton />
+        <MoreButton onClick={handleMenuOpen} />
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          MenuListProps={{
+            'aria-labelledby': 'more-button',
+          }}
+        >
+          <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="playlist" id={playlist.id} />
+        </Menu>
       </Box>
       
       {/* --- Vị trí này là nơi bạn đặt component danh sách bài hát (Song List) --- 
