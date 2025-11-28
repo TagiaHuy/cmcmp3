@@ -42,3 +42,33 @@ export async function getFavoriteSongs(signal) {
 
   return data;
 }
+
+/**
+ * Cập nhật cài đặt xác thực hai bước (2FA) cho người dùng.
+ * @param {string} token - The authorization token.
+ * @param {AbortSignal} signal - Abort signal.
+ * @returns {Promise<object>} - Updated UserDTO object.
+ */
+export const updateTwoFactorPreference = async (token, signal) => {
+  const res = await fetch(`${API_BASE_URL}/api/me/toggle-2fa`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`, // Yêu cầu JWT token hợp lệ
+    },
+    body: JSON.stringify({}), // Empty JSON body
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.message || data.error)) ||
+      `Không thể cập nhật cài đặt 2FA (HTTP ${res.status})`;
+    throw new Error(msg);
+  }
+  return data; // UserDTO object
+};
+

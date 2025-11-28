@@ -126,13 +126,31 @@ export const AuthProvider = ({ children }) => {
     return false;
   }, [user]);
 
+  const completeLogin = (loginData) => {
+    if (!loginData?.token) throw new Error("Phản hồi đăng nhập không có token");
+
+    const raw = loginData.token;
+    const clean = cleanToken(raw);
+
+    const userToSet = loginData?.user ?? loginData;
+    if (!userToSet || Object.keys(userToSet).length === 0) {
+      throw new Error("Không thể lấy thông tin người dùng sau khi đăng nhập");
+    }
+
+    setToken(clean);
+    setUser(userToSet);
+    localStorage.setItem("token", clean);
+    localStorage.setItem("user", JSON.stringify(userToSet));
+  };
+
   const value = useMemo(() => ({
     user, token, loading, error,
     isAuthenticated: !!token,
     isAdmin,
     login, register, logout,
+    completeLogin, // <-- export here
     handleSocialLogin: (rawToken) => {
-      const clean = cleanToken(rawToken);          // ← sạch khi social login
+      const clean = cleanToken(rawToken);
       setToken(clean);
       localStorage.setItem("token", clean);
     },

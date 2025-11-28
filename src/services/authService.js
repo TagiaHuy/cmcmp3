@@ -209,3 +209,49 @@ export const resetPassword = async (email, otp, newPassword, signal) => {
   }
   return data;
 };
+
+/** Đăng nhập ban đầu (Xác thực Email/Mật khẩu và Gửi OTP) */
+export const loginAndSendOtp = async (email, password, signal) => {
+  const res = await fetch(`${API_URL}/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.message || data.error)) ||
+      (res.status === 401 ? "Tài khoản không tồn tại hoặc mật khẩu không đúng." : `HTTP ${res.status}`);
+    throw new Error(msg);
+  }
+  return data; // { message: "Xác thực thành công, vui lòng nhập mã OTP" }
+};
+
+/** Xác thực OTP và Hoàn tất Đăng nhập */
+export const verifyLoginOtp = async (email, otp, signal) => {
+  const res = await fetch(`${API_URL}/verify-login-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ email, otp }),
+    signal,
+  });
+
+  const data = await safeJson(res);
+
+  if (!res.ok) {
+    const msg =
+      (data && (data.message || data.error)) ||
+      (res.status === 400 ? "Mã OTP không hợp lệ hoặc đã hết hạn." : `HTTP ${res.status}`);
+    throw new Error(msg);
+  }
+  return data; // { message, user, token }
+};
