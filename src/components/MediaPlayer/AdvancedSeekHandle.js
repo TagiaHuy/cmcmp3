@@ -52,8 +52,9 @@ const drawRuler = (canvas, duration, width, textColor) => {
     }
 };
 
-const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, onCardTimeUpdate, selectedLyric, onSelectLyric, onCardTextUpdate, onCardAdd, onCardDelete }) => {
+const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, onCardTimeUpdate, selectedLyric, onSelectLyric, onCardTextUpdate, onCardAdd, onCardDelete, onLyricsParsed }) => {
   const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
   const { ref: containerRef, width } = useResizeObserver();
   const { currentTrack } = useMediaPlayer();
 
@@ -87,6 +88,52 @@ const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, 
     }
   };
 
+  const handleDeleteSelected = () => {
+    if (!selectedLyric || !lyrics) return;
+
+    const lyricIndex = lyrics.findIndex(lyric => lyric.id === selectedLyric.id);
+
+    if (lyricIndex !== -1) {
+      onCardDelete(lyricIndex);
+    }
+  };
+
+  const parsePlainTextLyrics = (textContent, duration) => {
+    const lines = textContent.split('\n').filter(line => line.trim() !== '');
+    if (lines.length === 0) {
+        return [];
+    }
+
+    const interval = duration / lines.length;
+    return lines.map((line, index) => ({
+        id: Date.now() + index,
+        time: index * interval,
+        text: line.trim(),
+    }));
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const content = e.target.result;
+        const parsed = parsePlainTextLyrics(content, duration);
+        if (parsed.length > 0) {
+            onLyricsParsed(parsed);
+        } else {
+            alert('File appears to be empty or could not be read.');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = null;
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
   const scrubberPosition = duration > 0 ? (currentTime / duration) * width : 0;
 
   return (
@@ -116,8 +163,23 @@ const AdvancedSeekHandle = ({ currentTime, duration, onSeek, textColor, lyrics, 
         onCardAdd={onCardAdd}
         onCardDelete={onCardDelete}
       />
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+        accept=".lrc,.txt"
+      />
       <div className="lyrics-actions" style={{display: 'flex', justifyContent: 'flex-end', marginRight: 30}}>
         <button className="lyrics-action-btn" onClick={onCardAdd}>Add New Card</button>
+        <button 
+            className="lyrics-action-btn" 
+            onClick={handleDeleteSelected} 
+            disabled={!selectedLyric}
+        >
+            Delete Selected Card
+        </button>
+        <button className="lyrics-action-btn" onClick={handleUploadClick}>Upload Lyrics</button>
         <button className="lyrics-action-btn" onClick={handlePostLyrics}>Post Lyrics</button>
       </div>
     </div>

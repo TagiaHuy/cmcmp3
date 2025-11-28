@@ -158,6 +158,12 @@ const MediaPlayer = () => {
     setSelectedLyric(null);
   };
 
+  const handleLyricsParsed = (newLyrics) => {
+    if (!currentTrack) return;
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+    setSelectedLyric(null);
+  };
+
   useEffect(() => {
     if (playerRef.current) {
       setMediaPlayerHeight(playerRef.current.clientHeight);
@@ -302,6 +308,7 @@ const MediaPlayer = () => {
               onCardTextUpdate={handleCardTextUpdate}
               onCardAdd={handleCardAdd}
               onCardDelete={handleCardDelete}
+              onLyricsParsed={handleLyricsParsed}
           />
         )}
         <Box
