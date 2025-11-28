@@ -7,16 +7,19 @@ import {
     Stack,
     Typography,
     TextField,
-    Button,
+    Button, // Keep Button for moderation
     IconButton,
     Tooltip,
-    Paper
+    Paper,
+    Chip // Import Chip
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useTheme } from '@mui/material/styles';
 
-const CommentItem = ({ comment, onDelete, onUpdate }) => {
+const CommentItem = ({ comment, onDelete, onUpdate, onApprove, onReject, isPending = false }) => {
     const { user } = useAuth();
     const theme = useTheme();
     const [isEditing, setIsEditing] = useState(false);
@@ -32,7 +35,15 @@ const CommentItem = ({ comment, onDelete, onUpdate }) => {
     };
 
     return (
-        <Paper elevation={1} sx={{bgcolor: theme.palette.primary.comment, p: 2, mb: 2 }}>
+        <Paper
+            elevation={isPending ? 3 : 1} // Higher elevation for pending to stand out
+            sx={{
+                bgcolor: isPending ? theme.palette.background.paper : theme.palette.primary.comment, // More subtle color
+                p: 2,
+                mb: 2,
+                border: isPending ? `1px solid ${theme.palette.divider}` : 'none' // Subtle border
+            }}
+        >
             <Stack direction="row" spacing={2} alignItems="flex-start">
                 {/* Avatar */}
                 <Avatar
@@ -43,9 +54,19 @@ const CommentItem = ({ comment, onDelete, onUpdate }) => {
 
                 {/* Comment Content */}
                 <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="subtitle2" color="text.primary">
-                        {comment.user.name}
-                    </Typography>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography variant="subtitle2" color="text.primary">
+                            {comment.user.name}
+                        </Typography>
+                        {isPending && (
+                            <Chip
+                                label="ĐANG CHỜ"
+                                size="small"
+                                color="warning" // Keep warning color for the chip itself
+                                sx={{ height: 20, '& .MuiChip-label': { px: 1 } }}
+                            />
+                        )}
+                    </Stack>
                     <Typography variant="caption" color="text.secondary">
                         {moment(comment.createdAt).fromNow()}
                     </Typography>
@@ -65,14 +86,14 @@ const CommentItem = ({ comment, onDelete, onUpdate }) => {
                                     size="small"
                                     onClick={handleUpdate}
                                 >
-                                    Save
+                                    Lưu
                                 </Button>
                                 <Button
                                     variant="text"
                                     size="small"
                                     onClick={() => setIsEditing(false)}
                                 >
-                                    Cancel
+                                    Hủy
                                 </Button>
                             </Stack>
                         </Stack>
@@ -88,9 +109,30 @@ const CommentItem = ({ comment, onDelete, onUpdate }) => {
                 </Box>
 
                 {/* Action Buttons */}
-                {canModify && (
+                {isPending ? (
                     <Stack direction="row" spacing={1}>
-                        <Tooltip title="Edit">
+                        <Button
+                            onClick={() => onApprove(comment.id)}
+                            size="small"
+                            variant="outlined"
+                            color="success"
+                            startIcon={<CheckCircleIcon />}
+                        >
+                            Phê duyệt
+                        </Button>
+                        <Button
+                            onClick={() => onReject(comment.id)}
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            startIcon={<CancelIcon />}
+                        >
+                            Từ chối
+                        </Button>
+                    </Stack>
+                ) : canModify && (
+                    <Stack direction="row" spacing={1}>
+                        <Tooltip title="Chỉnh sửa">
                             <IconButton
                                 onClick={() => setIsEditing(true)}
                                 size="small"
@@ -99,7 +141,7 @@ const CommentItem = ({ comment, onDelete, onUpdate }) => {
                                 <EditIcon />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip title="Delete">
+                        <Tooltip title="Xóa">
                             <IconButton
                                 onClick={() => onDelete(comment.id)}
                                 size="small"
