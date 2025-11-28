@@ -309,7 +309,32 @@ export const getSongsAdmin = async (page = 0, size = 10, signal) => {
 
     return data;
 };
+export const deleteSong = async (id) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/${id}`, {
+      method: "DELETE",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+    });
 
+    if (res.status === 204 || res.status === 200) {
+      return { success: true };
+    }
+
+    const data = await safeJson(res);
+    if (!res.ok) {
+      const msg = data?.message || data?.error || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Error deleting song ${id}:`, error);
+    throw error;
+  }
+};
 export const updateUploadedSong = async (id, formData) => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/songs/uploaded/${id}`, {

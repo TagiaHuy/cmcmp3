@@ -4,10 +4,11 @@ import {
   FormControl, Select, MenuItem
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import UploadSongForm from '../Form/UploadSongForm';
 import EditSongForm from '../Form/EditSongForm';
 import SongList from '../SongList/SongList';
-import { getUploadedSongs, updateUploadedSongStatus } from '../../services/songService';
+import { getUploadedSongs, updateUploadedSongStatus, deleteSong } from '../../services/songService';
 import { useNotifications } from '../../hooks/useNotifications';
 
 const UploadedSongs = () => {
@@ -83,6 +84,21 @@ const UploadedSongs = () => {
     }
   };
 
+  const handleDeleteSong = async (songId) => {
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa bài hát này?');
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteSong(songId);
+      setSongs((prevSongs) => prevSongs.filter((song) => song.id !== songId));
+      notifySuccess('Xóa bài hát thành công!');
+    } catch (err) {
+      notifyError(err.message || 'Lỗi khi xóa bài hát.');
+    }
+  };
+
   const renderSongActions = (song, defaultActions) => (
     <Stack direction="row" spacing={1} alignItems="center">
       <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -107,6 +123,13 @@ const UploadedSongs = () => {
         onClick={() => handleEditClick(song)}
       >
         <EditIcon fontSize="small" />
+      </IconButton>
+      <IconButton
+        size="small"
+        color="error"
+        onClick={() => handleDeleteSong(song.id)}
+      >
+        <DeleteIcon fontSize="small" />
       </IconButton>
       {defaultActions}
     </Stack>
