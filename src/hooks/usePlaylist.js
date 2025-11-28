@@ -36,7 +36,7 @@ const usePlaylist = (playlistId) => {
     };
   }, [playlistId]);
 
-  return { playlist, loading, error };
+  return { playlist, loading, error, setPlaylist };
 };
 
 export default usePlaylist;
