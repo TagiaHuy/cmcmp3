@@ -1,24 +1,29 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
-import { Box, IconButton, Slider, Typography, Stack, Paper } from '@mui/material';
+import { Box, IconButton, Slider, Typography, Stack, Paper, Menu } from '@mui/material'; // Removed MenuItem, ListItemIcon, ListItemText
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import MicIcon from '@mui/icons-material/Mic';
+// Removed DownloadOutlinedIcon
 
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { useMediaActions } from '../../hooks/useMediaActions';
 import { ThemeContext } from '../../theme/ThemeContext';
+import { useNotifications } from '../../hooks/useNotifications'; // Import notifications
 
-import { increaseListenCount } from '../../services/songService';
+import { increaseListenCount } from '../../services/songService'; // Removed downloadSong import
 
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+import AdvancedSeekHandle from './AdvancedSeekHandle';
+import SeekHandle from './SeekHandle';
 import LyricsModal from '../Lyric/LyricsModal';
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 
 import cmcmp3Logo from '../../assets/cmcmp3-logo.png';
-
 const MediaPlayer = () => {
   const {
     currentPlayingSrc,
@@ -32,9 +37,12 @@ const MediaPlayer = () => {
     setCurrentTime,
     toggleLyrics,
     setMediaPlayerHeight,
+    updateSongInQueue,
+    isEditingLyrics,
   } = useMediaPlayer();
 
   const { currentTheme } = useContext(ThemeContext);
+  const { notifySuccess, notifyError } = useNotifications(); // Initialize notifications
 
   const {
     prev,
@@ -49,12 +57,113 @@ const MediaPlayer = () => {
   const listenCountedRef = useRef(false);
   const playerRef = useRef(null);
 
-  // UI STATE
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Removed handleDownload function
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(() => {
     const storedVolume = localStorage.getItem('cmcmp3-volume');
     return storedVolume !== null ? parseFloat(storedVolume) : 0.5;
   });
+  const [selectedLyric, setSelectedLyric] = useState(null);
+
+  const handleCardTimeUpdate = (lyricIndex, newStartTime, newEndTime) => {
+    if (!currentTrack || !currentTrack.lyrics) return;
+
+    const newLyrics = currentTrack.lyrics.map((lyric, index) => {
+        if (index === lyricIndex) {
+            return { ...lyric, time: newStartTime };
+        }
+        return lyric;
+    });
+
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+  };
+
+  const handleCardTextUpdate = (lyricIndex, newText) => {
+    if (!currentTrack || !currentTrack.lyrics) return;
+
+    const newLyrics = currentTrack.lyrics.map((lyric, index) => {
+        if (index === lyricIndex) {
+            return { ...lyric, text: newText };
+        }
+        return lyric;
+    });
+
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+  };
+
+  const handleCardAdd = (selectedIndex) => {
+    if (!currentTrack || !currentTrack.lyrics) {
+      return;
+    }
+  
+    let newLyric;
+    let newLyrics;
+  
+    // Case 1: Called from a specific card with an index
+    if (typeof selectedIndex === 'number' && selectedIndex >= 0 && selectedIndex < currentTrack.lyrics.length) {
+      const selectedLyric = currentTrack.lyrics[selectedIndex];
+      const nextLyric = currentTrack.lyrics[selectedIndex + 1];
+      const selectedLyricEndTime = nextLyric ? nextLyric.time : duration;
+  
+      const midTime = selectedLyric.time + (selectedLyricEndTime - selectedLyric.time) / 2;
+  
+      if (midTime <= selectedLyric.time) {
+        return; // Not enough space
+      }
+  
+      newLyric = {
+        id: Date.now(),
+        text: "New Lyric",
+        time: midTime,
+      };
+  
+      newLyrics = [
+        ...currentTrack.lyrics.slice(0, selectedIndex + 1),
+        newLyric,
+        ...currentTrack.lyrics.slice(selectedIndex + 1)
+      ];
+    } 
+    // Case 2: Called from the global "Add" button (or no valid index)
+    else {
+      newLyric = {
+        id: Date.now(),
+        text: "New Lyric",
+        time: currentTime,
+      };
+      newLyrics = [...currentTrack.lyrics, newLyric];
+    }
+  
+    newLyrics.sort((a, b) => a.time - b.time);
+  
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+    setSelectedLyric(newLyric);
+  };
+
+  const handleCardDelete = (lyricIndex) => {
+    if (!currentTrack || !currentTrack.lyrics) return;
+
+    const newLyrics = currentTrack.lyrics.filter((_, index) => index !== lyricIndex);
+
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+    setSelectedLyric(null);
+  };
+
+  const handleLyricsParsed = (newLyrics) => {
+    if (!currentTrack) return;
+    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
+    setSelectedLyric(null);
+  };
 
   useEffect(() => {
     if (playerRef.current) {
@@ -150,9 +259,6 @@ const MediaPlayer = () => {
     handleEnded();
   };
 
-  const safeDuration = Number.isFinite(duration) ? duration : 0;
-  const safeCurrent = Math.min(Number.isFinite(currentTime) ? currentTime : 0, safeDuration);
-
   const format = (t) => {
     if (!Number.isFinite(t) || t <= 0) return '0:00';
     const m = Math.floor(t / 60);
@@ -165,6 +271,7 @@ const MediaPlayer = () => {
   return (
     <>
       <LyricsModal />
+      
       <Paper
         ref={playerRef}
         elevation={6}
@@ -173,6 +280,7 @@ const MediaPlayer = () => {
           px: 3,
           py: 1.5,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'space-between',
           backdropFilter: 'blur(14px)',
@@ -185,9 +293,30 @@ const MediaPlayer = () => {
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+          zIndex: (theme) => theme.zIndex.modal + 21,
         }}
       >
+        {isEditingLyrics && (
+          <AdvancedSeekHandle
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={handleSeek}
+              textColor={textColor}
+              lyrics={currentTrack?.lyrics}
+              onCardTimeUpdate={handleCardTimeUpdate}
+              selectedLyric={selectedLyric}
+              onSelectLyric={setSelectedLyric}
+              onCardTextUpdate={handleCardTextUpdate}
+              onCardAdd={handleCardAdd}
+              onCardDelete={handleCardDelete}
+              onLyricsParsed={handleLyricsParsed}
+          />
+        )}
+        <Box
+        sx={{
+          width: '100%',
+          display: 'flex'
+        }}>
         {/* LEFT SECTION — Song Info */}
         <Box
           sx={{
@@ -205,7 +334,18 @@ const MediaPlayer = () => {
             songAuthor={currentTrack?.artists || 'Unknown'}
           />
           <FavoriteButton songId={currentTrack?.id} isFavorite={currentTrack?.isFavorite} />
-          <MoreButton />
+          <MoreButton onClick={handleMenuOpen} />
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleMenuClose}
+            MenuListProps={{
+              'aria-labelledby': 'more-button-media-player',
+            }}
+          >
+            <DownloadMenuItem songId={currentTrack?.id} songTitle={currentTrack?.title} onCloseMenu={handleMenuClose} />
+            <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={currentTrack?.id} />
+          </Menu>
         </Box>
 
         {/* CENTER SECTION — Controls */}
@@ -229,43 +369,20 @@ const MediaPlayer = () => {
             handleRepeat={cycleRepeatMode}
           />
 
-          {/* Progress Bar */}
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-            <audio
-              ref={audioRef}
-              src={currentPlayingSrc || undefined}
-              preload="metadata"
-              onEnded={onEnded}
-            />
-
-            <Typography variant="body2" sx={{ color: textColor, width: 40 }}>
-              {format(safeCurrent)}
-            </Typography>
-
-            <Slider
-              value={safeCurrent}
-              min={0}
-              max={safeDuration}
-              step={1}
-              onChange={handleSeek}
-              sx={{
-                color: '#9353FF',
-                flexGrow: 1,
-                '& .MuiSlider-track': { border: 'none' },
-                '& .MuiSlider-thumb': {
-                  width: 14,
-                  height: 14,
-                  backgroundColor: '#fff',
-                  border: '2px solid #9353FF',
-                  '&:hover': { boxShadow: '0 0 0 8px rgba(147, 83, 255, 0.16)' },
-                },
-              }}
-            />
-
-            <Typography variant="body2" sx={{ color: textColor, width: 40, textAlign: 'right' }}>
-              {format(safeDuration)}
-            </Typography>
-          </Stack>
+          <audio
+            ref={audioRef}
+            src={currentPlayingSrc || undefined}
+            preload="metadata"
+            onEnded={onEnded}
+          />
+          
+          <SeekHandle
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={handleSeek}
+            textColor={textColor}
+            format={format}
+          />
         </Stack>
 
         {/* RIGHT SECTION — Volume + Playlist */}
@@ -323,6 +440,7 @@ const MediaPlayer = () => {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
+      </Box>
       </Paper>
     </>
   );

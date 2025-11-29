@@ -30,7 +30,7 @@ const PlaylistDetailPage = () => {
   const { notifySuccess, notifyError } = useNotifications();
 
   // Use the renamed updatePlaylist function from the hook
-  const { deletePlaylist, updatePlaylist: updatePlaylistService, getSongsForPlaylist } = usePlaylists();
+  const { deletePlaylist, editPlaylist: updatePlaylistService, getSongsForPlaylist } = usePlaylists();
   const { playlist, loading, error, setPlaylist } = usePlaylist(playlistId);
   const { loadQueue, queue, isPlaying, setIsPlaying } = useMediaPlayer();
 

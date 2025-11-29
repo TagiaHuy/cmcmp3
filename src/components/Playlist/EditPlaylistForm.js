@@ -92,7 +92,7 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
     e.preventDefault();
     setIsSubmitting(true);
     const formData = new FormData();
-    formData.append('title', name);
+    formData.append('name', name);
     formData.append('description', description);
     formData.append('privacy', isPrivate ? 'PRIVATE' : 'PUBLIC');
     if (imageFile) {

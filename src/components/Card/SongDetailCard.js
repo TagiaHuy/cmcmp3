@@ -1,14 +1,33 @@
-import React from 'react';
-import { Box, Typography, Stack } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Stack, Menu } from '@mui/material'; // Removed MenuItem, ListItemIcon, ListItemText
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+// Removed DownloadOutlinedIcon
 import MoreButton from '../Button/Specific/MoreButton';
 import { useMediaPlayer, normalizeArtists } from '../../context/MediaPlayerContext';
 import PrimaryPlaybackButton from '../Button/Specific/PrimaryPlaybackButton';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
+// Removed downloadSong and useNotifications
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
+
+import ShareMenu from '../MenuItem/Specific/ShareMenu'; // Import ShareMenu
 
 const SongDetailCard = ({ song }) => {
   const { handlePlay, currentTrack, isPlaying: isPlayerPlaying, setIsPlaying } = useMediaPlayer();
+  // Removed useNotifications
+
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Removed handleDownload function
 
   // ⭐ Chuẩn hóa artists về string
   const artistText = normalizeArtists(song?.artists);
@@ -96,7 +115,18 @@ const SongDetailCard = ({ song }) => {
           handlePlayPause={handleTogglePlay}
         />
 
-        <MoreButton />
+        <MoreButton onClick={handleMenuOpen} />
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          MenuListProps={{
+            'aria-labelledby': 'more-button',
+          }}
+        >
+          <DownloadMenuItem songId={song.id} songTitle={song.title} onCloseMenu={handleMenuClose} />
+          <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={song.id} />
+        </Menu>
       </Stack>
 
       {/* 4. Stats nhỏ */}

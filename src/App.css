@@ -23,3 +23,17 @@
 .see-all-link:hover {
   color: #ffffff;
 }
+
+/* Fade-in animation for images */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in-image {
+  animation: fadeIn 0.5s ease-in-out; /* Adjust duration and timing function as needed */
+}

@@ -1,6 +1,6 @@
 // src/hooks/useSong.js
-import { useState, useEffect } from "react";
-import { getSongById } from "../services/songService";
+import { useState, useEffect, useCallback } from "react";
+import { getSongById, updateSongLyrics } from "../services/songService";
 
 const useSong = (songId) => {
   const [song, setSong] = useState(null);
@@ -36,7 +36,23 @@ const useSong = (songId) => {
     return () => ac.abort();
   }, [songId]);
 
-  return { song, loading, error };
+  const updateLyrics = useCallback(async (newLyrics) => {
+    if (!songId) {
+      throw new Error("Cannot update lyrics: songId is not provided.");
+    }
+    try {
+      // Assuming updateSongLyrics returns the updated song object
+      const updatedSong = await updateSongLyrics(songId, newLyrics);
+      setSong(updatedSong); // Update local state with the newly updated song
+      return updatedSong;
+    } catch (err) {
+      console.error("Failed to update lyrics:", err);
+      setError(err);
+      throw err;
+    }
+  }, [songId]);
+
+  return { song, loading, error, updateLyrics };
 };
 
 export default useSong;

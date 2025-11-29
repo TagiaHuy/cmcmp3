@@ -38,6 +38,7 @@ export const MediaPlayerProvider = ({ children }) => {
   const [isShuffling, setIsShuffling] = useState(false);
   const [repeatMode, setRepeatMode] = useState('none');
   const [isLyricsVisible, setIsLyricsVisible] = useState(false);
+  const [isEditingLyrics, setIsEditingLyrics] = useState(false);
 
   // --- Init recently played from localStorage ---
   useEffect(() => {
@@ -139,6 +140,10 @@ export const MediaPlayerProvider = ({ children }) => {
 
   const toggleLyrics = useCallback(() => {
     setIsLyricsVisible(v => !v);
+  }, []);
+
+  const toggleLyricsEditor = useCallback(() => {
+    setIsEditingLyrics(v => !v);
   }, []);
 
   const playPlaylistRandom = useCallback((songs) => {
@@ -270,6 +275,8 @@ export const MediaPlayerProvider = ({ children }) => {
     toggleLyrics,
     mediaPlayerHeight,
     setMediaPlayerHeight,
+    isEditingLyrics,
+    toggleLyricsEditor,
 
   }), [
     queue, currentIndex, currentTrack, currentPlayingSrc,
@@ -279,7 +286,8 @@ export const MediaPlayerProvider = ({ children }) => {
     handlePlay, loadQueue, playPlaylistRandom, playAt,
     prev, next, toggleShuffle, cycleRepeatMode, handleEnded,
     clearRecentlyPlayed, toggleSidebarRight, updateSongInQueue,
-    currentTime, isLyricsVisible, toggleLyrics, mediaPlayerHeight
+    currentTime, isLyricsVisible, toggleLyrics, mediaPlayerHeight,
+    isEditingLyrics, toggleLyricsEditor
   ]);
 
   return (

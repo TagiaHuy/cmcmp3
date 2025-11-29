@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react'; // Import useState
 import { 
   ListItem, 
   ListItemButton, 
   ListItemText, 
   Stack, 
   Typography,
-  Box
+  Box,
+  Menu // Import Menu
 } from '@mui/material';
 import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
@@ -13,9 +14,23 @@ import MoreButton from '../Button/Specific/MoreButton';
 import PlayableImage from '../Card/PlayableImage';
 import { normalizeArtists } from '../../context/MediaPlayerContext';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import DownloadMenuItem
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 
 const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
   const navigate = useNavigate(); // Initialize useNavigate
+
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    event.stopPropagation(); // Prevent other click events
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   // ⭐ Chuẩn hóa artist (phòng BE trả array)
   const artistText = normalizeArtists(song.artists);
@@ -30,7 +45,18 @@ const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
   const defaultActions = (
     <Stack direction="row" spacing={1} alignItems="center">
       <FavoriteButton songId={song.id} isFavorite={song.isFavorite} />
-      <MoreButton />
+      <MoreButton onClick={handleMenuOpen} />
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleMenuClose}
+        MenuListProps={{
+          'aria-labelledby': `more-button-song-list-item-${song.id}`,
+        }}
+      >
+        <DownloadMenuItem songId={song.id} songTitle={song.title} onCloseMenu={handleMenuClose} />
+        <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={song.id} />
+      </Menu>
     </Stack>
   );
 
