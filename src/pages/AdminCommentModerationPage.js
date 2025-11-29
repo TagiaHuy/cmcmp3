@@ -37,7 +37,7 @@ const AdminCommentModerationPage = () => {
         if (commentType === 'song') {
             navigate(`/songs/${contentId}`);
         } else if (commentType === 'playlist') {
-            navigate(`/playlists/${contentId}`);
+            navigate(`/playlist/${contentId}`);
         }
     };
 
@@ -82,6 +82,7 @@ const AdminCommentModerationPage = () => {
                         console.log('Comment Type:', comment.type);
                         console.log('Content ID:', contentId);
                         console.log('Content Title:', contentTitle);
+                        console.log('Full Comment Object:', comment);
 
                         return (
                             <Paper key={comment.id} elevation={2} sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
