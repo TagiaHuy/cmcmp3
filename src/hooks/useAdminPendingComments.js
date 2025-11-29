@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import commentService from '../services/commentService';
-import { getSongById } from '../services/songService'; // Import songService
-import { getPlaylistById } from '../services/playlistService'; // Import playlistService
 import { useAuth } from '../context/AuthContext';
 
 const useAdminPendingComments = () => {
@@ -26,28 +24,13 @@ const useAdminPendingComments = () => {
                 commentService.getAdminPendingPlaylistComments(0, 100, signal),
             ]);
 
-            // Extract unique song and playlist IDs
-            const uniqueSongIds = [...new Set(songCommentsRes.content.map(c => c.song?.id).filter(Boolean))];
-            const uniquePlaylistIds = [...new Set(playlistCommentsRes.content.map(c => c.playlist?.id).filter(Boolean))];
-
-            // Fetch song and playlist details for titles
-            const [songsData, playlistsData] = await Promise.all([
-                Promise.all(uniqueSongIds.map(id => getSongById(id, signal))),
-                Promise.all(uniquePlaylistIds.map(id => getPlaylistById(id, signal))),
-            ]);
-
-            const songsMap = new Map(songsData.filter(Boolean).map(s => [s.id, s]));
-            const playlistsMap = new Map(playlistsData.filter(Boolean).map(p => [p.id, p]));
-
             const songComments = songCommentsRes.content.map(comment => ({
                 ...comment,
                 type: 'song',
-                song: comment.song?.id ? (songsMap.get(comment.song.id) || comment.song) : comment.song, // Replace with full song object
             }));
             const playlistComments = playlistCommentsRes.content.map(comment => ({
                 ...comment,
                 type: 'playlist',
-                playlist: comment.playlist?.id ? (playlistsMap.get(comment.playlist.id) || comment.playlist) : comment.playlist, // Replace with full playlist object
             }));
 
             // Combine and sort by creation date (newest first)
