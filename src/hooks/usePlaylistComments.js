@@ -19,7 +19,8 @@ const usePlaylistComments = (playlistId) => {
     const [pendingPagination, setPendingPagination] = useState(null);
     const [pendingPage, setPendingPage] = useState(0);
 
-    const canModerate = isAdmin || (user && playlist && playlist.creator && user.id === playlist.creator.id);
+
+    const canModerate = isAdmin || (user && playlist && playlist.owner && user.id === playlist.owner.id);
 
     const fetchComments = useCallback(async (page = 0, size = 10, signal) => {
         try {
