@@ -4,6 +4,9 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import MicIcon from '@mui/icons-material/Mic';
+import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 // Removed DownloadOutlinedIcon
 
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
@@ -39,6 +42,7 @@ const MediaPlayer = () => {
     setMediaPlayerHeight,
     updateSongInQueue,
     isEditingLyrics,
+    turnOffPlayer,
   } = useMediaPlayer();
 
   const { currentTheme } = useContext(ThemeContext);
@@ -216,26 +220,67 @@ const MediaPlayer = () => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  // Listen Count Effect
+  // Listen Count Session Management
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !currentTrack) return;
+    if (!audio || !currentTrack || !duration) return;
 
-    listenCountedRef.current = false; // Reset for new track
+    const songId = currentTrack.id;
+    const listenSessionKey = `cmcmp3-listen-session-${songId}`;
+
+    // Function to start a new listen session
+    const startListenSession = () => {
+      const now = Date.now();
+      const session = {
+        songId,
+        startTime: now,
+        countedTime: now + 30 * 1000, // 30 seconds from now
+        endTime: now + duration * 1000,
+        counted: false,
+      };
+      localStorage.setItem(listenSessionKey, JSON.stringify(session));
+      return session;
+    };
+
+    // Check for an existing session
+    let sessionJSON = localStorage.getItem(listenSessionKey);
+    let session = sessionJSON ? JSON.parse(sessionJSON) : null;
+
+    // If session exists but has expired, or doesn't exist, start a new one
+    if (!session || Date.now() > session.endTime) {
+      session = startListenSession();
+    }
 
     const handleTimeUpdate = () => {
-      if (audio.currentTime > 30 && !listenCountedRef.current) {
-        listenCountedRef.current = true; // Prevent multiple calls
-        increaseListenCount(currentTrack.id);
+      let currentSessionJSON = localStorage.getItem(listenSessionKey);
+      if (!currentSessionJSON) return;
+
+      let currentSession = JSON.parse(currentSessionJSON);
+
+      // Check if it's time to count the listen
+      if (Date.now() > currentSession.countedTime && !currentSession.counted) {
+        increaseListenCount(songId);
+        currentSession.counted = true;
+        localStorage.setItem(listenSessionKey, JSON.stringify(currentSession));
       }
     };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
 
+    // Cleanup function when the component unmounts or the track changes
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
+      
+      let finalSessionJSON = localStorage.getItem(listenSessionKey);
+      if (finalSessionJSON) {
+        let finalSession = JSON.parse(finalSessionJSON);
+        // If the song ends before being counted, clear the session
+        if (!finalSession.counted) {
+          localStorage.removeItem(listenSessionKey);
+        }
+      }
     };
-  }, [currentTrack]);
+  }, [currentTrack, duration]);
   
   const handlePlayPause = () => {
     if (!currentTrack) return;
@@ -267,6 +312,10 @@ const MediaPlayer = () => {
   };
 
   const textColor = currentTheme === 'dark' ? '#eee' : '#222';
+
+  if (!currentTrack) {
+    return null;
+  }
 
   return (
     <>
@@ -429,7 +478,10 @@ const MediaPlayer = () => {
               transition: '0.2s',
             }}
           >
-            <QueueMusicIcon />
+            {isSidebarRightVisible ? <ArrowBackIosIcon /> : <ArrowForwardIosIcon />}
+          </IconButton>
+          <IconButton onClick={turnOffPlayer} sx={{ color: textColor }}>
+            <CloseIcon />
           </IconButton>
         </Box>
 

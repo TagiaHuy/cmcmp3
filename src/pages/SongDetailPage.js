@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, CircularProgress } from '@mui/material';
 
@@ -11,6 +11,14 @@ import Comment from '../components/Comment/Comment'; // Import the Comment compo
 const SongDetailPage = () => {
   const { songId } = useParams();
   const { song, loading, error } = useSong(songId);
+  const [displaySong, setDisplaySong] = useState(song);
+  const listenCountUpdated = useRef(false);
+
+  // Update displaySong when the song from the hook changes
+  useEffect(() => {
+    setDisplaySong(song);
+    listenCountUpdated.current = false; // Reset when song changes
+  }, [song]);
 
   // ⭐ lấy hàm điều khiển trình phát
   const { loadQueue } = useMediaPlayer();
@@ -36,6 +44,42 @@ const SongDetailPage = () => {
 
   }, [song, loadQueue]);
 
+  // Real-time listen count update
+  useEffect(() => {
+    if (!songId || loading) return;
+
+    const listenSessionKey = `cmcmp3-listen-session-${songId}`;
+    const interval = setInterval(() => {
+      const sessionJSON = localStorage.getItem(listenSessionKey);
+      if (sessionJSON) {
+        const session = JSON.parse(sessionJSON);
+        if (session.counted && !listenCountUpdated.current) {
+          setDisplaySong(prevSong => {
+            if (prevSong) {
+              return { ...prevSong, listenCount: prevSong.listenCount + 1 };
+            }
+            return prevSong;
+          });
+          listenCountUpdated.current = true;
+        }
+      }
+    }, 1000); // Check every second
+
+    return () => clearInterval(interval); // Cleanup interval on unmount
+  }, [songId, loading]);
+
+  const handleLikeToggle = (isFavorited) => {
+    setDisplaySong(prevSong => {
+      if (prevSong) {
+        return {
+         ...prevSong,
+          likeCount: isFavorited? prevSong.likeCount + 1 : prevSong.likeCount - 1,
+        };
+      }
+      return prevSong;
+    });
+  };
+
 
   if (loading) {
     return (
@@ -49,7 +93,7 @@ const SongDetailPage = () => {
     return <Typography color="error">Lỗi khi tải bài hát.</Typography>;
   }
 
-  if (!song) {
+  if (!displaySong) {
     return <Typography>Không tìm thấy bài hát.</Typography>;
   }
 
@@ -57,7 +101,7 @@ const SongDetailPage = () => {
     <Box>
       <Box display="flex" flexDirection="row" sx={{ p: 3 }}>
         {/* ⭐ Card chi tiết bài hát */}
-        <SongDetailCard song={song} />
+        <SongDetailCard song={displaySong} onLikeToggle={handleLikeToggle} />
 
         <Box sx={{ width: '100%', ml: 3 }}>
           {/* ⭐ Danh sách bài (SongList) */}

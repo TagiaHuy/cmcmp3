@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
-import { Box, Container, Paper, Typography } from '@mui/material';
+import { Container, Paper, Typography } from '@mui/material';
 import LoginOtpVerificationForm from '../components/Form/LoginOtpVerificationForm';
 
 const LoginOtpVerificationPage = () => {

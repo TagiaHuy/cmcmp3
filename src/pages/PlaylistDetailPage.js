@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Typography, CircularProgress, Tabs, Tab, Modal, Button } from '@mui/material';
+import { Box, Typography, CircularProgress, Tabs, Tab, Modal } from '@mui/material';
 import usePlaylist from '../hooks/usePlaylist';
 import SongList from '../components/SongList/SongList';
 import PlaylistDetailCard from '../components/Card/PlaylistDetailCard';

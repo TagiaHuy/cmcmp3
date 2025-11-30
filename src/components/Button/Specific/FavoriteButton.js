@@ -6,7 +6,7 @@ import { useNotifications } from '../../../hooks/useNotifications';
 import { likeSong, unlikeSong } from '../../../services/songService';
 import { useMediaPlayer } from '../../../context/MediaPlayerContext';
 
-function FavoriteButton({ songId, isFavorite, visible = true, ...props }) {
+function FavoriteButton({ songId, isFavorite, onLikeToggle, visible = true, ...props }) {
   const [favorited, setFavorited] = useState(isFavorite);
   const { updateSongInQueue } = useMediaPlayer();
   const { notifySuccess, notifyError } = useNotifications();
@@ -31,6 +31,9 @@ function FavoriteButton({ songId, isFavorite, visible = true, ...props }) {
       setFavorited(newFavoritedState);
       if (updateSongInQueue) {
         updateSongInQueue(songId, { isFavorite: newFavoritedState });
+      }
+      if (onLikeToggle) {
+        onLikeToggle(newFavoritedState);
       }
     } catch (error) {
       notifyError("Có lỗi xảy ra, vui lòng thử lại.");

@@ -12,7 +12,7 @@ import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import 
 
 import ShareMenu from '../MenuItem/Specific/ShareMenu'; // Import ShareMenu
 
-const SongDetailCard = ({ song }) => {
+const SongDetailCard = ({ song, onLikeToggle }) => {
   const { handlePlay, currentTrack, isPlaying: isPlayerPlaying, setIsPlaying } = useMediaPlayer();
   // Removed useNotifications
 
@@ -107,7 +107,7 @@ const SongDetailCard = ({ song }) => {
 
       {/* 3. Action Buttons */}
       <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 4 }}>
-        <FavoriteButton songId={song.id} isFavorite={isLiked} />
+        <FavoriteButton songId={song.id} isFavorite={isLiked} onLikeToggle={onLikeToggle} />
 
         {/* ⭐ Play chính → truyền unifiedTrack */}
         <PrimaryPlaybackButton

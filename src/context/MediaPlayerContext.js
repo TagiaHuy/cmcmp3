@@ -28,7 +28,7 @@ export const MediaPlayerProvider = ({ children }) => {
   const [currentTrack, setCurrentTrack] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
-  const [isSidebarRightVisible, setIsSidebarRightVisible] = useState(true);
+  const [isSidebarRightVisible, setIsSidebarRightVisible] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [mediaPlayerHeight, setMediaPlayerHeight] = useState(0);
 
@@ -237,6 +237,14 @@ export const MediaPlayerProvider = ({ children }) => {
     );
   }, []);
 
+  const turnOffPlayer = useCallback(() => {
+    setIsPlaying(false);
+    setCurrentTrack(null);
+    setQueue([]);
+    setCurrentIndex(0);
+    setIsSidebarRightVisible(false);
+  }, []);
+
   // ============================================
   // VALUE xuất ra cho toàn app
   // ============================================
@@ -277,6 +285,7 @@ export const MediaPlayerProvider = ({ children }) => {
     setMediaPlayerHeight,
     isEditingLyrics,
     toggleLyricsEditor,
+    turnOffPlayer,
 
   }), [
     queue, currentIndex, currentTrack, currentPlayingSrc,
@@ -287,7 +296,7 @@ export const MediaPlayerProvider = ({ children }) => {
     prev, next, toggleShuffle, cycleRepeatMode, handleEnded,
     clearRecentlyPlayed, toggleSidebarRight, updateSongInQueue,
     currentTime, isLyricsVisible, toggleLyrics, mediaPlayerHeight,
-    isEditingLyrics, toggleLyricsEditor
+    isEditingLyrics, toggleLyricsEditor, turnOffPlayer
   ]);
 
   return (
