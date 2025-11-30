@@ -35,7 +35,7 @@ const NotificationBell = () => {
         if (noti.type === 'LIKE_SONG' || noti.type === 'COMMENT_SONG') {
             navigate(`/songs/${noti.referenceId}`);
         } else if (noti.type === 'LIKE_PLAYLIST' || noti.type === 'COMMENT_PLAYLIST') {
-            navigate(`/playlist/${noti.referenceId}`);
+            navigate(`/playlists/${noti.referenceId}`);
         }
         
         handleClose();

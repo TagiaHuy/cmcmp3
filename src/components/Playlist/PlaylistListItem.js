@@ -17,7 +17,7 @@ const PlaylistListItem = ({ playlist, onEdit, onDelete }) => {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const handleItemClick = () => {
-    navigate(`/playlist/${playlist.id}`); // Navigate to playlist detail page
+    navigate(`/playlists/${playlist.id}`); // Navigate to playlist detail page
   };
 
   return (

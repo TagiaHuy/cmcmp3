@@ -37,7 +37,7 @@ const AdminCommentModerationPage = () => {
         if (commentType === 'song') {
             navigate(`/songs/${contentId}`);
         } else if (commentType === 'playlist') {
-            navigate(`/playlist/${contentId}`);
+            navigate(`/playlists/${contentId}`);
         }
     };
 

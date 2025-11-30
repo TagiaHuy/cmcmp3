@@ -71,7 +71,7 @@ function App() {
           <Route path="/recently-played" element={<RecentlyPlayedPage />} />
           <Route path="/songs/:songId" element={<SongDetailPage />} />
           <Route path="/artist/:artistId" element={<ArtistDetailPage />} />
-          <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
+          <Route path="/playlists/:playlistId" element={<PlaylistDetailPage />} />
           <Route path="/tags/:tagId" element={<TagDetailPage />} />
           <Route path="/artists" element={<ArtistsPage />} /> {/* Re-added route for ArtistsPage */}
 

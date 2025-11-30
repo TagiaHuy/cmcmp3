@@ -69,7 +69,7 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default', isLoading }) 
   };
 
   const handleCardClick = () => {
-    navigate(`/playlist/${playlist.id}`);
+    navigate(`/playlists/${playlist.id}`);
   };
 
   // ============================================
