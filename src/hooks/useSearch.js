@@ -61,6 +61,17 @@ const useSearch = (query) => {
           allFormattedResults.push(...playlistResults);
         }
 
+        // 4. Xử lý kết quả Tags (Thẻ)
+        if (searchResults?.tags && searchResults.tags.length > 0) {
+          const tagResults = searchResults.tags.map(tag => ({
+            type: 'tag', // Thêm trường type
+            id: tag.id,
+            name: tag.name, // Dùng 'name' làm 'name'
+            // imageUrl: tag.imageUrl, // Có thể thêm ảnh tag nếu API hỗ trợ
+          }));
+          allFormattedResults.push(...tagResults);
+        }
+
         // Chỉ update nếu effect chưa bị cleanup
         if (!isCancelled) {
           // Gộp tất cả kết quả lại thành một mảng duy nhất

@@ -15,6 +15,7 @@ import TestPage from './pages/TestPage';
 import SongDetailPage from './pages/SongDetailPage';
 import ArtistDetailPage from './pages/ArtistDetailPage';
 import PlaylistDetailPage from './pages/PlaylistDetailPage';
+import TagDetailPage from './pages/TagDetailPage'; // Import TagDetailPage
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
@@ -71,6 +72,7 @@ function App() {
           <Route path="/songs/:songId" element={<SongDetailPage />} />
           <Route path="/artist/:artistId" element={<ArtistDetailPage />} />
           <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
+          <Route path="/tags/:tagId" element={<TagDetailPage />} />
           <Route path="/artists" element={<ArtistsPage />} /> {/* Re-added route for ArtistsPage */}
 
           {/* Auth pages: chỉ hiển thị khi CHƯA đăng nhập */}

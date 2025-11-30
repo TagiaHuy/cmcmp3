@@ -124,6 +124,30 @@ export const getSongsByArtist = async (artistId, signal) => {
 };
 
 /* ==========================================================
+    GET SONGS BY TAG
+========================================================== */
+export const getSongsByTag = async (tagId, signal) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/tags/${tagId}/songs`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+    return (Array.isArray(data) ? data : []).map(mapSong);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    return [];
+  }
+};
+
+/* ==========================================================
     4) TOP SONGS — Listen count
 ========================================================== */
 export const getTopSongs = async (limit = 10, signal) => {
