@@ -8,6 +8,7 @@ const OAuth2RedirectHandler = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
