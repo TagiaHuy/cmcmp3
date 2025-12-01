@@ -13,6 +13,8 @@ const OAuth2RedirectHandler = () => {
     const token = params.get('token');
     const error = params.get('error');
 
+
+
     if (token) {
       handleSocialLogin(token);
       navigate('/');
