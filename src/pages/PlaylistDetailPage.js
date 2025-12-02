@@ -1,3 +1,5 @@
+import API_BASE_URL from '../config';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, CircularProgress, Tabs, Tab, Modal } from '@mui/material';
@@ -81,7 +83,12 @@ const PlaylistDetailPage = () => {
       if (isPlaylistCurrentlyLoaded) {
         setIsPlaying(!isPlaying);
       } else {
-        loadQueue(songs);
+        const unifiedSongs = songs.map(song => ({
+            ...song,
+            mediaSrc: song.filePath, // Use filePath as the source of truth
+            artists: Array.isArray(song.artists) ? song.artists.map(a => a.name).join(', ') : song.artists,
+        }));
+        loadQueue(unifiedSongs);
       }
     }
   };
@@ -152,7 +159,7 @@ const PlaylistDetailPage = () => {
             <Tab label="Songs" />
             <Tab label="Comments" />
           </Tabs>
-          {selectedTab === 0 && <SongList songIds={playlist.songs} />}
+          {selectedTab === 0 && <SongList songs={songs} />}
           {selectedTab === 1 && <Comment playlistId={playlistId} />}
         </Box>
       </Box>
