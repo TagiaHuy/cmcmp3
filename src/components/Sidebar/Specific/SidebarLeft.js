@@ -6,6 +6,7 @@ import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import HistoryIcon from '@mui/icons-material/History';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 import CommentIcon from '@mui/icons-material/Comment'; // Import CommentIcon
+import ReportIcon from '@mui/icons-material/Report'; // Import ReportIcon
 import LogoButton from '../../Button/Specific/LogoButton';
 import { useAuth } from '../../../context/AuthContext';
 import {ThemeContext} from "../../../theme/ThemeContext";
@@ -30,6 +31,7 @@ function SidebarLeft() {
           { text: 'Quản lý bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs' },
           { text: 'Kiểm duyệt bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs/moderation' },
           { text: 'Kiểm duyệt bình luận', icon: <CommentIcon />, to: '/admin/comments/moderation' }, // New admin link
+          { text: 'Quản lý báo cáo', icon: <ReportIcon />, to: '/admin/reports' },
         ]
       : [];
 
