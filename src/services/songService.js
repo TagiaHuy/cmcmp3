@@ -65,8 +65,35 @@ export const getAllSongs = async (page = 0, size = 10, sortBy = 'createdAt', dir
 
     const data = await safeJson(res);
     if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
-
     return (Array.isArray(data) ? data : []).map(mapSong);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error("Error fetching songs:", error);
+    return [];
+  }
+};
+
+export const getAllSongs2 = async (page = 0, size = 10, sortBy = 'createdAt', direction = 'desc', signal) => {
+  try {
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sortBy,
+      direction,
+    }).toString();
+
+    const res = await fetch(`${API_BASE_URL}/api/songs?${queryParams}`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+    return data;
   } catch (error) {
     if (error.name === 'AbortError') throw error;
     console.error("Error fetching songs:", error);

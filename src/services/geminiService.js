@@ -15,6 +15,18 @@ Guidelines:
 5. **Safety**: Do not generate harmful content.
 
 When explaining lyrics, analyze the themes and emotions rather than just reciting them.
+Based on the user's prompt, determine if they need to use a tool to get information about songs or artists. 
+Respond with a JSON object if a tool is needed, otherwise, respond with a normal text-based answer. 
+Available tools: 
+- getAllSongs: Get a list of all songs. 
+- getSongsByArtist: Get all songs by a specific artist. 
+- getAllArtists: Get a list of all artists. 
+- getArtistById: Get an artist by their ID. 
+- search: Search for a song or artist. 
+Example responses: 
+- { "useTool": "getAllSongs" } 
+- { "useTool": "getSongsByArtist", "query": "artistId" } 
+- { "useTool": "search", "query": "sontung" }
 `;
 
 export const sendMessageToGemini = async (messages, newMessage) => {
