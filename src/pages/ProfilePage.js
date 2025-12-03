@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import MainLayout from '../layout/MainLayout';
 import {
@@ -12,6 +12,7 @@ import { updateTwoFactorPreference, requestArtistVerification } from '../service
 import { uploadFile } from '../services/fileUploadService';
 import API_BASE_URL from '../config';
 import useIsAdmin from '../hooks/useIsAdmin';
+
 import ArtistVerificationRequestForm from '../components/Form/ArtistVerificationRequestForm';
 
 const ProfilePage = () => {
@@ -33,6 +34,22 @@ const ProfilePage = () => {
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationError, setVerificationError] = useState('');
+
+  // Determine if the user is an artist using a robust role check
+  const isArtist = useMemo(() => {
+    if (!user) return false;
+    const roleCandidates = [
+      ...(Array.isArray(user.roles) ? user.roles : []),
+      ...(Array.isArray(user.authorities) ? user.authorities : []),
+      ...(Array.isArray(user.roleList) ? user.roleList : []),
+    ];
+
+    const roleStrs = roleCandidates
+      .map(r => (typeof r === "string" ? r : (r?.authority || r?.name || r?.role || r?.code || "")))
+      .map(s => String(s).toUpperCase());
+
+    return roleStrs.some(s => s.includes("ARTIST"));
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -274,7 +291,7 @@ const ProfilePage = () => {
                   Đổi mật khẩu
                 </Button>
               )}
-              {!isAdmin && user.role !== 'ARTIST' && (
+              {!isAdmin && !isArtist && (
                  <Button
                     variant="contained"
                     color="primary"
