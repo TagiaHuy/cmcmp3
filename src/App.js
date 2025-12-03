@@ -170,6 +170,17 @@ function App() {
           />
 
           <Route
+              path="/admin/songs/moderation"
+              element={
+                  <PrivateRoute isAuthed={isAuthenticated}>
+                      <AdminRoute isAdmin={isAdmin}>
+                          <AdminSongModerationPage />
+                      </AdminRoute>
+                  </PrivateRoute>
+              }
+          />
+
+          <Route
               path="/admin/comments/moderation"
               element={
                   <PrivateRoute isAuthed={isAuthenticated}>
