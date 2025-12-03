@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import PlayallButton from '../Button/Specific/PlayallButton';
@@ -45,14 +44,9 @@ const ArtistDetailCard = ({ artist, onPlayAll }) => {
         alt={artist.name}
       />
       
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-        <Typography variant="h4" component="h1" color="text.primary" sx={{ fontWeight: 700, textAlign: 'center', mr: 1 }}>
-          {artist.name}
-        </Typography>
-        {artist.isVerified && ( // Conditional rendering for the checkmark
-          <VerifiedUserIcon sx={{ color: theme.palette.primary.main, fontSize: '1.5rem' }} />
-        )}
-      </Box>
+      <Typography variant="h4" component="h1" color="text.primary" sx={{ fontWeight: 700, textAlign: 'center' }}>
+        {artist.name}
+      </Typography>
       
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
         {artist.songCount} Songs

@@ -12,6 +12,7 @@ import { updateTwoFactorPreference, requestArtistVerification } from '../service
 import { uploadFile } from '../services/fileUploadService';
 import API_BASE_URL from '../config';
 import useIsAdmin from '../hooks/useIsAdmin';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
 import ArtistVerificationRequestForm from '../components/Form/ArtistVerificationRequestForm';
 
@@ -199,9 +200,19 @@ const ProfilePage = () => {
   return (
     <Box sx={{ padding: 4, display: 'flex', justifyContent: 'center' }}>
       <Paper sx={{ padding: 4, backgroundColor: (theme) => theme.palette.background.paper, maxWidth: 800, width: '100%' }}>
-        <Typography variant="h4" gutterBottom>
-          Hồ sơ cá nhân
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h4" gutterBottom component="span" sx={{ mr: 1 }}>
+            Hồ sơ cá nhân
+          </Typography>
+          {user.displayName && ( // Display user's display name
+            <Typography variant="h4" gutterBottom component="span" sx={{ mr: 1, fontWeight: 'bold' }}>
+              {user.displayName}
+            </Typography>
+          )}
+          {isArtist && ( // Conditional rendering for the checkmark
+            <VerifiedUserIcon sx={{ color: 'primary.main', fontSize: '1.5rem' }} />
+          )}
+        </Box>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
