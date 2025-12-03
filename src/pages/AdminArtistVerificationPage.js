@@ -120,7 +120,7 @@ export default function AdminArtistVerificationPage() {
                           }}
                         >
                           <TableCell>{req.user?.displayName || req.user?.username || 'N/A'}</TableCell>
-                          <TableCell>{req.stageName}</TableCell>
+                          <TableCell>{req.artistName}</TableCell>
                           <TableCell>
                             <Avatar src={req.imageUrl} alt={req.stageName} />
                           </TableCell>
