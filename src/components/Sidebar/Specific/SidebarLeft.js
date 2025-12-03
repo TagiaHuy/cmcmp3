@@ -30,7 +30,7 @@ function SidebarLeft() {
           { text: 'Quản lý tài khoản', icon: <PeopleAltRoundedIcon />, to: '/admin/users' },
           { text: 'Quản lý bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs' },
           { text: 'Kiểm duyệt bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs/moderation' },
-          { text: 'Xác thực nghệ sĩ', icon: <VerifiedUserIcon />, to: '/admin/artist-verifications' },
+          { text: 'Xác thực nghệ sĩ', icon: <VerifiedUserIcon />, to: '/admin/artist-verification' },
           { text: 'Kiểm duyệt bình luận', icon: <CommentIcon />, to: '/admin/comments/moderation' },
           { text: 'Quản lý báo cáo', icon: <ReportIcon />, to: '/admin/reports' },
         ]
