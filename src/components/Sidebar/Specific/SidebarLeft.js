@@ -1,12 +1,12 @@
-// src/components/Sidebar/Specific/SidebarLeft.js
 import React, {useContext, useMemo} from 'react';
 import Sidebar from '../Sidebar';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import HistoryIcon from '@mui/icons-material/History';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
-import CommentIcon from '@mui/icons-material/Comment'; // Import CommentIcon
-import ReportIcon from '@mui/icons-material/Report'; // Import ReportIcon
+import CommentIcon from '@mui/icons-material/Comment';
+import ReportIcon from '@mui/icons-material/Report';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import LogoButton from '../../Button/Specific/LogoButton';
 import { useAuth } from '../../../context/AuthContext';
 import {ThemeContext} from "../../../theme/ThemeContext";
@@ -30,7 +30,8 @@ function SidebarLeft() {
           { text: 'Quản lý tài khoản', icon: <PeopleAltRoundedIcon />, to: '/admin/users' },
           { text: 'Quản lý bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs' },
           { text: 'Kiểm duyệt bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs/moderation' },
-          { text: 'Kiểm duyệt bình luận', icon: <CommentIcon />, to: '/admin/comments/moderation' }, // New admin link
+          { text: 'Xác thực nghệ sĩ', icon: <VerifiedUserIcon />, to: '/admin/artist-verifications' },
+          { text: 'Kiểm duyệt bình luận', icon: <CommentIcon />, to: '/admin/comments/moderation' },
           { text: 'Quản lý báo cáo', icon: <ReportIcon />, to: '/admin/reports' },
         ]
       : [];

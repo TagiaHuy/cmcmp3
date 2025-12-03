@@ -251,3 +251,66 @@ This document outlines the API endpoints required for the CMCMP3 music streaming
         ]
     }
     ```
+
+## 7. Artist Verification
+
+### 7.1 Request Artist Verification
+
+*   **HTTP Method**: `POST`
+*   **Endpoint**: `/api/me/request-artist-verification`
+*   **Description**: Submits a request for the authenticated user to become a verified artist.
+*   **Authentication**: Required (JWT in `Authorization` header).
+*   **Request Body**: `multipart/form-data`
+    *   `stageName` (string): The desired artist name.
+    *   `image` (file): The artist's profile picture.
+*   **Response**:
+    *   `201 Created`: If the request is successfully submitted.
+    *   `400 Bad Request`: If the `stageName` or `image` is missing or invalid.
+    *   `409 Conflict`: If the user already has a pending request or is already an artist.
+
+### 7.2 Get Pending Artist Verifications
+
+*   **HTTP Method**: `GET`
+*   **Endpoint**: `/api/admin/artist-verifications`
+*   **Description**: Retrieves a list of all pending artist verification requests.
+*   **Authentication**: Required (Admin role).
+*   **Response Body**:
+    ```json
+    [
+        {
+            "id": "verification_request_id",
+            "user": {
+                "id": "user_id",
+                "displayName": "User Display Name",
+                "username": "username"
+            },
+            "stageName": "Proposed Artist Name",
+            "imageUrl": "/path/to/artist_image.jpg",
+            "requestedAt": "2025-12-03T10:00:00Z"
+        }
+    ]
+    ```
+
+### 7.3 Approve Artist Verification
+
+*   **HTTP Method**: `POST`
+*   **Endpoint**: `/api/admin/artist-verifications/{id}/approve`
+*   **Description**: Approves an artist verification request. The backend should handle changing the user's role to 'ARTIST' and creating a new artist profile.
+*   **Authentication**: Required (Admin role).
+*   **Path Variables**:
+    *   `id`: The ID of the verification request.
+*   **Response**:
+    *   `200 OK`: If the request is successfully approved.
+    *   `404 Not Found`: If the verification request ID does not exist.
+
+### 7.4 Deny Artist Verification
+
+*   **HTTP Method**: `POST`
+*   **Endpoint**: `/api/admin/artist-verifications/{id}/deny`
+*   **Description**: Denies an artist verification request. The backend should handle deleting the request.
+*   **Authentication**: Required (Admin role).
+*   **Path Variables**:
+    *   `id`: The ID of the verification request.
+*   **Response**:
+    *   `200 OK`: If the request is successfully denied.
+    *   `404 Not Found`: If the verification request ID does not exist.

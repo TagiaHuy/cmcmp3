@@ -3,15 +3,16 @@ import { useAuth } from '../context/AuthContext';
 import MainLayout from '../layout/MainLayout';
 import {
   Box, Typography, Paper, TextField, Button, Avatar,
-  CircularProgress, Alert, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel
+  CircularProgress, Alert, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Modal
 } from '@mui/material';
-import PersonRoundedIcon from "@mui/icons-material/PersonRounded"; // Import the icon
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { useNavigate } from 'react-router-dom';
 import { updateUserProfile, updateUserAvatar } from '../services/authService';
-import { updateTwoFactorPreference } from '../services/userService'; // Import the new service
+import { updateTwoFactorPreference, requestArtistVerification } from '../services/userService';
 import API_BASE_URL from '../config';
-import { Divider, Switch, FormGroup } from '@mui/material'; // Import Switch and FormGroup
+import { Divider, Switch, FormGroup } from '@mui/material';
 import useIsAdmin from '../hooks/useIsAdmin';
+import ArtistVerificationRequestForm from '../components/Form/ArtistVerificationRequestForm';
 
 const ProfilePage = () => {
   const { user, token, setUser } = useAuth();
@@ -25,10 +26,14 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isImageLoaded, setIsImageLoaded] = useState(false); // New state to track if image is loaded
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const fileInputRef = useRef(null);
-  const navigate = useNavigate(); // Initialize useNavigate
-  
+  const navigate = useNavigate();
+
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -58,7 +63,7 @@ const ProfilePage = () => {
   const handleTwoFactorChange = async (event) => {
     const { checked } = event.target;
     const originalState = isTwoFactorEnabled;
-    setIsTwoFactorEnabled(checked); // Optimistic update
+    setIsTwoFactorEnabled(checked);
     setLoading(true);
     setError('');
     setSuccess('');
@@ -67,11 +72,11 @@ const ProfilePage = () => {
       if (!token) {
         throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
       }
-      const updatedUser = await updateTwoFactorPreference(token); // Call without 'checked'
-      setUser(updatedUser); // Update user in context with the full updated object
+      const updatedUser = await updateTwoFactorPreference(token);
+      setUser(updatedUser);
       setSuccess(`Xác thực hai bước đã được ${updatedUser.twoFactorEnabled ? 'bật' : 'tắt'}.`);
     } catch (err) {
-      setIsTwoFactorEnabled(originalState); // Revert on error
+      setIsTwoFactorEnabled(originalState);
       setError(err.message || 'Không thể cập nhật cài đặt xác thực hai bước.');
     } finally {
       setLoading(false);
@@ -90,7 +95,7 @@ const ProfilePage = () => {
         return;
       }
       const updatedUser = await updateUserProfile(token, formData);
-      setUser(updatedUser); // Update user in context
+      setUser(updatedUser);
       setSuccess('Cập nhật thông tin thành công!');
     } catch (err) {
       setError(err.message || 'Có lỗi xảy ra khi cập nhật.');
@@ -98,9 +103,11 @@ const ProfilePage = () => {
       setLoading(false);
     }
   };
+
   const handleAvatarClick = () => {
     fileInputRef.current.click();
   };
+
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -111,7 +118,7 @@ const ProfilePage = () => {
     setLoading(true);
     setError('');
     setSuccess('');
-    setIsImageLoaded(false); // Set to false before upload
+    setIsImageLoaded(false);
     try {
       if (!token) {
         setError('Không có token xác thực. Vui lòng đăng nhập lại.');
@@ -119,8 +126,8 @@ const ProfilePage = () => {
         return;
       }
       const updatedUser = await updateUserAvatar(token, avatarFormData);
-      setUser(updatedUser); // Update user in context
-      setIsImageLoaded(true); // Set to true after successful upload
+      setUser(updatedUser);
+      setIsImageLoaded(true);
       setSuccess('Cập nhật avatar thành công!');
     } catch (err) {
       setError(err.message || 'Có lỗi xảy ra khi tải lên avatar.');
@@ -128,6 +135,26 @@ const ProfilePage = () => {
       setLoading(false);
     }
   };
+
+  const handleVerificationSubmit = async (verificationFormData) => {
+    setVerificationLoading(true);
+    setVerificationError('');
+    setSuccess('');
+
+    try {
+        if (!token) {
+            throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
+        }
+        await requestArtistVerification(token, verificationFormData);
+        setSuccess('Yêu cầu của bạn đã được gửi thành công và đang chờ duyệt!');
+        setIsVerificationModalOpen(false);
+    } catch (err) {
+        setVerificationError(err.message || 'Không thể gửi yêu cầu. Vui lòng thử lại.');
+    } finally {
+        setVerificationLoading(false);
+    }
+  };
+
 
   return (
     <Box sx={{ padding: 4, display: 'flex', justifyContent: 'center' }}>
@@ -149,11 +176,11 @@ const ProfilePage = () => {
                 cursor: 'pointer',
                 border: '2px solid',
                 opacity: isImageLoaded ? 1 : 0,
-                clipPath: isImageLoaded ? 'inset(0% 0% 0% 0%)' : 'inset(95% 0% 0% 0%)', // Reveal from bottom
-                transition: 'opacity 0.7s ease-out, clip-path 0.7s ease-out', // Smooth transition for both
+                clipPath: isImageLoaded ? 'inset(0% 0% 0% 0%)' : 'inset(95% 0% 0% 0%)',
+                transition: 'opacity 0.7s ease-out, clip-path 0.7s ease-out',
               }}
               onClick={handleAvatarClick}
-              imgProps={{ onLoad: () => setIsImageLoaded(true) }} // Set isImageLoaded on img load
+              imgProps={{ onLoad: () => setIsImageLoaded(true) }}
             />
 
             <Button variant="outlined" onClick={handleAvatarClick}>Đổi Avatar</Button>
@@ -224,6 +251,15 @@ const ProfilePage = () => {
                   Đổi mật khẩu
                 </Button>
               )}
+              {!isAdmin && user.role !== 'ARTIST' && (
+                 <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setIsVerificationModalOpen(true)}
+                >
+                    Yêu cầu xác thực nghệ sĩ
+                </Button>
+              )}
             </Box>
 
             {user.provider === 'LOCAL' && !isAdmin && (
@@ -250,6 +286,21 @@ const ProfilePage = () => {
           </Box>
         </Box>
       </Paper>
+
+        <Modal
+            open={isVerificationModalOpen}
+            onClose={() => setIsVerificationModalOpen(false)}
+            aria-labelledby="verification-modal-title"
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+            <Paper sx={{ padding: 4, width: '100%', maxWidth: 500,  bgcolor: 'background.paper' }}>
+                <ArtistVerificationRequestForm
+                    onSubmit={handleVerificationSubmit}
+                    isLoading={verificationLoading}
+                    error={verificationError}
+                />
+            </Paper>
+        </Modal>
     </Box>
   );
 };
