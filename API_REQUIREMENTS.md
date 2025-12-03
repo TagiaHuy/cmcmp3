@@ -257,60 +257,70 @@ This document outlines the API endpoints required for the CMCMP3 music streaming
 ### 7.1 Request Artist Verification
 
 *   **HTTP Method**: `POST`
-*   **Endpoint**: `/api/me/request-artist-verification`
-*   **Description**: Submits a request for the authenticated user to become a verified artist.
-*   **Authentication**: Required (JWT in `Authorization` header).
-*   **Request Body**: `multipart/form-data`
-    *   `stageName` (string): The desired artist name.
-    *   `image` (file): The artist's profile picture.
-*   **Response**:
-    *   `201 Created`: If the request is successfully submitted.
-    *   `400 Bad Request`: If the `stageName` or `image` is missing or invalid.
-    *   `409 Conflict`: If the user already has a pending request or is already an artist.
+*   **Endpoint**: `/api/me/artist-verification-requests`
+*   **Authentication**: Cần access token của người dùng đã đăng nhập.
+*   **Request Body (JSON)**:
+    ```json
+    {
+      "artistName": "Tên nghệ danh mong muốn",
+      "imageUrl": "URL của ảnh đã upload ở bước trên"
+    }
+    ```
+*   **Success Response (200 OK - JSON)**:
+    ```json
+    {
+        "id": 1, // ID của yêu cầu vừa tạo
+        "user": {
+            "id": 123,
+            "username": "nguyenvana",
+            "displayName": "Nguyễn Văn A",
+            "email": "a@example.com"
+        },
+        "artistName": "Tên nghệ danh mong muốn",
+        "imageUrl": "URL của ảnh đã upload",
+        "status": "PENDING", // Trạng thái ban đầu luôn là PENDING
+        "requestDate": "2025-12-03T10:15:30"
+    }
+    ```
+*   **Error Response (400 Bad Request)**:
+    *   Nếu người dùng đã là nghệ sĩ hoặc đã có yêu cầu đang chờ. Body sẽ là một chuỗi thông báo lỗi, ví dụ: "User is already an artist or has a pending verification request."
 
-### 7.2 Get Pending Artist Verifications
+### 7.2 Get Pending Artist Verifications (Admin)
 
 *   **HTTP Method**: `GET`
-*   **Endpoint**: `/api/admin/artist-verifications`
-*   **Description**: Retrieves a list of all pending artist verification requests.
-*   **Authentication**: Required (Admin role).
-*   **Response Body**:
+*   **Endpoint**: `/api/admin/artist-verification-requests`
+*   **Authentication**: Cần access token của tài khoản Admin.
+*   **Success Response (200 OK - JSON)**: Một mảng các đối tượng yêu cầu.
     ```json
     [
         {
-            "id": "verification_request_id",
+            "id": 1,
             "user": {
-                "id": "user_id",
-                "displayName": "User Display Name",
-                "username": "username"
+                "id": 123,
+                "username": "nguyenvana",
+                "displayName": "Nguyễn Văn A",
+                "email": "a@example.com"
             },
-            "stageName": "Proposed Artist Name",
-            "imageUrl": "/path/to/artist_image.jpg",
-            "requestedAt": "2025-12-03T10:00:00Z"
+            "artistName": "Tên nghệ danh mong muốn",
+            "imageUrl": "URL của ảnh",
+            "status": "PENDING",
+            "requestDate": "2025-12-03T10:15:30"
         }
     ]
     ```
 
-### 7.3 Approve Artist Verification
+### 7.3 Approve Artist Verification (Admin)
 
 *   **HTTP Method**: `POST`
-*   **Endpoint**: `/api/admin/artist-verifications/{id}/approve`
-*   **Description**: Approves an artist verification request. The backend should handle changing the user's role to 'ARTIST' and creating a new artist profile.
-*   **Authentication**: Required (Admin role).
-*   **Path Variables**:
-    *   `id`: The ID of the verification request.
-*   **Response**:
-    *   `200 OK`: If the request is successfully approved.
-    *   `404 Not Found`: If the verification request ID does not exist.
+*   **Endpoint**: `/api/admin/artist-verification-requests/{id}/approve`
+*   **Authentication**: Cần access token của tài khoản Admin.
+*   **Request Body**: (Không cần)
+*   **Success Response (200 OK)**: Một chuỗi thông báo, ví dụ: "Request approved successfully."
 
-### 7.4 Deny Artist Verification
+### 7.4 Reject Artist Verification (Admin)
 
 *   **HTTP Method**: `POST`
-*   **Endpoint**: `/api/admin/artist-verifications/{id}/deny`
-*   **Description**: Denies an artist verification request. The backend should handle deleting the request.
-*   **Authentication**: Required (Admin role).
-*   **Path Variables**:
-    *   `id`: The ID of the verification request.
-*   **Response**:
-    *   `200 OK`: If the request is successfully denied.
-    *   `404 Not Found`: If the verification request ID does not exist.
+*   **Endpoint**: `/api/admin/artist-verification-requests/{id}/reject`
+*   **Authentication**: Cần access token của tài khoản Admin.
+*   **Request Body**: (Không cần)
+*   **Success Response (200 OK)**: Một chuỗi thông báo, ví dụ: "Request rejected successfully."

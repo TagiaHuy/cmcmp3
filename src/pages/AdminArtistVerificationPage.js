@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Import useEffect
 import {
   Box, Paper, Typography, Table, TableHead, TableBody, TableRow, TableCell,
   TableContainer, CircularProgress, Alert, Button, Avatar
@@ -12,15 +12,25 @@ export default function AdminArtistVerificationPage() {
   const theme = useTheme();
   const { token } = useAuth();
   const { requests, loading, error, refresh } = useArtistVerifications();
-  const [actionLoading, setActionLoading] = useState(null); // To track loading state for each row's action
+  const [actionLoading, setActionLoading] = useState(null);
   const [actionError, setActionError] = useState(null);
+  const [actionSuccess, setActionSuccess] = useState(null); // New state for action success
+
+  useEffect(() => {
+    // Clear action messages when component mounts or requests change
+    setActionError(null);
+    setActionSuccess(null);
+  }, [requests]);
+
 
   const handleApprove = async (id) => {
     setActionLoading(id);
-    setActionError(null);
+    setActionError(null); // Clear previous error
+    setActionSuccess(null); // Clear previous success
     try {
-      await approveArtistVerification(token, id);
-      refresh(); // Refresh the list after action
+      const message = await approveArtistVerification(token, id); // Get the success message
+      setActionSuccess(message); // Set success message
+      refresh();
     } catch (err) {
       setActionError(err.message || 'Failed to approve request.');
     } finally {
@@ -30,10 +40,12 @@ export default function AdminArtistVerificationPage() {
 
   const handleDeny = async (id) => {
     setActionLoading(id);
-    setActionError(null);
+    setActionError(null); // Clear previous error
+    setActionSuccess(null); // Clear previous success
     try {
-      await denyArtistVerification(token, id);
-      refresh(); // Refresh the list after action
+      const message = await denyArtistVerification(token, id); // Get the success message
+      setActionSuccess(message); // Set success message
+      refresh();
     } catch (err) {
       setActionError(err.message || 'Failed to deny request.');
     } finally {
@@ -60,6 +72,7 @@ export default function AdminArtistVerificationPage() {
       ) : (
         <>
           {actionError && <Alert severity="error" sx={{ mb: 2 }}>{actionError}</Alert>}
+          {actionSuccess && <Alert severity="success" sx={{ mb: 2 }}>{actionSuccess}</Alert>} {/* Display success message */}
           <Paper
             elevation={4}
             sx={{

@@ -72,26 +72,23 @@ export const updateTwoFactorPreference = async (token, signal) => {
   return data; // UserDTO object
 };
 
-export const requestArtistVerification = async (token, formData) => {
-    const res = await fetch(`${API_BASE_URL}/api/me/request-artist-verification`, {
+export const requestArtistVerification = async (token, { artistName, imageUrl }) => {
+    const res = await fetch(`${API_BASE_URL}/api/me/artist-verification-requests`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
         Accept: "application/json",
+        Authorization: `Bearer ${token}`,
       },
-      body: formData,
+      body: JSON.stringify({ artistName, imageUrl }),
     });
   
+    const data = await safeJson(res);
+
     if (!res.ok) {
-      const data = await safeJson(res);
       const msg = data?.message || data?.error || `HTTP ${res.status}`;
       throw new Error(msg);
     }
-  
-    // If the server returns no content, we don't need to parse json
-    if (res.status === 201 || res.status === 204) {
-        return {};
-    }
     
-    return await safeJson(res);
+    return data; // Return the full response object
   };

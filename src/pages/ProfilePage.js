@@ -3,14 +3,14 @@ import { useAuth } from '../context/AuthContext';
 import MainLayout from '../layout/MainLayout';
 import {
   Box, Typography, Paper, TextField, Button, Avatar,
-  CircularProgress, Alert, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Modal
+  CircularProgress, Alert, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Modal,
+  Divider, Switch, FormGroup
 } from '@mui/material';
-import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { useNavigate } from 'react-router-dom';
 import { updateUserProfile, updateUserAvatar } from '../services/authService';
 import { updateTwoFactorPreference, requestArtistVerification } from '../services/userService';
+import { uploadFile } from '../services/fileUploadService';
 import API_BASE_URL from '../config';
-import { Divider, Switch, FormGroup } from '@mui/material';
 import useIsAdmin from '../hooks/useIsAdmin';
 import ArtistVerificationRequestForm from '../components/Form/ArtistVerificationRequestForm';
 
@@ -136,7 +136,7 @@ const ProfilePage = () => {
     }
   };
 
-  const handleVerificationSubmit = async (verificationFormData) => {
+  const handleVerificationSubmit = async (formDataFromForm) => { // Renamed for clarity
     setVerificationLoading(true);
     setVerificationError('');
     setSuccess('');
@@ -145,7 +145,30 @@ const ProfilePage = () => {
         if (!token) {
             throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
         }
-        await requestArtistVerification(token, verificationFormData);
+
+        // Extract stageName and artistImage (File object)
+        const stageName = formDataFromForm.get('stageName');
+        const artistImage = formDataFromForm.get('image');
+
+        if (!stageName || !artistImage) {
+            throw new Error('Thiếu nghệ danh hoặc ảnh đại diện.');
+        }
+
+        // 1. Upload the image file
+        const uploadResponse = await uploadFile(token, artistImage);
+        const imageUrl = uploadResponse.url; // Assuming the response has a 'url' field
+
+        if (!imageUrl) {
+            throw new Error('Không nhận được URL ảnh sau khi tải lên.');
+        }
+
+        // 2. Submit the verification request with imageUrl
+        const verificationRequestData = {
+            artistName: stageName, // Use artistName as per new API spec
+            imageUrl: imageUrl
+        };
+        await requestArtistVerification(token, verificationRequestData);
+
         setSuccess('Yêu cầu của bạn đã được gửi thành công và đang chờ duyệt!');
         setIsVerificationModalOpen(false);
     } catch (err) {
