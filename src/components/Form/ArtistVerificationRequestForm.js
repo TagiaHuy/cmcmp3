@@ -1,16 +1,33 @@
-import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Input } from '@mui/material';
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, TextField, Button, Typography, Stack, Avatar } from '@mui/material';
+import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 
 const ArtistVerificationRequestForm = ({ onSubmit, error, isLoading }) => {
   const [stageName, setStageName] = useState('');
   const [artistImage, setArtistImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [formError, setFormError] = useState('');
+  const fileInputRef = useRef(null);
 
   const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setArtistImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setArtistImage(file);
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+      setImagePreview(URL.createObjectURL(file));
     }
   };
+
+  useEffect(() => {
+    // Cleanup function to revoke the object URL
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,61 +50,69 @@ const ArtistVerificationRequestForm = ({ onSubmit, error, isLoading }) => {
     onSubmit(formData);
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current.click();
+  };
+
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-      <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
-        Yêu cầu xác thực tài khoản nghệ sĩ
-      </Typography>
-      <TextField
-        label="Nghệ danh"
-        variant="outlined"
-        fullWidth
-        value={stageName}
-        onChange={(e) => setStageName(e.target.value)}
-        required
-      />
-       <Button
-        variant="outlined"
-        component="label"
-        fullWidth
-        sx={{
-            justifyContent: 'flex-start',
-            color: artistImage ? 'text.primary' : 'grey.500',
-            borderColor: 'rgba(0, 0, 0, 0.23)',
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+      <Stack spacing={2} alignItems="center">
+        <Typography variant="h6" component="h2">
+          Yêu cầu xác thực nghệ sĩ
+        </Typography>
+
+        <Avatar
+          src={imagePreview}
+          sx={{
+            width: 150,
+            height: 150,
+            cursor: 'pointer',
+            backgroundColor: 'action.hover',
+            border: (theme) => `2px dashed ${theme.palette.divider}`,
+            transition: 'border-color 0.3s',
             '&:hover': {
-                borderColor: 'rgba(0, 0, 0, 0.87)',
-            },
-            textTransform: 'none',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            py: '16.5px', 
-            px: '14px',
-        }}
+                borderColor: 'primary.main',
+            }
+          }}
+          onClick={handleAvatarClick}
         >
-        {artistImage ? artistImage.name : "Chọn ảnh đại diện"}
+            {!imagePreview && <AddAPhotoIcon sx={{ fontSize: 50, color: 'text.secondary' }} />}
+        </Avatar>
         <input
             type="file"
+            ref={fileInputRef}
             hidden
             accept="image/*"
             onChange={handleImageChange}
         />
+        <Button variant="outlined" onClick={handleAvatarClick} size="small">
+          Chọn ảnh
         </Button>
 
-      {formError && (
-        <Typography color="error" variant="body2">
-          {formError}
-        </Typography>
-      )}
-       {error && (
-        <Typography color="error" variant="body2">
-          {error}
-        </Typography>
-      )}
+        <TextField
+          label="Nghệ danh"
+          variant="outlined"
+          fullWidth
+          value={stageName}
+          onChange={(e) => setStageName(e.target.value)}
+          required
+        />
 
-      <Button type="submit" variant="contained" disabled={isLoading} sx={{ mt: 2, bgcolor: '#9353FF', '&:hover': { bgcolor: '#7a42cc' } }}>
-        {isLoading ? 'Đang gửi...' : 'Gửi yêu cầu'}
-      </Button>
+        {formError && (
+          <Typography color="error" variant="body2">
+            {formError}
+          </Typography>
+        )}
+        {error && (
+          <Typography color="error" variant="body2">
+            {error}
+          </Typography>
+        )}
+
+        <Button type="submit" variant="contained" disabled={isLoading} fullWidth sx={{ mt: 2, bgcolor: '#9353FF', '&:hover': { bgcolor: '#7a42cc' } }}>
+          {isLoading ? 'Đang gửi...' : 'Gửi yêu cầu'}
+        </Button>
+      </Stack>
     </Box>
   );
 };
