@@ -138,12 +138,6 @@ const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying, isOwner, 
         
         {/* Các nút phụ (Kích thước tiêu chuẩn) */}
         <FavoritePlaylistButton playlistId={playlist.id} isFavorite={playlist.isFavorite} />
-        {isOwner && (
-          <>
-            <Button variant="outlined" color="primary" onClick={onEdit}>Chỉnh sửa</Button>
-            <Button variant="outlined" color="error" onClick={onDelete}>Xóa</Button>
-          </>
-        )}
         <MoreButton onClick={handleMenuOpen} />
         <Menu
           anchorEl={anchorEl}

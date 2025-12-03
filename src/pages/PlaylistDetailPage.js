@@ -151,8 +151,6 @@ const PlaylistDetailPage = () => {
           handlePlayPlaylist={handlePlayPlaylist} 
           isPlaying={isPlaylistCurrentlyLoaded && isPlaying}
           isOwner={isOwner}
-          onEdit={handleOpenEditModal}
-          onDelete={handleDelete}
         />
         <Box sx={{width: '100%'}}>
           <Tabs value={selectedTab} onChange={handleTabChange} centered>

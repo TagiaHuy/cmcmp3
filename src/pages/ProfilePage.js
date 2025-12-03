@@ -11,9 +11,11 @@ import { updateUserProfile, updateUserAvatar } from '../services/authService';
 import { updateTwoFactorPreference } from '../services/userService'; // Import the new service
 import API_BASE_URL from '../config';
 import { Divider, Switch, FormGroup } from '@mui/material'; // Import Switch and FormGroup
+import useIsAdmin from '../hooks/useIsAdmin';
 
 const ProfilePage = () => {
   const { user, token, setUser } = useAuth();
+  const isAdmin = useIsAdmin();
   const [formData, setFormData] = useState({
     displayName: '',
     gender: '',
@@ -213,7 +215,7 @@ const ProfilePage = () => {
                 {loading && <CircularProgress size={20} />}
                  Lưu thay đổi
               </Button>
-              {user.provider === 'LOCAL' && (
+              {user.provider === 'LOCAL' && !isAdmin && (
                 <Button
                   variant="contained"
                   color="primary"
@@ -224,7 +226,7 @@ const ProfilePage = () => {
               )}
             </Box>
 
-            {user.provider === 'LOCAL' && (
+            {user.provider === 'LOCAL' && !isAdmin && (
               <>
                 <Divider sx={{ my: 3 }} />
                 <Typography variant="h6" gutterBottom>
