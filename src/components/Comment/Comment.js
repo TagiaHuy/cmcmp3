@@ -22,6 +22,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 const Comment = ({ songId, playlistId }) => {
     const useComments = songId ? useSongComments : usePlaylistComments;
     const id = songId || playlistId;
+    const parentType = songId ? 'song' : 'playlist';
 
     const {
         comments, loading, error, pagination, postComment, deleteComment, updateComment, loadMore,
@@ -86,6 +87,7 @@ const Comment = ({ songId, playlistId }) => {
                                 onApprove={approveComment}
                                 onReject={rejectComment}
                                 isPending={true}
+                                parentType={parentType}
                             />
                         ))}
                     </Stack>
@@ -175,6 +177,7 @@ const Comment = ({ songId, playlistId }) => {
                         comment={comment}
                         onDelete={deleteComment}
                         onUpdate={updateComment}
+                        parentType={parentType}
                     />
                 ))}
             </Stack>
