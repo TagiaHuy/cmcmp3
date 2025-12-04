@@ -28,7 +28,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false); // New state for avatar upload
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -133,24 +133,22 @@ const ProfilePage = () => {
     const avatarFormData = new FormData();
     avatarFormData.append('avatar', file);
 
-    setLoading(true);
+    setIsUploadingAvatar(true); // Start avatar-specific loading
     setError('');
     setSuccess('');
-    setIsImageLoaded(false);
     try {
       if (!token) {
         setError('Không có token xác thực. Vui lòng đăng nhập lại.');
-        setLoading(false);
+        setIsUploadingAvatar(false);
         return;
       }
       const updatedUser = await updateUserAvatar(token, avatarFormData);
-      setUser(updatedUser);
-      setIsImageLoaded(true);
+      setUser(updatedUser); // Update user in context
       setSuccess('Cập nhật avatar thành công!');
     } catch (err) {
       setError(err.message || 'Có lỗi xảy ra khi tải lên avatar.');
     } finally {
-      setLoading(false);
+      setIsUploadingAvatar(false); // End avatar-specific loading
     }
   };
 
@@ -219,20 +217,36 @@ const ProfilePage = () => {
 
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <Avatar
-              src={user.avatarUrl}
-              sx={{
-                width: 150,
-                height: 150,
-                cursor: 'pointer',
-                border: '2px solid',
-                opacity: isImageLoaded ? 1 : 0,
-                clipPath: isImageLoaded ? 'inset(0% 0% 0% 0%)' : 'inset(95% 0% 0% 0%)',
-                transition: 'opacity 0.7s ease-out, clip-path 0.7s ease-out',
-              }}
-              onClick={handleAvatarClick}
-              imgProps={{ onLoad: () => setIsImageLoaded(true) }}
-            />
+            <Box sx={{ position: 'relative', width: 150, height: 150 }}>
+              <Avatar
+                src={user.avatarUrl}
+                sx={{
+                  width: 150,
+                  height: 150,
+                  cursor: 'pointer',
+                  border: '2px solid',
+                }}
+                onClick={handleAvatarClick}
+              />
+              {isUploadingAvatar && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderRadius: '50%',
+                  }}
+                >
+                  <CircularProgress color="inherit" />
+                </Box>
+              )}
+            </Box>
 
             <Button variant="outlined" onClick={handleAvatarClick}>Đổi Avatar</Button>
             <input
