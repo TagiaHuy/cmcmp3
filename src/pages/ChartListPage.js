@@ -53,31 +53,26 @@ const ChartListPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}> {/* Added Box for title and button */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         <Typography
           variant="h4"
           sx={{
             fontWeight: 900,
-            // Keep mb: 2 here if needed, but it's now controlled by parent Box gap and mb
-            display: 'inline-block', // Ensure block-level for consistent background rendering
+            display: 'inline-block',
             background: "linear-gradient(90deg,#ff9933,#bb33ff)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}
         >
-          #zingchart
+          #CMCchart
         </Typography>
-        <Button variant="outlined" onClick={refresh} disabled={loading} size="small"> {/* Added Refresh Button */}
-          {loading ? 'Đang tải...' : 'Làm mới'}
-        </Button>
       </Box>
       <Paper
         sx={{
           p: 2, borderRadius: 3,
           opacity: loading ? 0.7 : 1, // Add opacity change for loading state
           transition: 'opacity 0.3s',
-          background: (t) =>
-            `linear-gradient(135deg, ${alpha(t.palette.primary.dark, .25)} 0%, ${alpha(t.palette.secondary.dark, .25)} 100%)`,
+          backgroundColor: (t) => t.palette.background.table, // Set background color to match AdminUsersPage
         }}
       >
         {data?.items && data.items.length > 0 ? ( // Check for actual items
