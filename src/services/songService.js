@@ -594,3 +594,109 @@ export const rejectSong = async (songId) => {
   }
   return mapSong(data);
 };
+
+export const getSongsByArtistName = async (artistName, signal) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/by-artist?artistName=${artistName}`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+    return (Array.isArray(data) ? data : []).map(mapSong);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    return [];
+  }
+};
+
+export const getSongDetails = async (title, signal) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/details?title=${title}`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+    return mapSong(data);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error(`Error fetching song with title ${title}:`, error);
+    throw error;
+  }
+};
+
+export const getSimilarSongs = async (songId, signal) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/${songId}/similar`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+    return (Array.isArray(data) ? data : []).map(mapSong);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    return [];
+  }
+};
+
+export const getRecommendedSongs = async (mood, signal) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/recommendations/songs?mood=${mood}`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+    return (Array.isArray(data) ? data : []).map(mapSong);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    return [];
+  }
+};
+
+export const getSimilarSongsByTitle = async (title, signal) => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/songs/similar-by-title?title=${title}`, {
+            method: "GET",
+            headers: {
+                ...authHeader(),
+                Accept: "application/json",
+            },
+            signal,
+        });
+
+        const data = await safeJson(res);
+        if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+        return (Array.isArray(data) ? data : []).map(mapSong);
+    } catch (error) {
+        if (error.name === 'AbortError') throw error;
+        return [];
+    }
+};
