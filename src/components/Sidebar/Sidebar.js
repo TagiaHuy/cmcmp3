@@ -1,7 +1,7 @@
 // src/components/Sidebar/index.js
 import React from 'react';
 import {
-  Drawer, Toolbar, List, ListItem, ListItemButton,
+  Drawer, List, ListItem, ListItemButton,
   ListItemIcon, ListItemText, Box, Typography
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
@@ -37,7 +37,6 @@ function Sidebar({ anchor, items, logoComponent, bottomPadding = 84, sxItem, sxS
       }}
     >
       {logoComponent}
-      <Toolbar />
 
       <Box
         sx={{
