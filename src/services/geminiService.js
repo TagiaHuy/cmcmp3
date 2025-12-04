@@ -75,6 +75,14 @@ Use Case: “How many songs are in the database?”
 Response: { "totalSongs": 100, "totalArtists": 50, "totalPlaylists": 25 }
 
 
+Available Tools
+1. Play a Song
+
+Tool: "play_song"
+Use Case: “Play the song 'Let It Be'”
+Params: { "songTitle": "Let It Be" }
+
+
 Example Responses
 
 { "useEndpoint": "/api/songs/by-artist", "params": { "artistName": "Phan Mạnh Quỳnh" } }
@@ -84,6 +92,7 @@ Example Responses
 { "useEndpoint": "/api/recommendations/songs", "params": { "mood": "sad" } }
 { "useEndpoint": "/api/songs/similar-by-title", "params": { "title": "Let It Be" } }
 { "useEndpoint": "/api/stats/summary", "params": {} }
+{ "tool": "play_song", "params": { "songTitle": "Let It Be" } }
 `;
 
 export const sendMessageToGemini = async (messages, newMessage) => {
