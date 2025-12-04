@@ -319,7 +319,7 @@ export default function ZingChartSection() {
                   letterSpacing: 0.5,
                 }}
               >
-                #zingchart
+                #CMCmp3 chart
               </Typography>
 
               {/* Nút Play phát bài TOP 1 */}

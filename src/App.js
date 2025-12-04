@@ -26,6 +26,7 @@ import PlaylistsPage from './pages/PlaylistsPage';
 import AdminSongModerationPage from './pages/AdminSongModerationPage'; // New import
 import AdminCommentModerationPage from './pages/AdminCommentModerationPage'; // New import
 import AdminReportManagementPage from './pages/AdminReportManagementPage';
+import AdminArtistVerificationPage from './pages/AdminArtistVerificationPage';
 import { useAuth } from './context/AuthContext';
 
 import OtpVerificationPage from './pages/OtpVerificationPage';
@@ -197,6 +198,17 @@ function App() {
                   <PrivateRoute isAuthed={isAuthenticated}>
                       <AdminRoute isAdmin={isAdmin}>
                           <AdminReportManagementPage />
+                      </AdminRoute>
+                  </PrivateRoute>
+              }
+          />
+
+          <Route
+              path="/admin/artist-verification"
+              element={
+                  <PrivateRoute isAuthed={isAuthenticated}>
+                      <AdminRoute isAdmin={isAdmin}>
+                          <AdminArtistVerificationPage />
                       </AdminRoute>
                   </PrivateRoute>
               }

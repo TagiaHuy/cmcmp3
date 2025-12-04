@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import MainLayout from '../layout/MainLayout';
 import {
   Box, Typography, Paper, TextField, Button, Avatar,
-  CircularProgress, Alert, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel
+  CircularProgress, Alert, RadioGroup, FormControlLabel, Radio, FormControl, FormLabel, Modal,
+  Divider, Switch, FormGroup
 } from '@mui/material';
-import PersonRoundedIcon from "@mui/icons-material/PersonRounded"; // Import the icon
 import { useNavigate } from 'react-router-dom';
 import { updateUserProfile, updateUserAvatar } from '../services/authService';
-import { updateTwoFactorPreference } from '../services/userService'; // Import the new service
+import { updateTwoFactorPreference, requestArtistVerification } from '../services/userService';
+import { uploadFile } from '../services/fileUploadService';
 import API_BASE_URL from '../config';
-import { Divider, Switch, FormGroup } from '@mui/material'; // Import Switch and FormGroup
 import useIsAdmin from '../hooks/useIsAdmin';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+
+import ArtistVerificationRequestForm from '../components/Form/ArtistVerificationRequestForm';
 
 const ProfilePage = () => {
   const { user, token, setUser } = useAuth();
@@ -27,8 +30,28 @@ const ProfilePage = () => {
   const [success, setSuccess] = useState('');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false); // New state for avatar upload
   const fileInputRef = useRef(null);
-  const navigate = useNavigate(); // Initialize useNavigate
-  
+  const navigate = useNavigate();
+
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
+
+  // Determine if the user is an artist using a robust role check
+  const isArtist = useMemo(() => {
+    if (!user) return false;
+    const roleCandidates = [
+      ...(Array.isArray(user.roles) ? user.roles : []),
+      ...(Array.isArray(user.authorities) ? user.authorities : []),
+      ...(Array.isArray(user.roleList) ? user.roleList : []),
+    ];
+
+    const roleStrs = roleCandidates
+      .map(r => (typeof r === "string" ? r : (r?.authority || r?.name || r?.role || r?.code || "")))
+      .map(s => String(s).toUpperCase());
+
+    return roleStrs.some(s => s.includes("ARTIST"));
+  }, [user]);
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -58,7 +81,7 @@ const ProfilePage = () => {
   const handleTwoFactorChange = async (event) => {
     const { checked } = event.target;
     const originalState = isTwoFactorEnabled;
-    setIsTwoFactorEnabled(checked); // Optimistic update
+    setIsTwoFactorEnabled(checked);
     setLoading(true);
     setError('');
     setSuccess('');
@@ -67,11 +90,11 @@ const ProfilePage = () => {
       if (!token) {
         throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
       }
-      const updatedUser = await updateTwoFactorPreference(token); // Call without 'checked'
-      setUser(updatedUser); // Update user in context with the full updated object
+      const updatedUser = await updateTwoFactorPreference(token);
+      setUser(updatedUser);
       setSuccess(`Xác thực hai bước đã được ${updatedUser.twoFactorEnabled ? 'bật' : 'tắt'}.`);
     } catch (err) {
-      setIsTwoFactorEnabled(originalState); // Revert on error
+      setIsTwoFactorEnabled(originalState);
       setError(err.message || 'Không thể cập nhật cài đặt xác thực hai bước.');
     } finally {
       setLoading(false);
@@ -90,7 +113,7 @@ const ProfilePage = () => {
         return;
       }
       const updatedUser = await updateUserProfile(token, formData);
-      setUser(updatedUser); // Update user in context
+      setUser(updatedUser);
       setSuccess('Cập nhật thông tin thành công!');
     } catch (err) {
       setError(err.message || 'Có lỗi xảy ra khi cập nhật.');
@@ -98,9 +121,11 @@ const ProfilePage = () => {
       setLoading(false);
     }
   };
+
   const handleAvatarClick = () => {
     fileInputRef.current.click();
   };
+
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -127,12 +152,65 @@ const ProfilePage = () => {
     }
   };
 
+  const handleVerificationSubmit = async (formDataFromForm) => { // Renamed for clarity
+    setVerificationLoading(true);
+    setVerificationError('');
+    setSuccess('');
+
+    try {
+        if (!token) {
+            throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
+        }
+
+        // Extract stageName and artistImage (File object)
+        const stageName = formDataFromForm.get('stageName');
+        const artistImage = formDataFromForm.get('image');
+
+        if (!stageName || !artistImage) {
+            throw new Error('Thiếu nghệ danh hoặc ảnh đại diện.');
+        }
+
+        // 1. Upload the image file
+        const uploadResponse = await uploadFile(token, artistImage);
+        const imageUrl = uploadResponse.url; // Assuming the response has a 'url' field
+
+        if (!imageUrl) {
+            throw new Error('Không nhận được URL ảnh sau khi tải lên.');
+        }
+
+        // 2. Submit the verification request with imageUrl
+        const verificationRequestData = {
+            artistName: stageName, // Use artistName as per new API spec
+            imageUrl: imageUrl
+        };
+        await requestArtistVerification(token, verificationRequestData);
+
+        setSuccess('Yêu cầu của bạn đã được gửi thành công và đang chờ duyệt!');
+        setIsVerificationModalOpen(false);
+    } catch (err) {
+        setVerificationError(err.message || 'Không thể gửi yêu cầu. Vui lòng thử lại.');
+    } finally {
+        setVerificationLoading(false);
+    }
+  };
+
+
   return (
     <Box sx={{ padding: 4, display: 'flex', justifyContent: 'center' }}>
       <Paper sx={{ padding: 4, backgroundColor: (theme) => theme.palette.background.paper, maxWidth: 800, width: '100%' }}>
-        <Typography variant="h4" gutterBottom>
-          Hồ sơ cá nhân
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h4" gutterBottom component="span" sx={{ mr: 1 }}>
+            Hồ sơ cá nhân
+          </Typography>
+          {user.displayName && ( // Display user's display name
+            <Typography variant="h4" gutterBottom component="span" sx={{ mr: 1, fontWeight: 'bold' }}>
+              {user.displayName}
+            </Typography>
+          )}
+          {isArtist && ( // Conditional rendering for the checkmark
+            <VerifiedUserIcon sx={{ color: 'primary.main', fontSize: '1.5rem' }} />
+          )}
+        </Box>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
@@ -238,6 +316,15 @@ const ProfilePage = () => {
                   Đổi mật khẩu
                 </Button>
               )}
+              {!isAdmin && !isArtist && (
+                 <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setIsVerificationModalOpen(true)}
+                >
+                    Yêu cầu xác thực nghệ sĩ
+                </Button>
+              )}
             </Box>
 
             {user.provider === 'LOCAL' && !isAdmin && (
@@ -264,6 +351,21 @@ const ProfilePage = () => {
           </Box>
         </Box>
       </Paper>
+
+        <Modal
+            open={isVerificationModalOpen}
+            onClose={() => setIsVerificationModalOpen(false)}
+            aria-labelledby="verification-modal-title"
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+            <Paper sx={{ padding: 4, width: '100%', maxWidth: 500,  bgcolor: 'background.paper' }}>
+                <ArtistVerificationRequestForm
+                    onSubmit={handleVerificationSubmit}
+                    isLoading={verificationLoading}
+                    error={verificationError}
+                />
+            </Paper>
+        </Modal>
     </Box>
   );
 };
