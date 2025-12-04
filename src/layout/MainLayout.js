@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Toolbar, GlobalStyles } from '@mui/material';
+import { Box, GlobalStyles } from '@mui/material';
 import Header from './Header';
 import SidebarLeft from '../components/Sidebar/Specific/SidebarLeft';
 import SidebarRight from '../components/Sidebar/Specific/SidebarRight';
-import Footer from './Footer';
 import MediaPlayer from '../components/MediaPlayer/MediaPlayer';
 import { MediaPlayerProvider, useMediaPlayer } from '../context/MediaPlayerContext';
-import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Chatbot from '../components/Chatbot/Chatbot'; // Import Chatbot component
 
@@ -69,7 +67,7 @@ function MainLayoutContent({ children }) {
           }}
         >
           <Header />
-          <Toolbar />
+
           <Box sx={{ flexGrow: 1 }}>
             {children}
           </Box>
