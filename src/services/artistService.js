@@ -57,3 +57,26 @@ export const getAllArtists = async (signal) => {
 
   return data;
 };
+
+export const getArtistBySongTitle = async (songTitle, signal) => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/artists/by-song?songTitle=${songTitle}`, {
+            method: "GET",
+            headers: {
+                ...authHeader(),
+                Accept: "application/json",
+            },
+            signal,
+        });
+
+        const data = await safeJson(res);
+        if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+        return data;
+    } catch (error) {
+        if (error.name === 'AbortError') throw error;
+        console.error(`Error fetching artist with song title ${songTitle}:`, error);
+        throw error;
+    }
+};
+
