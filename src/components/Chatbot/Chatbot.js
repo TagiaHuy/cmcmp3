@@ -11,12 +11,14 @@ import {
 } from '../../services/songService';
 import { getArtistBySongTitle } from '../../services/artistService';
 import { getSummary } from '../../services/statsService';
+import { useMediaActions } from '../../hooks/useMediaActions';
 import './Chatbot.css';
 
 const Chatbot = ({ onClose }) => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef(null);
+    const { play } = useMediaActions();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -88,6 +90,14 @@ const Chatbot = ({ onClose }) => {
                     
                     finalResponse = finalGeminiText;
                     finalGroundingChunks = finalGeminiGroundingChunks;
+                } else if (parsed.tool === 'play_song') {
+                    const song = await getSongDetails(parsed.params.songTitle);
+                    if (song) {
+                        play(song);
+                        finalResponse = `Now playing ${song.title} by ${song.artists}.`;
+                    } else {
+                        finalResponse = `Sorry, I couldn't find the song ${parsed.params.songTitle}.`;
+                    }
                 }
             } catch (e) {
                 // Not a JSON response, so treat as plain text
