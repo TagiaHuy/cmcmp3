@@ -75,7 +75,7 @@ export const createAlbum = async (albumData) => {
   try {
     const res = await fetch(BASE_URL, {
       method: 'POST',
-      headers: { ...authHeader() },
+      headers: { ...authHeader(), 'Accept': 'application/json' },
       body: albumData, // albumData should be FormData for multipart/form-data
     });
     const data = await safeJson(res);
@@ -93,7 +93,7 @@ export const updateAlbum = async (albumId, albumData) => {
   try {
     const res = await fetch(`${BASE_URL}/${albumId}`, {
       method: 'PUT',
-      headers: { ...authHeader() },
+      headers: { ...authHeader(), 'Accept': 'application/json' },
       body: albumData, // albumData should be FormData for multipart/form-data
     });
     const data = await safeJson(res);

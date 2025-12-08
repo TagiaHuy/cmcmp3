@@ -17,9 +17,8 @@ const CreateAlbumForm = ({ onSubmit, onCancel }) => {
     e.preventDefault();
     setIsLoading(true);
     const formData = new FormData();
-    formData.append('name', name);
+    formData.append('title', name);
     formData.append('description', description);
-    formData.append('privacy', isPrivate ? 'PRIVATE' : 'PUBLIC');
     if (imageFile) {
       formData.append('imageFile', imageFile);
     }
@@ -119,19 +118,7 @@ const CreateAlbumForm = ({ onSubmit, onCancel }) => {
             />
           </Box>
         )}
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isPrivate}
-              onChange={(e) => setIsPrivate(e.target.checked)}
-              name="private"
-              color="primary"
-              disabled={isLoading}
-            />
-          }
-          label={<Typography color="text.primary" fontWeight={600}>Riêng tư</Typography>}
-        />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
           <Button variant="outlined" onClick={onCancel} disabled={isLoading}>
             Hủy
           </Button>

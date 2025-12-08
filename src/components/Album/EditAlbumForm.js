@@ -91,9 +91,8 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
     e.preventDefault();
     setIsSubmitting(true);
     const formData = new FormData();
-    formData.append('name', name);
+    formData.append('title', name);
     formData.append('description', description);
-    formData.append('privacy', isPrivate ? 'PRIVATE' : 'PUBLIC');
     if (imageFile) {
       formData.append('imageFile', imageFile);
     }
@@ -228,18 +227,6 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
             <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
           </Box>
         )}
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isPrivate}
-              onChange={(e) => setIsPrivate(e.target.checked)}
-              name="private"
-              color="primary"
-              disabled={isSubmitting}
-            />
-          }
-          label={<Typography color="text.primary" fontWeight={600}>Riêng tư</Typography>}
-        />
 
         <Typography variant="h6" mt={2} color="text.primary" fontWeight={600}>Bài hát trong Album</Typography>
         {currentSongs.length === 0 ? (
