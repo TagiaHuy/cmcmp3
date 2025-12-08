@@ -1,65 +1,77 @@
 import React from 'react';
 import {
-  ListItem, ListItemAvatar, Avatar, ListItemText,
-  IconButton, ListItemSecondaryAction
+  ListItem,
+  ListItemText,
+  IconButton,
+  Box,
+  Typography,
+  Avatar,
+  ListItemButton
 } from '@mui/material';
-import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import { Link } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import { useNavigate } from 'react-router-dom';
 
-export default function AlbumListItem({
-  album,
-  index,
-  onPlay,      // optional: phát album
-  onOpen,      // optional: mở trang chi tiết
-}) {
-  const imageUrl = album?.imageUrl || '/placeholder-cover.png';
-  const subtitle = `${album?.numberOfSongs ?? 0} bài • ${(album?.listenCount ?? 0).toLocaleString()} lượt nghe`;
+const AlbumListItem = ({ album, onEdit, onDelete }) => {
+  const navigate = useNavigate();
+
+  const handleItemClick = () => {
+    navigate(`/albums/${album.id}`);
+  };
 
   return (
     <ListItem
       divider
+      sx={{
+        '&:hover': {
+          backgroundColor: 'action.hover',
+        },
+        borderRadius: '8px',
+        mb: 1,
+      }}
       secondaryAction={
-        <ListItemSecondaryAction>
-          {onPlay && (
-            <IconButton edge="end" aria-label="play" onClick={() => onPlay(album)}>
-              <PlayArrowRoundedIcon />
+        <Box>
+          {onEdit && (
+            <IconButton aria-label="edit" onClick={(e) => { e.stopPropagation(); onEdit(album); }}>
+              <EditIcon />
             </IconButton>
           )}
-          {onOpen ? (
-            <IconButton edge="end" aria-label="open" onClick={() => onOpen(album)}>
-              <ChevronRightRoundedIcon />
-            </IconButton>
-          ) : (
-            <IconButton
-              edge="end"
-              aria-label="open"
-              component={Link}
-              to={`/albums/${album.id}`}
-            >
-              <ChevronRightRoundedIcon />
+          {onDelete && (
+            <IconButton aria-label="delete" onClick={(e) => { e.stopPropagation(); onDelete(album.id); }}>
+              <DeleteIcon />
             </IconButton>
           )}
-        </ListItemSecondaryAction>
+        </Box>
       }
     >
-      <ListItemAvatar>
-        <img
-          src={imageUrl}
-          alt={album?.name}
-          style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'cover' }}
-          onError={(e) => {
-            console.error('Error loading album image:', imageUrl, e);
-            e.target.src = '/placeholder-cover.png'; // Fallback to placeholder
-          }}
+      <ListItemButton onClick={handleItemClick} sx={{ borderRadius: '8px', '&:hover': { backgroundColor: 'transparent' } }}>
+        <Avatar variant="rounded" src={album.imageUrl} sx={{ mr: 2, width: 56, height: 56, backgroundColor: 'grey.800' }}>
+          <MusicNoteIcon />
+        </Avatar>
+        <ListItemText
+          primary={
+            <Typography variant="body1" color="text.primary" fontWeight={600}>
+              {album.title}
+            </Typography>
+          }
+          secondary={
+            <Box component="span" sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Typography component="span" variant="body2" color="text.primary">
+                {`${album.songCount} bài hát`}
+              </Typography>
+              <Typography component="span" variant="body2" color="text.primary">
+                •
+              </Typography>
+              <Typography component="span" variant="body2" color="text.primary">
+                {album.privacy}
+              </Typography>
+            </Box>
+          }
         />
-      </ListItemAvatar>
-
-      <ListItemText
-        primary={`${index + 1}. ${album?.name ?? 'Album'}`}
-        secondary={subtitle}
-        primaryTypographyProps={{ fontWeight: 600 }}
-      />
+      </ListItemButton>
     </ListItem>
   );
-}
+};
+
+export default AlbumListItem;
