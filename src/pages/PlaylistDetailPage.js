@@ -34,7 +34,7 @@ const PlaylistDetailPage = () => {
   // Use the renamed updatePlaylist function from the hook
   const { deletePlaylist, editPlaylist: updatePlaylistService, getSongsForPlaylist } = usePlaylists();
   const { playlist, loading, error, setPlaylist } = usePlaylist(playlistId);
-  const { loadQueue, queue, isPlaying, setIsPlaying } = useMediaPlayer();
+  const { loadQueue, queue, isPlaying, setIsPlaying, addRecentlyPlayedPlaylist } = useMediaPlayer();
 
   const [songs, setSongs] = useState([]);
   const [songsLoading, setSongsLoading] = useState(true);
@@ -80,6 +80,7 @@ const PlaylistDetailPage = () => {
 
   const handlePlayPlaylist = () => {
     if (songs && songs.length > 0) {
+      addRecentlyPlayedPlaylist(playlist);
       if (isPlaylistCurrentlyLoaded) {
         setIsPlaying(!isPlaying);
       } else {

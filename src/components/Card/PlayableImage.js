@@ -13,6 +13,8 @@ const PlayableImage = ({
   playlist,
   mediaSrc,
   artists,
+  hideOverlay = false,
+  hidePlayButtonBorder = false,
   isLoading
 }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -25,9 +27,9 @@ const PlayableImage = ({
     artists: normalizeArtists(artists),
   };
 
-  const handlePlayClick = () => {
+  const handlePlayClick = (e) => {
     if (onPlay) {
-      onPlay(unifiedTrack);
+      onPlay(e, unifiedTrack);
     }
   };
 
@@ -41,6 +43,8 @@ const PlayableImage = ({
       isHovered={isHovered}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      hideOverlay={hideOverlay}
+      hidePlayButtonBorder={hidePlayButtonBorder}
       isLoading={isLoading}
     >
       <Box
