@@ -28,6 +28,7 @@ export const MediaPlayerProvider = ({ children }) => {
   const [currentTrack, setCurrentTrack] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
+  const [recentlyPlayedPlaylists, setRecentlyPlayedPlaylists] = useState([]);
   const [isSidebarRightVisible, setIsSidebarRightVisible] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [mediaPlayerHeight, setMediaPlayerHeight] = useState(0);
@@ -45,8 +46,11 @@ export const MediaPlayerProvider = ({ children }) => {
     try {
       const stored = JSON.parse(localStorage.getItem('recentlyPlayed')) || [];
       setRecentlyPlayed(stored);
+      const storedPlaylists = JSON.parse(localStorage.getItem('recentlyPlayedPlaylists')) || [];
+      setRecentlyPlayedPlaylists(storedPlaylists);
     } catch {
       setRecentlyPlayed([]);
+      setRecentlyPlayedPlaylists([]);
     }
   }, []);
 
@@ -71,6 +75,15 @@ export const MediaPlayerProvider = ({ children }) => {
       return updated;
     });
   }, [currentTrack]);
+  
+  const addRecentlyPlayedPlaylist = useCallback((playlist) => {
+    setRecentlyPlayedPlaylists(prev => {
+      const filtered = (prev || []).filter(p => p.id !== playlist.id);
+      const updated = [playlist, ...filtered].slice(0, 10);
+      localStorage.setItem('recentlyPlayedPlaylists', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   // ===== Helpers =====
   const safeIndex = useCallback((i, len) => {
@@ -258,6 +271,8 @@ export const MediaPlayerProvider = ({ children }) => {
     setIsPlaying,
 
     recentlyPlayed,
+    recentlyPlayedPlaylists,
+    addRecentlyPlayedPlaylist,
     clearRecentlyPlayed,
     isSidebarRightVisible,
     toggleSidebarRight,
@@ -290,7 +305,7 @@ export const MediaPlayerProvider = ({ children }) => {
   }), [
     queue, currentIndex, currentTrack, currentPlayingSrc,
     isPlaying, setIsPlaying,
-    recentlyPlayed, isSidebarRightVisible,
+    recentlyPlayed, recentlyPlayedPlaylists, addRecentlyPlayedPlaylist, isSidebarRightVisible,
     isShuffling, repeatMode,
     handlePlay, loadQueue, playPlaylistRandom, playAt,
     prev, next, toggleShuffle, cycleRepeatMode, handleEnded,
