@@ -5,7 +5,6 @@ import {
     IconButton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import EditIcon from '@mui/icons-material/Edit';
 import { useMediaPlayer } from "../../context/MediaPlayerContext";
 
 const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
@@ -61,15 +60,6 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
                 }}
             >
                 <Typography variant="h5">No lyrics available.</Typography>
-
-                {songId && (
-                    <IconButton
-                        onClick={toggleLyricsEditor} // Directly call toggleLyricsEditor
-                        sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-                    >
-                        <EditIcon />
-                    </IconButton>
-                )}
             </Box>
         );
     }
@@ -104,15 +94,6 @@ const LyricsDisplay = ({ songId, lyrics, currentTime }) => {
                 }
             }}
         >
-            {songId && (
-                <IconButton
-                    onClick={toggleLyricsEditor} // Directly call toggleLyricsEditor
-                    sx={{ position: "absolute", top: 8, right: 16, zIndex: 10, color: "white" }}
-                >
-                    <EditIcon />
-                </IconButton>
-            )}
-
             {lyrics.map((lyric, index) => {
                 const isActive =
                     currentTime >= lyric.time &&

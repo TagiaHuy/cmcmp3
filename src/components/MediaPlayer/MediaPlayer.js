@@ -7,6 +7,7 @@ import MicIcon from '@mui/icons-material/Mic';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import EditIcon from '@mui/icons-material/Edit';
 // Removed DownloadOutlinedIcon
 
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
@@ -14,13 +15,12 @@ import { useMediaActions } from '../../hooks/useMediaActions';
 import { ThemeContext } from '../../theme/ThemeContext';
 import { useNotifications } from '../../hooks/useNotifications'; // Import notifications
 
-import { increaseListenCount } from '../../services/songService'; // Removed downloadSong import
+import { increaseListenCount, updateSongLyrics } from '../../services/songService'; // Removed downloadSong import
 
 import PlaybackControls from '../Button/Specific/PlaybackControls';
 import CurrentSongCard from '../Card/CurrentSongCard';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
-import AdvancedSeekHandle from './AdvancedSeekHandle';
 import SeekHandle from './SeekHandle';
 import LyricsModal from '../Lyric/LyricsModal';
 import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
@@ -39,6 +39,7 @@ const MediaPlayer = () => {
     currentTime,
     setCurrentTime,
     toggleLyrics,
+    toggleLyricsEditor,
     setMediaPlayerHeight,
     updateSongInQueue,
     isEditingLyrics,
@@ -78,96 +79,6 @@ const MediaPlayer = () => {
     const storedVolume = localStorage.getItem('cmcmp3-volume');
     return storedVolume !== null ? parseFloat(storedVolume) : 0.5;
   });
-  const [selectedLyric, setSelectedLyric] = useState(null);
-
-  const handleCardTimeUpdate = (lyricIndex, newStartTime, newEndTime) => {
-    if (!currentTrack || !currentTrack.lyrics) return;
-
-    const newLyrics = currentTrack.lyrics.map((lyric, index) => {
-        if (index === lyricIndex) {
-            return { ...lyric, time: newStartTime };
-        }
-        return lyric;
-    });
-
-    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
-  };
-
-  const handleCardTextUpdate = (lyricIndex, newText) => {
-    if (!currentTrack || !currentTrack.lyrics) return;
-
-    const newLyrics = currentTrack.lyrics.map((lyric, index) => {
-        if (index === lyricIndex) {
-            return { ...lyric, text: newText };
-        }
-        return lyric;
-    });
-
-    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
-  };
-
-  const handleCardAdd = (selectedIndex) => {
-    if (!currentTrack || !currentTrack.lyrics) {
-      return;
-    }
-  
-    let newLyric;
-    let newLyrics;
-  
-    // Case 1: Called from a specific card with an index
-    if (typeof selectedIndex === 'number' && selectedIndex >= 0 && selectedIndex < currentTrack.lyrics.length) {
-      const selectedLyric = currentTrack.lyrics[selectedIndex];
-      const nextLyric = currentTrack.lyrics[selectedIndex + 1];
-      const selectedLyricEndTime = nextLyric ? nextLyric.time : duration;
-  
-      const midTime = selectedLyric.time + (selectedLyricEndTime - selectedLyric.time) / 2;
-  
-      if (midTime <= selectedLyric.time) {
-        return; // Not enough space
-      }
-  
-      newLyric = {
-        id: Date.now(),
-        text: "New Lyric",
-        time: midTime,
-      };
-  
-      newLyrics = [
-        ...currentTrack.lyrics.slice(0, selectedIndex + 1),
-        newLyric,
-        ...currentTrack.lyrics.slice(selectedIndex + 1)
-      ];
-    } 
-    // Case 2: Called from the global "Add" button (or no valid index)
-    else {
-      newLyric = {
-        id: Date.now(),
-        text: "New Lyric",
-        time: currentTime,
-      };
-      newLyrics = [...currentTrack.lyrics, newLyric];
-    }
-  
-    newLyrics.sort((a, b) => a.time - b.time);
-  
-    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
-    setSelectedLyric(newLyric);
-  };
-
-  const handleCardDelete = (lyricIndex) => {
-    if (!currentTrack || !currentTrack.lyrics) return;
-
-    const newLyrics = currentTrack.lyrics.filter((_, index) => index !== lyricIndex);
-
-    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
-    setSelectedLyric(null);
-  };
-
-  const handleLyricsParsed = (newLyrics) => {
-    if (!currentTrack) return;
-    updateSongInQueue(currentTrack.id, { lyrics: newLyrics });
-    setSelectedLyric(null);
-  };
 
   useEffect(() => {
     if (playerRef.current) {
@@ -304,6 +215,20 @@ const MediaPlayer = () => {
     handleEnded();
   };
 
+  const handleLyricsParsed = async (newLyrics) => {
+    if (!currentTrack) {
+      notifyError('No track selected to save lyrics for.');
+      return;
+    }
+    try {
+      const updatedSong = await updateSongLyrics(currentTrack.id, newLyrics);
+      updateSongInQueue(currentTrack.id, { lyrics: updatedSong.lyrics });
+      notifySuccess('Lyrics have been saved successfully!');
+    } catch (error) {
+      console.error('Failed to save lyrics:', error);
+      notifyError('Failed to save lyrics. Please try again.');
+    }
+  };
   const format = (t) => {
     if (!Number.isFinite(t) || t <= 0) return '0:00';
     const m = Math.floor(t / 60);
@@ -319,7 +244,11 @@ const MediaPlayer = () => {
 
   return (
     <>
-      <LyricsModal />
+      <LyricsModal 
+        isEditingLyrics={isEditingLyrics}
+        onLyricsParsed={handleLyricsParsed}
+        duration={duration}
+      />
       
       <Paper
         ref={playerRef}
@@ -345,22 +274,6 @@ const MediaPlayer = () => {
           zIndex: (theme) => theme.zIndex.modal + 21,
         }}
       >
-        {isEditingLyrics && (
-          <AdvancedSeekHandle
-              currentTime={currentTime}
-              duration={duration}
-              onSeek={handleSeek}
-              textColor={textColor}
-              lyrics={currentTrack?.lyrics}
-              onCardTimeUpdate={handleCardTimeUpdate}
-              selectedLyric={selectedLyric}
-              onSelectLyric={setSelectedLyric}
-              onCardTextUpdate={handleCardTextUpdate}
-              onCardAdd={handleCardAdd}
-              onCardDelete={handleCardDelete}
-              onLyricsParsed={handleLyricsParsed}
-          />
-        )}
         <Box
         sx={{
           width: '100%',
@@ -447,6 +360,9 @@ const MediaPlayer = () => {
         >
           <IconButton onClick={toggleLyrics} sx={{ color: textColor }}>
             <MicIcon />
+          </IconButton>
+          <IconButton onClick={toggleLyricsEditor} sx={{ color: textColor }}>
+            <EditIcon />
           </IconButton>
           <IconButton onClick={toggleMute} sx={{ color: textColor }}>
             {volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}

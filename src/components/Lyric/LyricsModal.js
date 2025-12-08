@@ -2,8 +2,9 @@ import React from 'react';
 import { Box, Slide } from '@mui/material';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import LyricsDisplay from './LyricsDisplay';
+import LyricEditor from './LyricEditor';
 
-const LyricsModal = () => {
+const LyricsModal = ({ isEditingLyrics, onLyricsParsed, duration }) => {
     const { isLyricsVisible, currentTrack, currentTime, mediaPlayerHeight } = useMediaPlayer();
 
     return (
@@ -35,24 +36,29 @@ const LyricsModal = () => {
                 {/* LEFT — Artwork */}
                 <Box
                     sx={{
-                        flex: '0 0 320px',
+                        flex: isEditingLyrics ? '0 0 1200px' : '0 0 520px',
+                        transition: 'flex 0.3s ease-in-out',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
                         mr: 6,
                     }}
                 >
-                    <img
-                        src={currentTrack?.imageUrl}
-                        alt="Artwork"
-                        style={{
-                            width: '320px',
-                            height: '320px',
-                            borderRadius: '16px',
-                            objectFit: 'cover',
-                            boxShadow: '0 20px 40px rgba(0,0,0,0.55)',
-                        }}
-                    />
+                    {isEditingLyrics ? (
+                        <LyricEditor onLyricsParsed={onLyricsParsed} duration={duration} />
+                    ) : (
+                        <img
+                            src={currentTrack?.imageUrl}
+                            alt="Artwork"
+                            style={{
+                                width: '320px',
+                                height: '320px',
+                                borderRadius: '16px',
+                                objectFit: 'cover',
+                                boxShadow: '0 20px 40px rgba(0,0,0,0.55)',
+                            }}
+                        />
+                    )}
                 </Box>
 
                 {/* RIGHT — Lyrics Center UI */}
