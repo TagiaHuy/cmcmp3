@@ -2,14 +2,13 @@ import React, {
   createContext, useState, useContext, useEffect,
   useCallback, useMemo
 } from 'react';
+import { useAuth } from './AuthContext'; // 👈 thêm
 
 const MediaPlayerContext = createContext();
 export const useMediaPlayer = () => useContext(MediaPlayerContext);
 
-/** 
- * Hàm chuẩn hóa artists để tránh lỗi React render object 
- * - Nếu artists là array → lấy artists.name
- * - Nếu artists là string → giữ nguyên
+/**
+ * Chuẩn hoá artists để tránh lỗi React render object
  */
 export function normalizeArtists(artists) {
   if (Array.isArray(artists)) {
@@ -19,10 +18,23 @@ export function normalizeArtists(artists) {
 }
 
 /**
+ * Tạo key trong localStorage theo từng user
+ * - Nếu chưa đăng nhập → suffix _guest
+ * - Nếu có userId → suffix _<userId>
+ */
+const buildKey = (base, userId) => {
+  if (!userId) return `${base}_guest`;
+  return `${base}_${userId}`;
+};
+
+/**
  * repeatMode: 'none' | 'one' | 'all'
  * queue: [{ id, title, mediaSrc, imageUrl, artists, ... }]
  */
 export const MediaPlayerProvider = ({ children }) => {
+  const { user } = useAuth();          // 👈 lấy user từ AuthContext
+  const userId = user?.id;             // hoặc user?.email nếu bạn muốn
+
   // ===== Core states =====
   const [currentPlayingSrc, setCurrentPlayingSrc] = useState(null);
   const [currentTrack, setCurrentTrack] = useState(null);
@@ -34,27 +46,33 @@ export const MediaPlayerProvider = ({ children }) => {
   const [mediaPlayerHeight, setMediaPlayerHeight] = useState(0);
 
   // ===== Queue & playback mode =====
-  const [queue, setQueue] = useState([]);        
+  const [queue, setQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isShuffling, setIsShuffling] = useState(false);
   const [repeatMode, setRepeatMode] = useState('none');
   const [isLyricsVisible, setIsLyricsVisible] = useState(false);
   const [isEditingLyrics, setIsEditingLyrics] = useState(false);
 
-  // --- Init recently played from localStorage ---
+  // --- Init recently played từ localStorage, theo từng user ---
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem('recentlyPlayed')) || [];
-      setRecentlyPlayed(stored);
-      const storedPlaylists = JSON.parse(localStorage.getItem('recentlyPlayedPlaylists')) || [];
+      const keyTracks = buildKey('recentlyPlayed', userId);
+      const keyPlaylists = buildKey('recentlyPlayedPlaylists', userId);
+
+      const storedTracks =
+        JSON.parse(localStorage.getItem(keyTracks)) || [];
+      const storedPlaylists =
+        JSON.parse(localStorage.getItem(keyPlaylists)) || [];
+
+      setRecentlyPlayed(storedTracks);
       setRecentlyPlayedPlaylists(storedPlaylists);
     } catch {
       setRecentlyPlayed([]);
       setRecentlyPlayedPlaylists([]);
     }
-  }, []);
+  }, [userId]); // 👈 user đổi → load list khác
 
-  // --- Sync src khi đổi track ---
+  // --- Sync src khi đổi track & cập nhật recentlyPlayed (theo user) ---
   useEffect(() => {
     if (!currentTrack) {
       setCurrentPlayingSrc(null);
@@ -62,28 +80,29 @@ export const MediaPlayerProvider = ({ children }) => {
     }
     setCurrentPlayingSrc(currentTrack.mediaSrc || null);
 
-    // Update recently played
     setRecentlyPlayed(prev => {
       const filtered = (prev || []).filter(p =>
         (p?.id && currentTrack?.id && p.id !== currentTrack.id) ||
-        (!p?.id || !currentTrack?.id) && 
+        (!p?.id || !currentTrack?.id) &&
         (p?.title !== currentTrack.title || p?.mediaSrc !== currentTrack.mediaSrc)
       );
 
       const updated = [currentTrack, ...filtered].slice(0, 10);
-      localStorage.setItem('recentlyPlayed', JSON.stringify(updated));
+      const keyTracks = buildKey('recentlyPlayed', userId);
+      localStorage.setItem(keyTracks, JSON.stringify(updated));
       return updated;
     });
-  }, [currentTrack]);
-  
+  }, [currentTrack, userId]); // 👈 phụ thuộc userId
+
   const addRecentlyPlayedPlaylist = useCallback((playlist) => {
     setRecentlyPlayedPlaylists(prev => {
       const filtered = (prev || []).filter(p => p.id !== playlist.id);
       const updated = [playlist, ...filtered].slice(0, 10);
-      localStorage.setItem('recentlyPlayedPlaylists', JSON.stringify(updated));
+      const keyPlaylists = buildKey('recentlyPlayedPlaylists', userId);
+      localStorage.setItem(keyPlaylists, JSON.stringify(updated));
       return updated;
     });
-  }, []);
+  }, [userId]);
 
   // ===== Helpers =====
   const safeIndex = useCallback((i, len) => {
@@ -97,7 +116,7 @@ export const MediaPlayerProvider = ({ children }) => {
     const byId = list.findIndex(x => x?.id && x.id === track.id);
     if (byId !== -1) return byId;
 
-    return list.findIndex(x => 
+    return list.findIndex(x =>
       x?.title === track.title && x?.mediaSrc === track.mediaSrc
     );
   }, []);
@@ -133,8 +152,9 @@ export const MediaPlayerProvider = ({ children }) => {
 
   const clearRecentlyPlayed = useCallback(() => {
     setRecentlyPlayed([]);
-    localStorage.removeItem('recentlyPlayed');
-  }, []);
+    const keyTracks = buildKey('recentlyPlayed', userId);
+    localStorage.removeItem(keyTracks);
+  }, [userId]);
 
   const toggleSidebarRight = useCallback(() => {
     setIsSidebarRightVisible(v => !v);
@@ -163,8 +183,8 @@ export const MediaPlayerProvider = ({ children }) => {
     const list = Array.isArray(songs) ? songs : [];
 
     if (!list.length) {
-      setQueue([]); 
-      setCurrentIndex(0); 
+      setQueue([]);
+      setCurrentIndex(0);
       setCurrentTrack(null);
       setIsPlaying(false);
       return;
@@ -224,7 +244,7 @@ export const MediaPlayerProvider = ({ children }) => {
   }, []);
 
   const cycleRepeatMode = useCallback(() => {
-    setRepeatMode(m => 
+    setRepeatMode(m =>
       (m === 'none' ? 'one' : m === 'one' ? 'all' : 'none')
     );
   }, []);
@@ -292,7 +312,6 @@ export const MediaPlayerProvider = ({ children }) => {
 
     currentTime,
     setCurrentTime,
-    // thêm vào để dùng ở mọi component
     normalizeArtists,
     isLyricsVisible,
     toggleLyrics,
@@ -304,12 +323,13 @@ export const MediaPlayerProvider = ({ children }) => {
 
   }), [
     queue, currentIndex, currentTrack, currentPlayingSrc,
-    isPlaying, setIsPlaying,
-    recentlyPlayed, recentlyPlayedPlaylists, addRecentlyPlayedPlaylist, isSidebarRightVisible,
+    isPlaying,
+    recentlyPlayed, recentlyPlayedPlaylists, addRecentlyPlayedPlaylist,
+    clearRecentlyPlayed, isSidebarRightVisible, toggleSidebarRight,
     isShuffling, repeatMode,
     handlePlay, loadQueue, playPlaylistRandom, playAt,
     prev, next, toggleShuffle, cycleRepeatMode, handleEnded,
-    clearRecentlyPlayed, toggleSidebarRight, updateSongInQueue,
+    updateSongInQueue,
     currentTime, isLyricsVisible, toggleLyrics, mediaPlayerHeight,
     isEditingLyrics, toggleLyricsEditor, turnOffPlayer
   ]);
