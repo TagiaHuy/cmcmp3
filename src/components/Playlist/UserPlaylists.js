@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Button, CircularProgress, Typography, Modal, IconButton } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Box, CircularProgress, Typography, Modal, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PlaylistList from './PlaylistList';
 import usePlaylists from '../../hooks/usePlaylists';
-import CreatePlaylistForm from './CreatePlaylistForm';
 import EditPlaylistForm from './EditPlaylistForm';
 
 const style = {
@@ -20,13 +18,9 @@ const style = {
 };
 
 const UserPlaylists = () => {
-  const { playlists, loading, error, addPlaylist, removePlaylist, editPlaylist } = usePlaylists();
-  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const { playlists, loading, error, removePlaylist, editPlaylist } = usePlaylists();
   const [openEditModal, setOpenEditModal] = useState(false);
   const [currentPlaylist, setCurrentPlaylist] = useState(null);
-
-  const handleOpenCreateModal = () => setOpenCreateModal(true);
-  const handleCloseCreateModal = () => setOpenCreateModal(false);
 
   const handleOpenEditModal = (playlist) => {
     setCurrentPlaylist(playlist);
@@ -35,11 +29,6 @@ const UserPlaylists = () => {
   const handleCloseEditModal = () => {
     setOpenEditModal(false);
     setCurrentPlaylist(null);
-  };
-
-  const handleCreatePlaylist = async (data) => {
-    await addPlaylist(data);
-    handleCloseCreateModal();
   };
 
   const handleEditPlaylist = async (playlistId, data) => {
@@ -71,15 +60,6 @@ const UserPlaylists = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenCreateModal}
-        >
-          Tạo Playlist Mới
-        </Button>
-      </Box>
       {playlists.length === 0 ? (
         <Typography variant="body1" color="text.secondary">
           Bạn chưa có playlist nào. Hãy tạo một cái mới!
@@ -87,20 +67,6 @@ const UserPlaylists = () => {
       ) : (
         <PlaylistList playlists={playlists} onEdit={handleOpenEditModal} onDelete={handleDelete} />
       )}
-
-      <Modal
-        open={openCreateModal}
-        onClose={handleCloseCreateModal}
-        aria-labelledby="create-playlist-modal-title"
-        aria-describedby="create-playlist-modal-description"
-      >
-        <Box sx={style}>
-          <Typography id="create-playlist-modal-title" variant="h6" component="h2" mb={2} color="text.primary">
-            Tạo Playlist Mới
-          </Typography>
-          <CreatePlaylistForm onSubmit={handleCreatePlaylist} onCancel={handleCloseCreateModal} />
-        </Box>
-      </Modal>
 
       <Modal
         open={openEditModal}
