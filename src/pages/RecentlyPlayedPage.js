@@ -10,7 +10,7 @@ const RecentlyPlayedPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ color: theme.palette.text.primary }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
         Nghe gần đây
       </Typography>
       {recentlyPlayed.length > 0 ? (
