@@ -700,3 +700,30 @@ export const getSimilarSongsByTitle = async (title, signal) => {
         return [];
     }
 };
+
+export const searchMySongs = async (query, signal) => {
+  if (!query) {
+    return [];
+  }
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/me/search?q=${encodeURIComponent(query)}`, {
+      method: 'GET',
+      headers: {
+        ...authHeader(),
+        Accept: 'application/json',
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) {
+      throw new Error(data?.message || `HTTP ${res.status}`);
+    }
+
+    return (Array.isArray(data) ? data : []).map(mapSong);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error('Error searching my songs:', error);
+    return []; // Return empty array on error
+  }
+};

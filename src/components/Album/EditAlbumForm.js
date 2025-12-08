@@ -18,14 +18,13 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import useArtists from '../../hooks/useArtists';
 import { useNotifications } from '../../hooks/useNotifications';
-import useSearch from '../../hooks/useSearch'; // Import useSearch
+import { searchMySongs } from '../../services/songService';
 import Loading from '../Loading/Loading';
 import useUserAlbums from '../../hooks/useUserAlbums';
 
 const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
   const [name, setName] = useState(album.title);
   const [description, setDescription] = useState(album.description || '');
-  const [isPrivate, setIsPrivate] = useState(album.privacy === 'PRIVATE');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(album.imageUrl || null);
   const [currentSongs, setCurrentSongs] = useState([]);
@@ -35,12 +34,44 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { notifySuccess, notifyError } = useNotifications();
 
-  const [songSearchQuery, setSongSearchQuery] = useState(''); // State for song search input
-  const { results: searchResults, loading: loadingSearchResults } = useSearch(songSearchQuery); // Use useSearch hook
+  const [songSearchQuery, setSongSearchQuery] = useState('');
+  const [songSearchResults, setSongSearchResults] = useState([]);
+  const [loadingSongSearch, setLoadingSongSearch] = useState(false);
 
   const { updateAlbumSongsList, getSongsForAlbum } = useUserAlbums();
-  const { artists } = useArtists(); // Integrated useArtists hook
+  const { artists } = useArtists();
   const imageInputRef = useRef(null);
+
+  // Effect for debounced search
+  useEffect(() => {
+    if (!songSearchQuery) {
+      setSongSearchResults([]);
+      return;
+    }
+
+    setLoadingSongSearch(true);
+    const handler = setTimeout(() => {
+      const ac = new AbortController();
+      searchMySongs(songSearchQuery, ac.signal)
+        .then(results => {
+          setSongSearchResults(results);
+        })
+        .catch(err => {
+          if (err.name !== 'AbortError') {
+            notifyError("Lỗi khi tìm kiếm bài hát của bạn.");
+          }
+        })
+        .finally(() => {
+          setLoadingSongSearch(false);
+        });
+      
+      return () => ac.abort();
+    }, 500); // 500ms debounce
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [songSearchQuery, notifyError]);
 
   useEffect(() => {
     const fetchCurrentSongs = async () => {
@@ -68,11 +99,12 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
     try {
       await updateAlbumSongsList(album.id, { add: [song.id] });
       setCurrentSongs((prev) => [...prev, song]);
-      setSongSearchQuery(''); // Clear search query
+      setSongSearchQuery('');
+      setSongSearchResults([]);
       notifySuccess(`Đã thêm "${song.title}" vào album.`);
     } catch (err) {
       console.error('Failed to add song:', err);
-      notifyError('Lỗi khi thêm bài hát vào album.');
+      notifyError(err.message || 'Lỗi khi thêm bài hát vào album.');
     }
   };
 
@@ -115,7 +147,7 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
     }
   };
 
-  if (loadingSongs || loadingSearchResults) {
+  if (loadingSongs) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
@@ -253,7 +285,7 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
 
         <Typography variant="h6" mt={2} color="text.primary" fontWeight={600}>Thêm bài hát</Typography>
         <TextField
-          label="Tìm kiếm bài hát"
+          label="Tìm kiếm bài hát của bạn"
           variant="outlined"
           fullWidth
           value={songSearchQuery}
@@ -261,11 +293,11 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
           sx={{ mb: 2 }}
           disabled={isSubmitting}
         />
-        {loadingSearchResults && <CircularProgress size={24} />}
-        {!loadingSearchResults && searchResults.length > 0 && (
+        {loadingSongSearch && <CircularProgress size={24} />}
+        {!loadingSongSearch && songSearchResults.length > 0 && (
           <List dense>
-            {searchResults
-              .filter(result => result.type === 'song' && !currentSongs.some(s => s.id === result.id))
+            {songSearchResults
+              .filter(song => !currentSongs.some(s => s.id === song.id))
               .map((song) => (
                 <ListItem
                   key={song.id}
@@ -283,7 +315,7 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
               ))}
           </List>
         )}
-        {!loadingSearchResults && songSearchQuery && searchResults.filter(result => result.type === 'song').length === 0 && (
+        {!loadingSongSearch && songSearchQuery && songSearchResults.length === 0 && (
           <Typography variant="body2" color="text.secondary">Không tìm thấy bài hát nào.</Typography>
         )}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
