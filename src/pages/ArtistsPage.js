@@ -65,7 +65,7 @@ const ArtistsPage = () => {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1" color="primary.main">
+        <Typography variant="h4" component="h1" color="text.primary" sx={{ fontWeight: 700 }}>
           Nghệ sĩ
         </Typography>
         {isAdmin && ( // Wrap button with isAdmin check

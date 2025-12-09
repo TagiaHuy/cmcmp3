@@ -8,7 +8,7 @@ import PlaylistView from '../components/Card/PlaylistView';
 import Top100Section from '../components/Card/Top100Section';
 import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
 import RecentlyPlayed from '../components/Card/RecentlyPlayed';
-
+import Footer from '../layout/Footer';
 const HomePage = () => {
   const { playlists, loading, error } = usePlaylists();
 
@@ -42,6 +42,7 @@ const HomePage = () => {
       <PlaylistView playlist={l4} />
 
       <ZingChartSection />
+      <Footer />
     </Box>
   );
 };

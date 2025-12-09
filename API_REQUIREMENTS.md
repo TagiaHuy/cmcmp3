@@ -251,3 +251,76 @@ This document outlines the API endpoints required for the CMCMP3 music streaming
         ]
     }
     ```
+
+## 7. Artist Verification
+
+### 7.1 Request Artist Verification
+
+*   **HTTP Method**: `POST`
+*   **Endpoint**: `/api/me/artist-verification-requests`
+*   **Authentication**: Cần access token của người dùng đã đăng nhập.
+*   **Request Body (JSON)**:
+    ```json
+    {
+      "artistName": "Tên nghệ danh mong muốn",
+      "imageUrl": "URL của ảnh đã upload ở bước trên"
+    }
+    ```
+*   **Success Response (200 OK - JSON)**:
+    ```json
+    {
+        "id": 1, // ID của yêu cầu vừa tạo
+        "user": {
+            "id": 123,
+            "username": "nguyenvana",
+            "displayName": "Nguyễn Văn A",
+            "email": "a@example.com"
+        },
+        "artistName": "Tên nghệ danh mong muốn",
+        "imageUrl": "URL của ảnh đã upload",
+        "status": "PENDING", // Trạng thái ban đầu luôn là PENDING
+        "requestDate": "2025-12-03T10:15:30"
+    }
+    ```
+*   **Error Response (400 Bad Request)**:
+    *   Nếu người dùng đã là nghệ sĩ hoặc đã có yêu cầu đang chờ. Body sẽ là một chuỗi thông báo lỗi, ví dụ: "User is already an artist or has a pending verification request."
+
+### 7.2 Get Pending Artist Verifications (Admin)
+
+*   **HTTP Method**: `GET`
+*   **Endpoint**: `/api/admin/artist-verification-requests`
+*   **Authentication**: Cần access token của tài khoản Admin.
+*   **Success Response (200 OK - JSON)**: Một mảng các đối tượng yêu cầu.
+    ```json
+    [
+        {
+            "id": 1,
+            "user": {
+                "id": 123,
+                "username": "nguyenvana",
+                "displayName": "Nguyễn Văn A",
+                "email": "a@example.com"
+            },
+            "artistName": "Tên nghệ danh mong muốn",
+            "imageUrl": "URL của ảnh",
+            "status": "PENDING",
+            "requestDate": "2025-12-03T10:15:30"
+        }
+    ]
+    ```
+
+### 7.3 Approve Artist Verification (Admin)
+
+*   **HTTP Method**: `POST`
+*   **Endpoint**: `/api/admin/artist-verification-requests/{id}/approve`
+*   **Authentication**: Cần access token của tài khoản Admin.
+*   **Request Body**: (Không cần)
+*   **Success Response (200 OK)**: Một chuỗi thông báo, ví dụ: "Request approved successfully."
+
+### 7.4 Reject Artist Verification (Admin)
+
+*   **HTTP Method**: `POST`
+*   **Endpoint**: `/api/admin/artist-verification-requests/{id}/reject`
+*   **Authentication**: Cần access token của tài khoản Admin.
+*   **Request Body**: (Không cần)
+*   **Success Response (200 OK)**: Một chuỗi thông báo, ví dụ: "Request rejected successfully."

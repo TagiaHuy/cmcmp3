@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Container, Paper, Typography, TextField, Button } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { useNotifications } from '../hooks/useNotifications';
 import { resetPassword } from '../services/authService';
 
 const ResetPasswordPage = () => {
@@ -10,6 +10,7 @@ const ResetPasswordPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { notifySuccess, notifyError } = useNotifications();
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -17,28 +18,28 @@ const ResetPasswordPage = () => {
 
   useEffect(() => {
     if (!email) {
-      toast.error('Không tìm thấy thông tin email. Vui lòng thử lại từ đầu.');
+      notifyError('Không tìm thấy thông tin email. Vui lòng thử lại từ đầu.');
       navigate('/forgot-password');
     }
-  }, [email, navigate]);
+  }, [email, navigate, notifyError]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp!");
+      notifyError("Mật khẩu xác nhận không khớp!");
       return;
     }
     if (password.length < 6) {
-      toast.error("Mật khẩu phải có ít nhất 6 ký tự.");
+      notifyError("Mật khẩu phải có ít nhất 6 ký tự.");
       return;
     }
     setLoading(true);
     try {
       await resetPassword(email, otp, password);
-      toast.success('Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay bây giờ.');
+      notifySuccess('Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay bây giờ.');
       navigate('/login');
     } catch (error) {
-      toast.error(error.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+      notifyError(error.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }

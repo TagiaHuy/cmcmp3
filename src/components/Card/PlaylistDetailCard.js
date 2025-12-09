@@ -1,15 +1,28 @@
-import React from 'react';
-import { Box, Typography, Stack, Divider } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Stack, Divider, Button, Menu } from '@mui/material';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic'; // Icon Lượt Nghe
 import FavoriteIcon from '@mui/icons-material/Favorite'; // Icon Lượt Thích
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // Icon Số Bài hát
-import FavoriteButton from '../Button/Specific/FavoriteButton';
+import LockIcon from '@mui/icons-material/Lock'; // Icon cho playlist riêng tư
+import FavoritePlaylistButton from '../Button/Specific/FavoritePlaylistButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import PlayallButton from '../Button/Specific/PlayallButton'; // Thường là nút nổi bật
+import ShareMenu from '../MenuItem/Specific/ShareMenu'; // Import ShareMenu
 
-const PlaylistDetailCard = ({ playlist }) => {
+const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying, isOwner, onDelete, onEdit }) => {
   // Giả định thêm trường 'creator' hoặc 'author' vào object playlist
   const creatorName = playlist.creator || "Người dùng"; // Mặc định nếu không có
+
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Box 
@@ -43,7 +56,7 @@ const PlaylistDetailCard = ({ playlist }) => {
             flexShrink: 0, // Đảm bảo ảnh không bị co lại
           }}
           src={playlist.imageUrl}
-          alt={playlist.name}
+          alt={playlist.title}
         />
 
         {/* 2. Nội dung Playlist */}
@@ -59,7 +72,8 @@ const PlaylistDetailCard = ({ playlist }) => {
             color="text.primary" 
             fontWeight={800} // Cực kỳ đậm
           >
-            {playlist.name}
+            {playlist.privacy === 'PRIVATE' && <LockIcon fontSize="large" sx={{ verticalAlign: 'middle', mr: 1 }} />}
+            {playlist.title}
           </Typography>
 
           {/* Mô tả */}
@@ -120,11 +134,21 @@ const PlaylistDetailCard = ({ playlist }) => {
         justifyContent: { xs: 'center', md: 'flex-start' } // Căn trái trên desktop
       }}>
         {/* Nút Play Nổi bật (Ví dụ: Nút tròn lớn, màu sắc rực rỡ) */}
-        <PlayallButton sx={{ width: 64, height: 64, boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)' }} />
+        <PlayallButton isPlaying={isPlaying} handlePlayPause={handlePlayPlaylist} sx={{ width: 64, height: 64, boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)' }} />
         
         {/* Các nút phụ (Kích thước tiêu chuẩn) */}
-        <FavoriteButton />
-        <MoreButton />
+        <FavoritePlaylistButton playlistId={playlist.id} isFavorite={playlist.isFavorite} />
+        <MoreButton onClick={handleMenuOpen} />
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          MenuListProps={{
+            'aria-labelledby': 'more-button',
+          }}
+        >
+          <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="playlist" id={playlist.id} />
+        </Menu>
       </Box>
       
       {/* --- Vị trí này là nơi bạn đặt component danh sách bài hát (Song List) --- 

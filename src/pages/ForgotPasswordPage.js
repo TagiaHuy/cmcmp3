@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
 import { Box, Container, Paper, Typography, TextField, Button } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { useNotifications } from '../hooks/useNotifications';
 import { forgotPassword } from '../services/authService';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { notifySuccess, notifyError } = useNotifications();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       await forgotPassword(email);
-      toast.success('OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư.');
+      notifySuccess('OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư.');
       navigate('/reset-password', { state: { email } });
     } catch (error) {
-      toast.error(error.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+      notifyError(error.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }

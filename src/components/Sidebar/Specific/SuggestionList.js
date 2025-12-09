@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react'; // Import useState
 import { useMediaPlayer } from '../../../context/MediaPlayerContext';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -8,17 +8,33 @@ import {
   ListItem,
   ListItemAvatar,
   Avatar,
+  Menu // Import Menu
 } from '@mui/material';
+import { Link } from 'react-router-dom'; // Import Link
 
 import FavoriteButton from '../../Button/Specific/FavoriteButton';
 import MoreButton from '../../Button/Specific/MoreButton';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
+import DownloadMenuItem from '../../MenuItem/Specific/DownloadMenuItem'; // Import DownloadMenuItem
+import ShareMenu from '../../MenuItem/Specific/ShareMenu';
 
 const ACTION_WIDTH = 96;
 
 const SuggestionList = () => {
   const { recentlyPlayed, handlePlay, currentTrack, normalizeArtists } = useMediaPlayer();
   const theme = useTheme();
+
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    event.stopPropagation(); // Prevent other click events
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   if (!currentTrack) return null;
 
@@ -27,6 +43,7 @@ const SuggestionList = () => {
   );
 
   if (!suggestions.length) return null;
+
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -109,7 +126,9 @@ const SuggestionList = () => {
               }}
             >
               <Typography noWrap fontWeight="bold" color={theme.palette.text.primary}>
-                {track.title}
+                <Link to={`/songs/${track.id}`} onClick={(e) => e.stopPropagation()} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  {track.title}
+                </Link>
               </Typography>
 
               <Typography noWrap color={theme.palette.text.secondary}>
@@ -137,7 +156,18 @@ const SuggestionList = () => {
               }}
             >
               <FavoriteButton size="small" aria-label="Yêu thích" />
-              <MoreButton size="small" aria-label="Thêm" />
+              <MoreButton size="small" aria-label="Thêm" onClick={handleMenuOpen} />
+              <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleMenuClose}
+                MenuListProps={{
+                  'aria-labelledby': `more-button-suggestion-${track.id}`,
+                }}
+              >
+                <DownloadMenuItem songId={track.id} songTitle={track.title} onCloseMenu={handleMenuClose} />
+                <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={track.id} />
+              </Menu>
             </Box>
           </ListItem>
         ))}

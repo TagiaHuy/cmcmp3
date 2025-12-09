@@ -7,9 +7,8 @@ import UpgradeButton from '../components/Button/Specific/UpgradeButton';
 import SettingButton from '../components/Button/Specific/SettingButton';
 import Navigation from '../components/Navigation/Navigation';
 import ThemeToggleButton from '../components/Button/Specific/ThemeToggleButton';
-
-// ✅ Menu avatar tài khoản (đã tạo ở components/MenuItem/UserAvatarMenu.js)
 import UserAvatarMenu from '../components/MenuItem/UserAvatarMenu';
+import NotificationBell from '../components/Notification/NotificationBell';
 
 function Header() {
   return (
@@ -30,6 +29,7 @@ function Header() {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <UpgradeButton />
+          <NotificationBell />
           <SettingButton />
           {/* ✅ Luôn hiển thị icon tài khoản; menu bên trong sẽ tự phân nhánh theo trạng thái đăng nhập */}
           <UserAvatarMenu />

@@ -6,9 +6,18 @@ import SongCardDetailed from '../Card/SongCardDetailed';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const SongCarousel = ({ title, songs = [], columns = 3, onPlay }) => {
+// Re-add 'rows' prop, defaulting to 1 for backward compatibility.
+const SongCarousel = ({ title, songs = [], columns = 3, rows = 1, onPlay }) => {
   const [startIndex, setStartIndex] = useState(0);
   const { normalizeArtists } = useMediaPlayer();
+
+  // Calculate the total number of items visible per page.
+  const itemsPerPage = columns * rows;
+
+  // Reset startIndex when the layout geometry changes.
+  React.useEffect(() => {
+    setStartIndex(0);
+  }, [columns, rows]);
 
   if (!Array.isArray(songs) || songs.length === 0) {
     return (
@@ -18,17 +27,20 @@ const SongCarousel = ({ title, songs = [], columns = 3, onPlay }) => {
     );
   }
 
-  const maxIndex = Math.max(0, songs.length - columns);
+  const maxIndex = Math.max(0, songs.length - itemsPerPage);
 
   const handleNext = () => {
-    setStartIndex((prev) => Math.min(prev + columns, maxIndex));
+    // Paginate by the total items per page.
+    setStartIndex((prev) => Math.min(prev + itemsPerPage, maxIndex));
   };
 
   const handlePrev = () => {
-    setStartIndex((prev) => Math.max(prev - columns, 0));
+    // Paginate by the total items per page.
+    setStartIndex((prev) => Math.max(prev - itemsPerPage, 0));
   };
 
-  const visibleSongs = songs.slice(startIndex, startIndex + columns);
+  // Slice the array to get the items for the current page.
+  const visibleSongs = songs.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <Box sx={{ my: 4, position: 'relative' }}>
@@ -62,13 +74,13 @@ const SongCarousel = ({ title, songs = [], columns = 3, onPlay }) => {
       </IconButton>
 
       {/* Danh sách bài hát */}
-      <Grid container spacing={5} justifyContent="center">
+      <Grid container spacing={4} justifyContent="center">
         {visibleSongs.map((song) => (
           <Grid item key={song.id || song.mediaSrc} xs={12 / columns}>
             <SongCardDetailed
               song={song}
               normalizeArtists={normalizeArtists}
-              onPlay={() => onPlay?.(song)}  // 🔥 Gọi callback của TopSongsSection
+              onPlay={() => onPlay?.(song)}
             />
           </Grid>
         ))}

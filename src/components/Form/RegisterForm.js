@@ -1,6 +1,5 @@
 // src/pages/Auth/RegisterForm.js
 import React, { useRef, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, TextField, Button, Divider, Typography,
@@ -9,14 +8,14 @@ import {
 import GoogleIcon from '@mui/icons-material/Google';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useNotifications } from '../../hooks/useNotifications';
 import { sendOtp } from '../../services/authService';
-import { toast } from 'react-toastify';
 
 const emailRegex = /^[^\s@]+@gmail\.com$/i;
 
 const RegisterForm = () => {
-  const { register } = useAuth();
   const navigate = useNavigate();
+  const { notifySuccess, notifyError } = useNotifications();
 
   const [form, setForm] = useState({
     displayName: '',
@@ -29,110 +28,98 @@ const RegisterForm = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    otp: '',
   });
   const [submitting, setSubmitting] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-
   const refs = {
     displayName: useRef(null),
     email: useRef(null),
     password: useRef(null),
     confirmPassword: useRef(null),
-    otp: useRef(null),
   };
 
   const onChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'otp') {
-      setOtp(value);
-      setFieldErr((err) => ({ ...err, otp: '' }));
-    } else {
-      setForm((s) => ({ ...s, [name]: value }));
-      setFieldErr((err) => ({ ...err, [name]: '' }));
-    }
+    setForm((s) => ({ ...s, [name]: value }));
+    setFieldErr((err) => ({ ...err, [name]: '' }));
   };
 
   const validate = () => {
-    const e = { displayName: '', email: '', password: '', confirmPassword: '', otp: '' };
+    const e = { displayName: '', email: '', password: '', confirmPassword: '' };
+    let isValid = true;
 
-    if (!form.displayName.trim()) e.displayName = 'Vui lòng nhập tên hiển thị';
-    else if (form.displayName.trim().length < 2) e.displayName = 'Tên hiển thị tối thiểu 2 ký tự';
+    if (!form.displayName.trim()) {
+      isValid = false;
+    } else if (form.displayName.trim().length < 2) {
+      e.displayName = 'Tên hiển thị tối thiểu 2 ký tự';
+      isValid = false;
+    }
 
     const email = form.email.trim();
-    if (!email) e.email = 'Vui lòng nhập email';
-    else if (!emailRegex.test(email)) e.email = 'Email không hợp lệ';
+    if (!email) {
+      isValid = false;
+    } else if (!emailRegex.test(email)) {
+      e.email = 'Email không hợp lệ';
+      isValid = false;
+    }
 
-    if (isOtpSent && !otp.trim()) e.otp = 'Vui lòng nhập mã OTP';
+    if (!form.password) {
+      isValid = false;
+    } else if (form.password.length < 6) {
+      e.password = 'Mật khẩu tối thiểu 6 ký tự';
+      isValid = false;
+    }
 
-    if (!form.password) e.password = 'Vui lòng nhập mật khẩu';
-    else if (form.password.length < 6) e.password = 'Mật khẩu tối thiểu 6 ký tự';
-
-    if (!form.confirmPassword) e.confirmPassword = 'Vui lòng xác nhận mật khẩu';
-    else if (form.confirmPassword !== form.password) e.confirmPassword = 'Mật khẩu không khớp';
+    if (!form.confirmPassword) {
+      isValid = false;
+    } else if (form.confirmPassword !== form.password) {
+      e.confirmPassword = 'Mật khẩu không khớp';
+      isValid = false;
+    }
 
     setFieldErr(e);
-    return e;
+    return isValid;
   };
 
-  const focusFirstError = (e) => {
-    for (const k of ['displayName', 'email', 'otp', 'password', 'confirmPassword']) {
+  const focusFirstError = (e) => { // Keep this for other errors
+    for (const k of ['displayName', 'email', 'password', 'confirmPassword']) {
       if (e[k]) { refs[k].current?.focus(); break; }
     }
   };
 
-  const handleSendOtp = async () => {
-    const email = form.email.trim();
-    if (!email || !emailRegex.test(email)) {
-      setFieldErr(e => ({ ...e, email: 'Email không hợp lệ' }));
-      refs.email.current?.focus();
-      return;
-    }
+  const onBlurValidate = () => validate(); // This will not show errors for empty fields on blur anymore
 
-    setIsVerifying(true);
-    try {
-      await sendOtp(email);
-      setIsOtpSent(true);
-      toast.success('Mã OTP đã được gửi đến email của bạn.');
-    } catch (error) {
-      toast.error(error?.message || 'Không thể gửi OTP. Vui lòng thử lại.');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const onBlurValidate = () => validate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const e = validate();
-    if (Object.values(e).some(Boolean)) {
-      focusFirstError(e);
-      return;
+    const currentErrors = validate(); // Call validate to update fieldErr state
+    // Now check if there are any error messages or if isValid is false from validate
+    if (!currentErrors) { // If validate returns false (meaning something is invalid or empty)
+        // Optionally, if you still want to focus on the first truly invalid field,
+        // you would need to re-evaluate 'e' here based on current state after setFieldErr.
+        // For now, based on user request, we just prevent submission without
+        // displaying "Vui lòng nhập" for empty fields.
+        return;
     }
 
+    setSubmitting(true);
     try {
-      setSubmitting(true);
-      await register(form.displayName.trim(), form.email.trim(), form.password, otp);
-      toast.success('Đăng ký thành công! Bạn sẽ được chuyển tới trang đăng nhập...');
-      setTimeout(() => navigate('/login'), 1500);
+      const { displayName, email, password } = form;
+      await sendOtp(email.trim());
+      notifySuccess('Mã OTP đã được gửi đến email của bạn.');
+      navigate('/verify-otp', {
+        state: {
+          displayName: displayName.trim(),
+          email: email.trim(),
+          password,
+        },
+      });
     } catch (err) {
-      const errorMessage = err?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
-      if (errorMessage.includes('OTP không hợp lệ') || errorMessage.includes('OTP đã hết hạn')) {
-        toast.error('mã OTP không hợp lệ');
-      } else if (errorMessage.includes('Email đã được sử dụng')) {
-        setFieldErr(e => ({ ...e, email: 'Tài khoản này đã được sử dụng' }));
-        refs.email.current?.focus();
-      } else {
-        toast.error(errorMessage);
-      }
+      notifyError(err?.message || 'Không thể gửi OTP. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }
@@ -173,57 +160,23 @@ const RegisterForm = () => {
         sx={errorFieldSx}
       />
 
-      <Box sx={{ display: 'flex', alignItems: 'start', gap: 1 }}>
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="email"
-          label="Địa chỉ Email"
-          name="email"
-          autoComplete="email"
-          inputRef={refs.email}
-          value={form.email}
-          onChange={onChange}
-          onBlur={onBlurValidate}
-          error={!!fieldErr.email}
-          helperText={fieldErr.email}
-          helperTextProps={helperTextProps}
-          sx={{ ...errorFieldSx, flexGrow: 1 }}
-          disabled={isOtpSent}
-        />
-        <Button
-          variant="contained"
-          onClick={handleSendOtp}
-          disabled={isVerifying || isOtpSent}
-          sx={{
-            mt: '16px', // Match TextField margin
-            height: '56px', // Match TextField height
-            flexShrink: 0,
-          }}
-        >
-          {isVerifying ? 'Đang gửi...' : 'Gửi OTP'}
-        </Button>
-      </Box>
-
-      {isOtpSent && (
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="otp"
-          label="Mã OTP"
-          name="otp"
-          inputRef={refs.otp}
-          value={otp}
-          onChange={onChange}
-          onBlur={onBlurValidate}
-          error={!!fieldErr.otp}
-          helperText={fieldErr.otp}
-          helperTextProps={helperTextProps}
-          sx={errorFieldSx}
-        />
-      )}
+      <TextField
+        margin="normal"
+        required
+        fullWidth
+        id="email"
+        label="Địa chỉ Email"
+        name="email"
+        autoComplete="email"
+        inputRef={refs.email}
+        value={form.email}
+        onChange={onChange}
+        onBlur={onBlurValidate}
+        error={!!fieldErr.email}
+        helperText={fieldErr.email}
+        helperTextProps={helperTextProps}
+        sx={errorFieldSx}
+      />
 
       <TextField
         margin="normal"

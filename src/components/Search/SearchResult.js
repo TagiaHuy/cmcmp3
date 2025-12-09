@@ -3,6 +3,7 @@ import { Menu, MenuItem } from '@mui/material';
 import ResultCard from '../Card/ResultCard';
 import ArtistResultCard from '../Card/ArtistResultCard';
 import PlaylistResultCard from '../Card/PlaylistResultCard';
+import TagResultCard from '../Card/TagResultCard';
 
 function SearchResult({ anchorEl, open, handleClose, results, handlePlay }) {
   return (
@@ -47,6 +48,8 @@ function SearchResult({ anchorEl, open, handleClose, results, handlePlay }) {
               return <ArtistResultCard key={index} artist={result} sx={{ width: 430 }} />;
             case 'playlist':
               return <PlaylistResultCard key={index} playlist={result} sx={{ width: 430 }} />;
+            case 'tag':
+              return <TagResultCard key={index} tag={result} sx={{ width: 430 }} />;
             default:
               return null;
           }

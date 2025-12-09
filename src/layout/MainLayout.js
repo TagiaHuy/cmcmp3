@@ -1,14 +1,12 @@
-import React from 'react';
-import { Box, Toolbar, GlobalStyles } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, GlobalStyles } from '@mui/material';
 import Header from './Header';
 import SidebarLeft from '../components/Sidebar/Specific/SidebarLeft';
 import SidebarRight from '../components/Sidebar/Specific/SidebarRight';
-// import CreateArtistForm from '../components/Form/CreateArtistForm'; // Import CreateArtistForm
-import Footer from './Footer'; // nếu chưa dùng có thể bỏ
 import MediaPlayer from '../components/MediaPlayer/MediaPlayer';
 import { MediaPlayerProvider, useMediaPlayer } from '../context/MediaPlayerContext';
-import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Chatbot from '../components/Chatbot/Chatbot'; // Import Chatbot component
 
 const scrollbarStyles = (
   <GlobalStyles
@@ -33,14 +31,14 @@ function MainLayout({ children }) {
 function MainLayoutContent({ children }) {
   const { currentPlayingSrc, isSidebarRightVisible } = useMediaPlayer();
   const drawerWidth = 280;
+  const [showChatbot, setShowChatbot] = useState(false); // State to manage chatbot visibility
 
-  // const [isCreateArtistModalOpen, setIsCreateArtistModalOpen] = useState(false); // Removed
-  // const handleOpenCreateArtistModal = () => setIsCreateArtistModalOpen(true); // Removed
-  // const handleCloseCreateArtistModal = () => setIsCreateArtistModalOpen(false); // Removed
+  const toggleChatbot = () => {
+    setShowChatbot(!showChatbot);
+  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <ToastContainer position="top-right" />
       {scrollbarStyles}
 
       <Box
@@ -53,7 +51,7 @@ function MainLayoutContent({ children }) {
           '--player-h': currentPlayingSrc ? '100px' : '0px',
         }}
       >
-        <SidebarLeft /* Removed onOpenCreateArtistModal prop */ />
+        <SidebarLeft />
 
         <Box
           component="main"
@@ -63,12 +61,16 @@ function MainLayoutContent({ children }) {
             overflowY: 'scroll',
             overflowX: 'hidden',
             scrollbarGutter: 'stable both-edges',
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 'calc(100vh - 64px - 100px)', // Adjust based on header and player height
           }}
         >
           <Header />
-          <Toolbar />
-          {children}
-          <Footer />
+
+          <Box sx={{ flexGrow: 1 }}>
+            {children}
+          </Box>
         </Box>
 
         {isSidebarRightVisible && <SidebarRight />}
@@ -88,21 +90,17 @@ function MainLayoutContent({ children }) {
             p: 0,
           }}
         >
-          {/* ❗ KHÔNG truyền key hoặc src để tránh remount */}
           <MediaPlayer />
         </Box>
       )}
 
-      {/* CreateArtistForm modal removed */}
-      {/*
-      <CreateArtistForm
-        open={isCreateArtistModalOpen}
-        handleClose={handleCloseCreateArtistModal}
-        // onArtistCreated={handleArtistCreated} // Add this if you need to update a list in MainLayout
-      />
-      */}
+      {showChatbot && <Chatbot onClose={toggleChatbot} />}
+      <button className="floating-chat-button" onClick={toggleChatbot}>
+        {showChatbot ? '—' : '💬'}
+      </button>
     </Box>
   );
 }
 
 export default MainLayout;
+

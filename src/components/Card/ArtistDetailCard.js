@@ -4,7 +4,7 @@ import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import PlayallButton from '../Button/Specific/PlayallButton';
 
-const ArtistDetailCard = ({ artist }) => {
+const ArtistDetailCard = ({ artist, onPlayAll }) => {
   const theme = useTheme();
 
   return (
@@ -56,6 +56,8 @@ const ArtistDetailCard = ({ artist }) => {
         <PlayallButton
           size="large"
           variant="contained"
+          isPlaying={false} // Default to false for now, can be made dynamic later
+          handlePlayPause={onPlayAll} // Pass onPlayAll to handlePlayPause
           sx={{
             minWidth: 150,
             borderRadius: 20, // More rounded for a modern look

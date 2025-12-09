@@ -1,51 +1,74 @@
-// src/components/Section/TopPlaylistsSection.jsx
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Select, MenuItem } from '@mui/material';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Box, Typography, Select, MenuItem, CircularProgress, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 import {
   getTopPlaylists,
-  getNewestPlaylists,
-  getPlaylistsByTopLikes
+  getNewReleasePlaylists,
+  getMostLikedPlaylists,
+  getPlaylistById,
 } from '../../services/playlistService';
 
+import { getSongById } from '../../services/songService';
 import PlaylistCarousel from '../Carousel/PlaylistCarousel';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
+
 
 export default function TopPlaylistsSection() {
   const [playlists, setPlaylists] = useState([]);
   const [sortBy, setSortBy] = useState('listens');
+  const [loading, setLoading] = useState(true);
+  const [loadingPlaylistId, setLoadingPlaylistId] = useState(null);
 
-  const {
-    loadQueue,
-    normalizeArtists
-  } = useMediaPlayer();
-
+  const { loadQueue, normalizeArtists, addRecentlyPlayedPlaylist } = useMediaPlayer();
   const theme = useTheme();
   const headerColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
 
+  const is2033 = useMediaQuery('(min-width:2033px)');
+  const is1644 = useMediaQuery('(min-width:1644px)');
+  const is1265 = useMediaQuery('(min-width:1265px)');
+  const is900 = useMediaQuery('(min-width:900px)');
+
+  const displayConfig = useMemo(() => {
+    if (is2033) return { columns: 4, rows: 1 };
+    if (is1644) return { columns: 3, rows: 1 }; // Force 3 columns to prevent wrapping
+    if (is1265) return { columns: 2, rows: 2 }; // The 2x2 grid
+    if (is900) return { columns: 2, rows: 1 };
+    return { columns: 1, rows: 1 };
+  }, [is2033, is1644, is1265, is900]);
+
   // ============================
-  // Fetch playlist theo sort type
+  // Fetch playlists based on sort option
   // ============================
   useEffect(() => {
     const ac = new AbortController();
 
     async function fetchPlaylists() {
+      setLoading(true);
       try {
-        let fetched = [];
+        let fetched;
+        const limit = 15;
 
-        if (sortBy === 'listens') {
-          fetched = await getTopPlaylists(8, ac.signal);
-        } else if (sortBy === 'newest') {
-          fetched = await getNewestPlaylists(8, ac.signal);
-        } else if (sortBy === 'likes') {
-          fetched = await getPlaylistsByTopLikes(8, ac.signal);
+        switch (sortBy) {
+          case 'newest':
+            fetched = await getNewReleasePlaylists(limit, ac.signal);
+            break;
+          case 'likes':
+            fetched = await getMostLikedPlaylists(limit, ac.signal);
+            break;
+          case 'listens':
+          default:
+            fetched = await getTopPlaylists(limit, ac.signal);
+            break;
         }
 
-        setPlaylists(Array.isArray(fetched) ? fetched : []);
+        const playlistsData = Array.isArray(fetched) ? fetched : [];
+        setPlaylists(playlistsData);
       } catch (err) {
-        if (err.name !== 'AbortError') console.error(err);
+        if (err.name !== 'AbortError') console.error(`Error fetching playlists for sort by ${sortBy}:`, err);
         setPlaylists([]);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -53,39 +76,51 @@ export default function TopPlaylistsSection() {
     return () => ac.abort();
   }, [sortBy]);
 
+
   // ==========================================
   // ⭐ Play playlist — hỗ trợ Next / Prev
   // ==========================================
-  const handlePlayPlaylist = (playlist, clickedSong = null) => {
-    if (!playlist) return;
+  const handlePlayPlaylist = async (playlist) => {
+    if (!playlist || !playlist.id) return;
+    setLoadingPlaylistId(playlist.id);
+    addRecentlyPlayedPlaylist(playlist);
+    try {
+      const fullPlaylist = await getPlaylistById(playlist.id);
+      const songIds = fullPlaylist.songs;
 
-    const songs = playlist.songs || playlist.trackList || [];
+      if (!songIds || songIds.length === 0) {
+        console.warn("Playlist has no songs:", fullPlaylist);
+        return;
+      }
 
-    if (!Array.isArray(songs) || songs.length === 0) {
-      console.warn("Playlist không có bài hát:", playlist);
-      return;
+      const songResults = await Promise.allSettled(
+        songIds.map(id => getSongById(id))
+      );
+      
+      const fetchedSongs = songResults
+        .filter(r => r.status === 'fulfilled' && r.value)
+        .map(r => r.value);
+
+      if (fetchedSongs.length === 0) {
+        console.warn("Could not fetch any songs for the playlist");
+        return;
+      }
+      
+      const normalizedSongs = fetchedSongs.map((song, index) => ({
+        id: song.id ?? index,
+        title: song.title,
+        mediaSrc: song.mediaSrc || song.audioUrl,
+        imageUrl: song.imageUrl,
+        artists: normalizeArtists(song.artists)
+      }));
+
+      loadQueue(normalizedSongs, 0);
+
+    } catch (error) {
+      console.error("Failed to play playlist:", error);
+    } finally {
+      setLoadingPlaylistId(null);
     }
-
-    // Chuẩn hóa track list giống ZingChart (để MediaPlayer xử lý queue)
-    const normalizedSongs = songs.map((song, index) => ({
-      id: song.id ?? index,
-      title: song.title,
-      mediaSrc: song.mediaSrc || song.audioUrl,
-      imageUrl: song.imageUrl,
-      artists: normalizeArtists(song.artists)
-    }));
-
-    // Xác định bài bắt đầu play
-    let startIndex = 0;
-
-    if (clickedSong) {
-      const idx = normalizedSongs.findIndex(s => s.id === clickedSong.id);
-      if (idx >= 0) startIndex = idx;
-    }
-
-    // ⭐ Nạp toàn bộ queue + chỉ định bài sẽ phát đầu
-    // (MediaPlayer sẽ tự lo Next / Prev giống ZingChart)
-    loadQueue(normalizedSongs, startIndex);
   };
 
   return (
@@ -120,13 +155,18 @@ export default function TopPlaylistsSection() {
       </Box>
 
       {/* Nội dung */}
-      {playlists.length > 0 ? (
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 130 }}>
+          <CircularProgress />
+        </Box>
+      ) : playlists.length > 0 ? (
         <PlaylistCarousel
-          key={sortBy}          // ép remount khi đổi sort
+          key={sortBy}
           playlists={playlists}
-          columns={3}
-          // Khi bấm play playlist → nạp queue + Next/Prev OK
+          columns={displayConfig.columns}
+          rows={displayConfig.rows}
           onPlay={handlePlayPlaylist}
+          loadingPlaylistId={loadingPlaylistId}
         />
       ) : (
         <Box
@@ -138,7 +178,7 @@ export default function TopPlaylistsSection() {
           }}
         >
           <Typography color="text.secondary">
-            Đang chờ dữ liệu từ backend...
+            Không tìm thấy playlist nào.
           </Typography>
         </Box>
       )}

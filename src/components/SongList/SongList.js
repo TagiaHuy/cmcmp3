@@ -3,11 +3,12 @@ import { Box, Typography, CircularProgress, List } from '@mui/material';
 import useSongsByIds from '../../hooks/useSongsByIds';
 import { useMediaPlayer, normalizeArtists } from '../../context/MediaPlayerContext';
 import SongListItem from './SongListItem';
+import API_BASE_URL from '../../config';
 
 /* -------------------------------------------------------------------
    ⭐ Renderer — chỉ render UI, không fetch, không dùng hook.
 ------------------------------------------------------------------- */
-const SongListRenderer = ({ songs, onPlay, currentTrack }) => {
+const SongListRenderer = ({ songs, onPlay, currentTrack, renderActions }) => {
   if (!Array.isArray(songs) || songs.length === 0) {
     return (
       <Typography
@@ -32,7 +33,7 @@ const SongListRenderer = ({ songs, onPlay, currentTrack }) => {
         const unifiedTrack = {
           id: song.id,
           title: song.title,
-          mediaSrc: song.mediaSrc || song.audioUrl,
+          mediaSrc: song.mediaSrc || song.audioUrl || `${API_BASE_URL}/api/songs/stream/${song.id}`,
           imageUrl: song.imageUrl || '',
           artists: artistText,
         };
@@ -48,6 +49,7 @@ const SongListRenderer = ({ songs, onPlay, currentTrack }) => {
             index={index}
             onPlay={() => onPlay(unifiedTrack)}
             isPlaying={isPlaying}
+            renderActions={renderActions}
           />
         );
       })}
@@ -58,7 +60,7 @@ const SongListRenderer = ({ songs, onPlay, currentTrack }) => {
 /* -------------------------------------------------------------------
    ⭐ SongList chính — xử lý fetch hoặc nhận sẵn dữ liệu
 ------------------------------------------------------------------- */
-const SongList = ({ songIds, songs: songsFromProps }) => {
+const SongList = ({ songIds, songs: songsFromProps, renderActions }) => {
   const { handlePlay, currentTrack } = useMediaPlayer();
 
   // ⭐ Chỉ fetch khi không có songs được truyền thẳng vào props
@@ -90,6 +92,7 @@ const SongList = ({ songIds, songs: songsFromProps }) => {
       songs={songsToRender}
       onPlay={handlePlay}
       currentTrack={currentTrack}
+      renderActions={renderActions}
     />
   );
 };

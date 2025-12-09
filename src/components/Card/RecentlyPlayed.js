@@ -1,25 +1,29 @@
-// src/components/Card/RecentlyPlayed.js
-import React from 'react';
+import React, { useState } from 'react';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import { Box, Typography } from '@mui/material';
-
-// Đồng bộ với Top100 / Base
+import { Box, Typography, Menu } from '@mui/material';
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem';
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+import { useAuth } from '../../context/AuthContext'; // 👈 THÊM
 
-const IMG_H = 160;           
+const IMG_H = 160;
 const PLAY_DIAMETER = 42;
 
 const BTN_BOX = 44;
-const GAP_PX  = 16;          
-const TWEAK_Y = -22;         
+const GAP_PX  = 16;
+const TWEAK_Y = -22;
 
 export default function RecentlyPlayed() {
   const { recentlyPlayed, handlePlay, addToLibrary, normalizeArtists } = useMediaPlayer();
+  const { isAuthenticated } = useAuth();            // 👈 LẤY TRẠNG THÁI LOGIN
   const theme = useTheme();
+
+  // ❗ Chưa đăng nhập → ẩn luôn section
+  if (!isAuthenticated) return null;
 
   if (!recentlyPlayed?.length) return null;
 
@@ -87,17 +91,34 @@ export default function RecentlyPlayed() {
 }
 
 function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
-  const [isHovered, setIsHovered] = React.useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
   const mediaUrl = track.mediaSrc || track.audioUrl;
 
-  // ⭐ CHUẨN HÓA ARTISTS → luôn là string
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const artistText = normalizeArtists(track.artists);
+
+  const handleCardClick = () => {
+    navigate(`/songs/${track.id}`);
+  };
 
   return (
     <Box
       sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', cursor: 'pointer' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
     >
       {/* Ảnh + nút ▶ */}
       <BasePlayableImage mediaSrc={mediaUrl} onPlay={onPlay} size={IMG_H} isHovered={isHovered}>
@@ -162,9 +183,19 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
               pointerEvents: 'auto',
               cursor: 'pointer',
             }}
-            onClick={(e) => { e.stopPropagation(); console.log('More:', track.title); }}
           >
-            <MoreButton visible={isHovered} />
+            <MoreButton visible={isHovered} onClick={handleMenuOpen} />
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleMenuClose}
+              MenuListProps={{
+                'aria-labelledby': 'more-button-recently-played',
+              }}
+            >
+              <DownloadMenuItem songId={track.id} songTitle={track.title} onCloseMenu={handleMenuClose} />
+              <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={track.id} />
+            </Menu>
           </Box>
         </Box>
       </Box>
@@ -187,7 +218,7 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
         {track.title}
       </Typography>
 
-      {/* ⭐ ARTISTS (đã normalize) */}
+      {/* Artists */}
       <Typography
         variant="caption"
         sx={{

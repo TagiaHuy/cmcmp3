@@ -1,13 +1,14 @@
-// src/components/Card/Top100Section.jsx (hoặc đường dẫn bạn đang dùng)
-import React from "react";
-import { Box, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Box, Typography, Menu } from "@mui/material"; // Add Menu import
+import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 
 // Components theo pattern RecommendCard
 import BasePlayableImage from "./Base/BasePlayableImage";
 import FavoriteButton from "../Button/Specific/FavoriteButton";
 import MoreButton from "../Button/Specific/MoreButton";
+import DownloadMenuItem from "../MenuItem/Specific/DownloadMenuItem"; // Import the new reusable component
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 
 // Context player
 import { useMediaPlayer } from "../../context/MediaPlayerContext";
@@ -69,8 +70,22 @@ const TWEAK_Y = -38;
 
 function Top100Card({ item, onPlay, onFavorite }) {
   const [isHovered, setIsHovered] = React.useState(false);
+  const navigate = useNavigate();
 
-  const handlePlay = () =>
+  const [anchorEl, setAnchorEl] = React.useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    event.stopPropagation(); // Prevent card click
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handlePlay = (e) => {
+    e.stopPropagation();
     onPlay?.({
       id: item.id,
       title: item.title,
@@ -78,11 +93,17 @@ function Top100Card({ item, onPlay, onFavorite }) {
       imageUrl: item.cover,
       mediaSrc: item.mediaSrc,
     });
+  }
+
+  const handleCardClick = () => {
+    navigate(`/playlists/${item.id}`);
+  }
 
   return (
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
       sx={{
         width: 160,
         position: "relative",
@@ -169,7 +190,18 @@ function Top100Card({ item, onPlay, onFavorite }) {
               console.log("More:", item.id);
             }}
           >
-            <MoreButton visible={isHovered} />
+            <MoreButton visible={isHovered} onClick={handleMenuOpen} />
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleMenuClose}
+              MenuListProps={{
+                'aria-labelledby': 'more-button-top100-card',
+              }}
+            >
+              <DownloadMenuItem songId={item.id} songTitle={item.title} onCloseMenu={handleMenuClose} />
+              <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="playlist" id={item.id} />
+            </Menu>
           </Box>
         </Box>
       </Box>

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
+import { useNotifications } from '../../hooks/useNotifications';
 import CloseIcon from '@mui/icons-material/Close';
 import API_BASE_URL from '../../config';
 import Loading from '../Loading/Loading';
-import { toast } from 'react-toastify';
 
 const style = {
   position: 'absolute',
@@ -21,13 +21,16 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
   const [name, setName] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [isImageLoaded, setIsImageLoaded] = useState(false); // New state for image load effect
   const [isLoading, setIsLoading] = useState(false);
+  const imageInputRef = useRef(null);
+  const { notifySuccess, notifyError, notifyWarning } = useNotifications();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!name) {
-      toast.warn('Vui lòng nhập tên nghệ sĩ.');
+      notifyWarning('Vui lòng nhập tên nghệ sĩ.');
       return;
     }
 
@@ -39,7 +42,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
 
     const token = localStorage.getItem('token');
     if (!token) {
-      toast.error('Xác thực không thành công. Vui lòng đăng nhập lại.');
+      notifyError('Xác thực không thành công. Vui lòng đăng nhập lại.');
       return;
     }
 
@@ -55,7 +58,7 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
 
       if (response.ok) {
         const newArtist = await response.json();
-        toast.success('Tạo nghệ sĩ mới thành công!');
+        notifySuccess('Tạo nghệ sĩ mới thành công!');
         if (onArtistCreated) {
           onArtistCreated(newArtist);
         }
@@ -64,13 +67,21 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
         }, 500);
       } else {
         const errorData = await response.json();
-        toast.error(`Tạo nghệ sĩ thất bại: ${errorData.message || response.statusText}`);
+        notifyError(`Tạo nghệ sĩ thất bại: ${errorData.message || response.statusText}`);
       }
     } catch (error) {
-      toast.error('Đã xảy ra lỗi khi tạo nghệ sĩ.');
+      notifyError('Đã xảy ra lỗi khi tạo nghệ sĩ.');
       console.error('Error creating artist:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRemoveImageFile = () => {
+    setImageFile(null);
+    setImagePreviewUrl(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
     }
   };
 
@@ -120,21 +131,44 @@ const CreateArtistForm = ({ open, handleClose, onArtistCreated }) => {
               type="file"
               hidden
               accept="image/*"
+              ref={imageInputRef}
               onChange={(e) => {
                 const file = e.target.files[0];
                 setImageFile(file);
                 if (file) {
                   setImagePreviewUrl(URL.createObjectURL(file));
+                  setIsImageLoaded(false); // Reset load state for new image
                 } else {
                   setImagePreviewUrl(null);
+                  setIsImageLoaded(false);
                 }
               }}
             />
           </Button>
-          {imageFile && <Typography sx={{ mt: 1 }} color="text.primary">{imageFile.name}</Typography>}
+          {imageFile && (
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+              <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{imageFile.name}</Typography>
+              <IconButton onClick={handleRemoveImageFile} size="small">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
           {imagePreviewUrl && (
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
+            <Box sx={{ mt: 2, textAlign: 'center', overflow: 'hidden' }}>
+              <img
+                src={imagePreviewUrl}
+                alt="Image Preview"
+                onLoad={() => setIsImageLoaded(true)}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  maxHeight: '200px',
+                  borderRadius: '8px',
+                  opacity: isImageLoaded ? 1 : 0,
+                  clipPath: isImageLoaded ? 'inset(0% 0% 0% 0%)' : 'inset(95% 0% 0% 0%)', // Reveal from bottom
+                  transition: 'opacity 0.7s ease-out, clip-path 0.7s ease-out', // Smooth transition for both
+                }}
+              />
             </Box>
           )}
           <Button

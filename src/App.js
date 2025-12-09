@@ -15,16 +15,26 @@ import TestPage from './pages/TestPage';
 import SongDetailPage from './pages/SongDetailPage';
 import ArtistDetailPage from './pages/ArtistDetailPage';
 import PlaylistDetailPage from './pages/PlaylistDetailPage';
+import TagDetailPage from './pages/TagDetailPage'; // Import TagDetailPage
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminManageSongsPage from './pages/AdminManageSongsPage';
 import LibraryPage from './pages/LibraryPage'; // New import
 import ArtistsPage from './pages/ArtistsPage'; // New import for ArtistsPage
+import PlaylistsPage from './pages/PlaylistsPage';
+import AdminSongModerationPage from './pages/AdminSongModerationPage'; // New import
+import AdminCommentModerationPage from './pages/AdminCommentModerationPage'; // New import
+import AdminReportManagementPage from './pages/AdminReportManagementPage';
+import AdminArtistVerificationPage from './pages/AdminArtistVerificationPage';
 import { useAuth } from './context/AuthContext';
 
+import OtpVerificationPage from './pages/OtpVerificationPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import ChangePasswordPage from './pages/ChangePasswordPage'; // New import
+import ChartListPage from './pages/ChartListPage';
+import LoginOtpVerificationPage from './pages/LoginOtpVerificationPage';
 
 /** Chặn trang công khai (login/register) nếu đã đăng nhập */
 const PublicOnlyRoute = ({ isAuthed, children }) =>
@@ -53,95 +63,173 @@ function App() {
   }, [theme]);
 
   return (
-    <MainLayout>
-      <Routes>
-        {/* Public */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/test" element={<TestPage />} />
-        <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
-        <Route path="/recently-played" element={<RecentlyPlayedPage />} />
-        <Route path="/songs/:songId" element={<SongDetailPage />} />
-        <Route path="/artist/:artistId" element={<ArtistDetailPage />} />
-        <Route path="/playlist/:playlistId" element={<PlaylistDetailPage />} />
-        <Route path="/artists" element={<ArtistsPage />} /> {/* Re-added route for ArtistsPage */}
+      <MainLayout>
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/zing-chart" element={<ChartListPage />} />
+          <Route path="/test" element={<TestPage />} />
+          <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+          <Route path="/recently-played" element={<RecentlyPlayedPage />} />
+          <Route path="/songs/:songId" element={<SongDetailPage />} />
+          <Route path="/artist/:artistId" element={<ArtistDetailPage />} />
+          <Route path="/playlists/:playlistId" element={<PlaylistDetailPage />} />
+          <Route path="/tags/:tagId" element={<TagDetailPage />} />
+          <Route path="/artists" element={<ArtistsPage />} /> {/* Re-added route for ArtistsPage */}
 
-        {/* Auth pages: chỉ hiển thị khi CHƯA đăng nhập */}
-        <Route
-          path="/login"
-          element={
-            <PublicOnlyRoute isAuthed={isAuthenticated}>
-              <LoginPage />
-            </PublicOnlyRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicOnlyRoute isAuthed={isAuthenticated}>
-              <RegisterPage />
-            </PublicOnlyRoute>
-          }
-        />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-
-        {/* Private pages: yêu cầu đăng nhập */}
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute isAuthed={isAuthenticated}>
-              <ProfilePage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/library"
-          element={
-            <PrivateRoute isAuthed={isAuthenticated}>
-              <LibraryPage />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Admin (cần đăng nhập + quyền ADMIN) */}
-        <Route
-          path="/admin/users"
-          element={
-            <PrivateRoute isAuthed={isAuthenticated}>
-              <AdminRoute isAdmin={isAdmin}>
-                <AdminUsersPage />
-              </AdminRoute>
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-            path="/admin/songs"
+          {/* Auth pages: chỉ hiển thị khi CHƯA đăng nhập */}
+          <Route
+            path="/login"
             element={
-                <PrivateRoute isAuthed={isAuthenticated}>
-                    <AdminRoute isAdmin={isAdmin}>
-                        <AdminManageSongsPage />
-                    </AdminRoute>
-                </PrivateRoute>
+              <PublicOnlyRoute isAuthed={isAuthenticated}>
+                <LoginPage />
+              </PublicOnlyRoute>
             }
-        />
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicOnlyRoute isAuthed={isAuthenticated}>
+                <RegisterPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/verify-otp"
+            element={
+              <PublicOnlyRoute isAuthed={isAuthenticated}>
+                <OtpVerificationPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/verify-login-otp"
+            element={
+              <PublicOnlyRoute isAuthed={isAuthenticated}>
+                <LoginOtpVerificationPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* 404 → về trang chủ */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
-    </MainLayout>
+          {/* Private pages: yêu cầu đăng nhập */}
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute isAuthed={isAuthenticated}>
+                <ProfilePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/change-password"
+            element={
+              <PrivateRoute isAuthed={isAuthenticated}>
+                <ChangePasswordPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/library"
+            element={
+              <PrivateRoute isAuthed={isAuthenticated}>
+                <LibraryPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/my-playlists"
+            element={
+              <PrivateRoute isAuthed={isAuthenticated}>
+                <PlaylistsPage />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Admin (cần đăng nhập + quyền ADMIN) */}
+          <Route
+            path="/admin/users"
+            element={
+              <PrivateRoute isAuthed={isAuthenticated}>
+                <AdminRoute isAdmin={isAdmin}>
+                  <AdminUsersPage />
+                </AdminRoute>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+              path="/admin/songs"
+              element={
+                  <PrivateRoute isAuthed={isAuthenticated}>
+                      <AdminRoute isAdmin={isAdmin}>
+                          <AdminManageSongsPage />
+                      </AdminRoute>
+                  </PrivateRoute>
+              }
+          />
+
+          <Route
+              path="/admin/songs/moderation"
+              element={
+                  <PrivateRoute isAuthed={isAuthenticated}>
+                      <AdminRoute isAdmin={isAdmin}>
+                          <AdminSongModerationPage />
+                      </AdminRoute>
+                  </PrivateRoute>
+              }
+          />
+
+          <Route
+              path="/admin/comments/moderation"
+              element={
+                  <PrivateRoute isAuthed={isAuthenticated}>
+                      <AdminRoute isAdmin={isAdmin}>
+                          <AdminCommentModerationPage />
+                      </AdminRoute>
+                  </PrivateRoute>
+              }
+          />
+
+          <Route
+              path="/admin/reports"
+              element={
+                  <PrivateRoute isAuthed={isAuthenticated}>
+                      <AdminRoute isAdmin={isAdmin}>
+                          <AdminReportManagementPage />
+                      </AdminRoute>
+                  </PrivateRoute>
+              }
+          />
+
+          <Route
+              path="/admin/artist-verification"
+              element={
+                  <PrivateRoute isAuthed={isAuthenticated}>
+                      <AdminRoute isAdmin={isAdmin}>
+                          <AdminArtistVerificationPage />
+                      </AdminRoute>
+                  </PrivateRoute>
+              }
+          />
+
+          {/* 404 → về trang chủ */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={1000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
+      </MainLayout>
   );
 }
 

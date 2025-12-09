@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Autocomplete, Box, Button, TextField, Typography, Modal, IconButton } from '@mui/material';
+import { useNotifications } from '../../hooks/useNotifications';
 import CloseIcon from '@mui/icons-material/Close';
 import useArtists from '../../hooks/useArtists';
 import useTags from '../../hooks/useTags';
 import API_BASE_URL from '../../config';
 import Loading from '../Loading/Loading';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const style = {
   position: 'absolute',
@@ -18,6 +17,8 @@ const style = {
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
+  maxHeight: '90vh',
+  overflowY: 'auto',
 };
 
 const UploadSongForm = ({ open, handleClose }) => {
@@ -28,21 +29,26 @@ const UploadSongForm = ({ open, handleClose }) => {
   const [songFile, setSongFile] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [isImageLoaded, setIsImageLoaded] = useState(false); // New state for image load effect
   const [isLoading, setIsLoading] = useState(false);
   const { artists } = useArtists();
   const { tags } = useTags();
+  const { notifySuccess, notifyError, notifyWarning } = useNotifications();
+
+  const songInputRef = useRef(null);
+  const imageInputRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!title || !songFile || !imageFile) {
-      toast.warn('Vui lòng điền đầy đủ thông tin và chọn tệp.');
+      notifyWarning('Vui lòng điền đầy đủ thông tin và chọn tệp.');
       return;
     }
 
     const token = localStorage.getItem('token');
     if (!token) {
-      toast.error('Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      notifyError('Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
       return;
     }
 
@@ -74,7 +80,7 @@ const UploadSongForm = ({ open, handleClose }) => {
 
       if (response.ok) {
         const result = await response.json();
-        toast.success('Tải bài hát lên thành công!');
+        notifySuccess('Tải bài hát lên thành công, đang chờ kiểm duyệt');
         console.log('Upload successful:', result);
         setTitle('');
         setDescription('');
@@ -82,19 +88,37 @@ const UploadSongForm = ({ open, handleClose }) => {
         setSelectedTags([]);
         setSongFile(null);
         setImageFile(null);
+        setImagePreviewUrl(null);
+        if (songInputRef.current) songInputRef.current.value = '';
+        if (imageInputRef.current) imageInputRef.current.value = '';
         setTimeout(() => {
           handleClose();
-        }, 5000);
+        }, 2000);
       } else {
         const errorData = await response.json();
-        toast.error(`Tải bài hát lên thất bại: ${errorData.message || response.statusText}`);
+        notifyError(`Tải bài hát lên thất bại: ${errorData.message || response.statusText}`);
         console.error('Upload failed:', errorData);
       }
     } catch (error) {
-      toast.error('Đã xảy ra lỗi khi tải bài hát lên.');
+      notifyError('Đã xảy ra lỗi khi tải bài hát lên.');
       console.error('Network error or unexpected error:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRemoveSongFile = () => {
+    setSongFile(null);
+    if (songInputRef.current) {
+      songInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImageFile = () => {
+    setImageFile(null);
+    setImagePreviewUrl(null);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
     }
   };
 
@@ -191,10 +215,18 @@ const UploadSongForm = ({ open, handleClose }) => {
               type="file"
               hidden
               accept=".mp3"
+              ref={songInputRef}
               onChange={(e) => setSongFile(e.target.files[0])}
             />
           </Button>
-          {songFile && <Typography sx={{ mt: 1 }} color="text.primary">{songFile.name}</Typography>}
+          {songFile && (
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+              <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{songFile.name}</Typography>
+              <IconButton onClick={handleRemoveSongFile} size="small">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
           <Button
             variant="contained"
             component="label"
@@ -206,21 +238,44 @@ const UploadSongForm = ({ open, handleClose }) => {
               type="file"
               hidden
               accept="image/*"
+              ref={imageInputRef}
               onChange={(e) => {
                 const file = e.target.files[0];
                 setImageFile(file);
                 if (file) {
                   setImagePreviewUrl(URL.createObjectURL(file));
+                  setIsImageLoaded(false); // Reset load state for new image
                 } else {
                   setImagePreviewUrl(null);
+                  setIsImageLoaded(false);
                 }
               }}
             />
           </Button>
-          {imageFile && <Typography sx={{ mt: 1 }} color="text.primary">{imageFile.name}</Typography>}
+          {imageFile && (
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+              <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{imageFile.name}</Typography>
+              <IconButton onClick={handleRemoveImageFile} size="small">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
           {imagePreviewUrl && (
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
+            <Box sx={{ mt: 2, textAlign: 'center', overflow: 'hidden' }}>
+              <img
+                src={imagePreviewUrl}
+                alt="Image Preview"
+                onLoad={() => setIsImageLoaded(true)}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  maxHeight: '200px',
+                  borderRadius: '8px',
+                  opacity: isImageLoaded ? 1 : 0,
+                  clipPath: isImageLoaded ? 'inset(0% 0% 0% 0%)' : 'inset(95% 0% 0% 0%)', // Reveal from bottom
+                  transition: 'opacity 0.7s ease-out, clip-path 0.7s ease-out', // Smooth transition for both
+                }}
+              />
             </Box>
           )}
           <Button

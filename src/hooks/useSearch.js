@@ -54,11 +54,22 @@ const useSearch = (query) => {
           const playlistResults = searchResults.playlists.map(playlist => ({
             type: 'playlist', // Thêm trường type
             id: playlist.id,
-            title: playlist.name, // Dùng 'name' làm 'title'
+            title: playlist.title, // Dùng 'name' làm 'title'
             description: playlist.description,
             imageUrl: playlist.imageUrl,
           }));
           allFormattedResults.push(...playlistResults);
+        }
+
+        // 4. Xử lý kết quả Tags (Thẻ)
+        if (searchResults?.tags && searchResults.tags.length > 0) {
+          const tagResults = searchResults.tags.map(tag => ({
+            type: 'tag', // Thêm trường type
+            id: tag.id,
+            name: tag.name, // Dùng 'name' làm 'name'
+            // imageUrl: tag.imageUrl, // Có thể thêm ảnh tag nếu API hỗ trợ
+          }));
+          allFormattedResults.push(...tagResults);
         }
 
         // Chỉ update nếu effect chưa bị cleanup

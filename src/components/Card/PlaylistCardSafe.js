@@ -4,6 +4,8 @@ import { useMediaPlayer, normalizeArtists } from '../../context/MediaPlayerConte
 import BaseCard from './BaseCard';
 import CardTag from './CardTag';
 import PlayableImage from './PlayableImage';
+import { useNavigate } from 'react-router-dom';
+import LockIcon from '@mui/icons-material/Lock';
 
 // Fallback nền blur mượt
 const FALLBACK_BG =
@@ -18,8 +20,9 @@ const FALLBACK_BG =
      </svg>`
   );
 
-function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
+function PlaylistCardSafe({ playlist, onPlay, variant = 'default', isLoading }) {
   const { handlePlay } = useMediaPlayer();
+  const navigate = useNavigate();
 
   if (!playlist) return null;
 
@@ -34,7 +37,7 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
   const artistRaw =
     playlist.artist ||
     playlist.creatorDisplayName ||
-    'Không rõ nghệ sĩ';
+    '';
 
   const artistText = normalizeArtists(artistRaw);
 
@@ -63,6 +66,10 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
       // Mặc định: play playlist như một bài
       handlePlay(unifiedTrack);
     }
+  };
+
+  const handleCardClick = () => {
+    navigate(`/playlists/${playlist.id}`);
   };
 
   // ============================================
@@ -103,7 +110,7 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
   };
 
   return (
-    <BaseCard sx={cardStyle}>
+    <BaseCard sx={cardStyle} onClick={handleCardClick}>
       {/* Nền blur */}
       {variant === 'default' && (
         <>
@@ -137,6 +144,7 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
           zIndex: 2 
         }}
         onPlay={handlePlayClick}
+        isLoading={isLoading}
       />
 
       {/* Text */}
@@ -153,6 +161,9 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default' }) {
           fontWeight="bold"
           color={variant === 'simple' ? 'text.primary' : 'white'}
         >
+          {playlist.privacy === 'PRIVATE' && (
+            <LockIcon sx={{ fontSize: '1rem', mr: 0.5, verticalAlign: 'middle' }} />
+          )}
           {title}
         </Typography>
 

@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Menu } from '@mui/material';
 import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+import ShareMenu from '../../MenuItem/Specific/ShareMenu';
 
 function PlaylistCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
+  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (event) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = (event) => {
+    event.stopPropagation();
+    setAnchorEl(null);
+  };
+
   const handlePlayClick = (e) => {
-    // e.stopPropagation(); // Ngăn card click event
+    e.stopPropagation(); // Ngăn card click event
     if (onPlay) {
       onPlay({
         id,
@@ -23,7 +37,9 @@ function PlaylistCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
   };
 
   const handleCardClick = () => {
-    navigate(`/songs/${id}`);
+        navigate(`/songs/${id}`);
+
+    navigate(`/playlists/${id}`);
   };
 
   return (
@@ -63,7 +79,14 @@ function PlaylistCard({ id, mediaSrc, imageUrl, title, subtitle, onPlay, sx }) {
 
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, width: 88, justifyContent: 'flex-end' }}>
         <FavoriteButton />
-        <MoreButton />
+        <MoreButton onClick={handleMenuOpen} />
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+        >
+          <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="playlist" id={id} />
+        </Menu>
       </Box>
     </Box>
   );

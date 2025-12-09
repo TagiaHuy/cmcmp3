@@ -4,20 +4,34 @@ import PlaylistCardSafe from '../Card/PlaylistCardSafe';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
+// Re-add 'rows' prop, defaulting to 1 for backward compatibility.
+const PlaylistCarousel = ({ title, playlists, columns = 3, rows = 1, onPlay, loadingPlaylistId }) => {
   const [startIndex, setStartIndex] = useState(0);
+  
+  // Calculate the total number of items visible per page.
+  const itemsPerPage = columns * rows;
+
+  // Reset startIndex when the layout geometry changes.
+  React.useEffect(() => {
+    setStartIndex(0);
+  }, [columns, rows]);
 
   const handleNext = () => {
     setStartIndex((prev) =>
-      Math.min(prev + columns, playlists.length - columns)
+      // Paginate by the total items per page.
+      Math.min(prev + itemsPerPage, playlists.length - itemsPerPage)
     );
   };
 
   const handlePrev = () => {
-    setStartIndex((prev) => Math.max(prev - columns, 0));
+    setStartIndex((prev) => 
+      // Paginate by the total items per page.
+      Math.max(prev - itemsPerPage, 0)
+    );
   };
 
-  const visiblePlaylists = playlists.slice(startIndex, startIndex + columns);
+  // Slice the array to get the items for the current page.
+  const visiblePlaylists = playlists.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <Box sx={{ my: 4, position: 'relative' }}>
@@ -51,13 +65,14 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
         <ChevronLeftIcon />
       </IconButton>
 
-      {/* Grid list */}
+      {/* Grid list - The 'xs' logic remains the same. Grid will handle wrapping to create rows. */}
       <Grid container spacing={4} justifyContent="center">
         {visiblePlaylists.map((playlist) => (
           <Grid item key={playlist.id} xs={12 / columns}>
             <PlaylistCardSafe
               playlist={playlist}
-              onPlay={() => onPlay(playlist)}   // ⭐ NHẤN MẠNH: TRUYỀN ĐÚNG CALLBACK
+              onPlay={() => onPlay(playlist)}
+              isLoading={loadingPlaylistId === playlist.id}
             />
           </Grid>
         ))}
@@ -66,7 +81,8 @@ const PlaylistCarousel = ({ title, playlists, columns = 3, onPlay }) => {
       {/* Button Next */}
       <IconButton
         onClick={handleNext}
-        disabled={startIndex + columns >= playlists.length}
+        // The disable logic must now use itemsPerPage.
+        disabled={startIndex + itemsPerPage >= playlists.length}
         sx={{
           position: 'absolute',
           right: 0,
