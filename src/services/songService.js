@@ -252,8 +252,13 @@ export const getSongsByLikes = async (limit = 9, signal) => {
 /* ==========================================================
     7) UPLOADED SONGS
 ========================================================== */
-export const getUploadedSongs = async (signal) => {
-  const res = await fetch(`${API_BASE_URL}/api/songs/uploaded`, {
+export const getUploadedSongs = async (query = '', signal) => {
+  let url = `${API_BASE_URL}/api/songs/uploaded`;
+  if (query) {
+    url += `?q=${encodeURIComponent(query)}`;
+  }
+
+  const res = await fetch(url, {
     method: "GET",
     headers: {
       ...authHeader(),
