@@ -31,6 +31,7 @@ export const MediaPlayerProvider = ({ children }) => {
   const [isSidebarRightVisible, setIsSidebarRightVisible] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [mediaPlayerHeight, setMediaPlayerHeight] = useState(0);
+  const [seekTargetTime, setSeekTargetTime] = useState(null);
 
   // ===== Queue & playback mode =====
   const [queue, setQueue] = useState([]);        
@@ -62,8 +63,8 @@ export const MediaPlayerProvider = ({ children }) => {
     setRecentlyPlayed(prev => {
       const filtered = (prev || []).filter(p =>
         (p?.id && currentTrack?.id && p.id !== currentTrack.id) ||
-        (!p?.id || !currentTrack?.id) && 
-        (p?.title !== currentTrack.title || p?.mediaSrc !== currentTrack.mediaSrc)
+        ((!p?.id || !currentTrack?.id) && 
+        (p?.title !== currentTrack.title || p?.mediaSrc !== currentTrack.mediaSrc))
       );
 
       const updated = [currentTrack, ...filtered].slice(0, 10);
@@ -286,6 +287,8 @@ export const MediaPlayerProvider = ({ children }) => {
     isEditingLyrics,
     toggleLyricsEditor,
     turnOffPlayer,
+    seekTargetTime,
+    setSeekTargetTime,
 
   }), [
     queue, currentIndex, currentTrack, currentPlayingSrc,
@@ -296,7 +299,7 @@ export const MediaPlayerProvider = ({ children }) => {
     prev, next, toggleShuffle, cycleRepeatMode, handleEnded,
     clearRecentlyPlayed, toggleSidebarRight, updateSongInQueue,
     currentTime, isLyricsVisible, toggleLyrics, mediaPlayerHeight,
-    isEditingLyrics, toggleLyricsEditor, turnOffPlayer
+    isEditingLyrics, toggleLyricsEditor, turnOffPlayer, seekTargetTime, setSeekTargetTime
   ]);
 
   return (

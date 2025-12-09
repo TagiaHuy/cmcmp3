@@ -44,6 +44,8 @@ const MediaPlayer = () => {
     updateSongInQueue,
     isEditingLyrics,
     turnOffPlayer,
+    seekTargetTime,
+    setSeekTargetTime,
   } = useMediaPlayer();
 
   const { currentTheme } = useContext(ThemeContext);
@@ -85,6 +87,15 @@ const MediaPlayer = () => {
       setMediaPlayerHeight(playerRef.current.clientHeight);
     }
   }, [setMediaPlayerHeight]);
+
+  // Effect to handle external seek requests
+  useEffect(() => {
+    if (seekTargetTime !== null && isFinite(seekTargetTime) && audioRef.current) {
+      audioRef.current.currentTime = seekTargetTime;
+      setCurrentTime(seekTargetTime); // Ensure UI state is in sync
+      setSeekTargetTime(null); // Reset seek target
+    }
+  }, [seekTargetTime, setSeekTargetTime, setCurrentTime]);
 
   // Persist volume to localStorage
   useEffect(() => {
