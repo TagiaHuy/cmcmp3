@@ -7,7 +7,6 @@ import MicIcon from '@mui/icons-material/Mic';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import EditIcon from '@mui/icons-material/Edit';
 // Removed DownloadOutlinedIcon
 
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
@@ -44,6 +43,8 @@ const MediaPlayer = () => {
     updateSongInQueue,
     isEditingLyrics,
     turnOffPlayer,
+    seekTargetTime,
+    setSeekTargetTime,
   } = useMediaPlayer();
 
   const { currentTheme } = useContext(ThemeContext);
@@ -85,6 +86,15 @@ const MediaPlayer = () => {
       setMediaPlayerHeight(playerRef.current.clientHeight);
     }
   }, [setMediaPlayerHeight]);
+
+  // Effect to handle external seek requests
+  useEffect(() => {
+    if (seekTargetTime !== null && isFinite(seekTargetTime) && audioRef.current) {
+      audioRef.current.currentTime = seekTargetTime;
+      setCurrentTime(seekTargetTime); // Ensure UI state is in sync
+      setSeekTargetTime(null); // Reset seek target
+    }
+  }, [seekTargetTime, setSeekTargetTime, setCurrentTime]);
 
   // Persist volume to localStorage
   useEffect(() => {
@@ -360,9 +370,6 @@ const MediaPlayer = () => {
         >
           <IconButton onClick={toggleLyrics} sx={{ color: textColor }}>
             <MicIcon />
-          </IconButton>
-          <IconButton onClick={toggleLyricsEditor} sx={{ color: textColor }}>
-            <EditIcon />
           </IconButton>
           <IconButton onClick={toggleMute} sx={{ color: textColor }}>
             {volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}
