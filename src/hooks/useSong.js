@@ -1,11 +1,12 @@
 // src/hooks/useSong.js
 import { useState, useEffect, useCallback } from "react";
-import { getSongById, updateSongLyrics } from "../services/songService";
+import { getSongById, updateSongLyrics, isCurrentUserUploader } from "../services/songService";
 
 const useSong = (songId) => {
   const [song, setSong] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isUploader, setIsUploader] = useState(false); // New state for uploader status
 
   useEffect(() => {
     if (!songId) {
@@ -21,8 +22,12 @@ const useSong = (songId) => {
 
         // 🎯 Bản song đã được normalize trong service
         const fetchedSong = await getSongById(songId, ac.signal);
-
         setSong(fetchedSong || null);
+
+        // Fetch uploader status
+        const uploaderStatus = await isCurrentUserUploader(songId, ac.signal);
+        setIsUploader(uploaderStatus);
+
       } catch (err) {
         if (err?.name !== "AbortError") {
           setError(err);
@@ -52,7 +57,7 @@ const useSong = (songId) => {
     }
   }, [songId]);
 
-  return { song, loading, error, updateLyrics };
+  return { song, loading, error, isUploader, updateLyrics };
 };
 
 export default useSong;

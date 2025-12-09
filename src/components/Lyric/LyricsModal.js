@@ -4,9 +4,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import LyricsDisplay from './LyricsDisplay';
 import LyricEditor from './LyricEditor';
+import useSong from '../../hooks/useSong';
 
 const LyricsModal = ({ isEditingLyrics, onLyricsParsed, duration }) => {
     const { isLyricsVisible, currentTrack, currentTime, mediaPlayerHeight, toggleLyricsEditor } = useMediaPlayer();
+    const { isUploader } = useSong(currentTrack?.id);
 
     return (
         <Slide direction="up" in={isLyricsVisible} mountOnEnter unmountOnExit>
@@ -61,14 +63,16 @@ const LyricsModal = ({ isEditingLyrics, onLyricsParsed, duration }) => {
                                     boxShadow: '0 20px 40px rgba(0,0,0,0.55)',
                                 }}
                             />
-                            <Button
-                                variant="contained"
-                                startIcon={<EditIcon />}
-                                onClick={toggleLyricsEditor}
-                                sx={{ mt: 2 }}
-                            >
-                                Edit Lyrics
-                            </Button>
+                            {isUploader && (
+                                <Button
+                                    variant="contained"
+                                    startIcon={<EditIcon />}
+                                    onClick={toggleLyricsEditor}
+                                    sx={{ mt: 2 }}
+                                >
+                                    Edit Lyrics
+                                </Button>
+                            )}
                         </>
                     )}
                 </Box>
