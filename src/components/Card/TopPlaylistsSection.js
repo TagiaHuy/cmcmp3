@@ -1,28 +1,41 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Select, MenuItem, CircularProgress } from '@mui/material';
+import { Box, Typography, Select, MenuItem, CircularProgress, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 import {
   getTopPlaylists,
   getNewReleasePlaylists,
   getMostLikedPlaylists,
-  getPlaylistById,        // ✅ đã có trong playlistService
+  getPlaylistById,
 } from '../../services/playlistService';
 
-import { getSongById } from '../../services/songService'; // ✅ songService
+import { getSongById } from '../../services/songService';
 import PlaylistCarousel from '../Carousel/PlaylistCarousel';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 
 
 export default function TopPlaylistsSection() {
   const [playlists, setPlaylists] = useState([]);
-  const [sortBy, setSortBy] = useState('listens'); // 'listens' is the default
+  const [sortBy, setSortBy] = useState('listens');
   const [loading, setLoading] = useState(true);
   const [loadingPlaylistId, setLoadingPlaylistId] = useState(null);
 
   const { loadQueue, normalizeArtists, addRecentlyPlayedPlaylist } = useMediaPlayer();
   const theme = useTheme();
   const headerColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
+
+  const is2033 = useMediaQuery('(min-width:2033px)');
+  const is1644 = useMediaQuery('(min-width:1644px)');
+  const is1265 = useMediaQuery('(min-width:1265px)');
+  const is900 = useMediaQuery('(min-width:900px)');
+
+  const displayConfig = useMemo(() => {
+    if (is2033) return { columns: 4, rows: 1 };
+    if (is1644) return { columns: 3, rows: 1 }; // Force 3 columns to prevent wrapping
+    if (is1265) return { columns: 2, rows: 2 }; // The 2x2 grid
+    if (is900) return { columns: 2, rows: 1 };
+    return { columns: 1, rows: 1 };
+  }, [is2033, is1644, is1265, is900]);
 
   // ============================
   // Fetch playlists based on sort option
@@ -34,7 +47,7 @@ export default function TopPlaylistsSection() {
       setLoading(true);
       try {
         let fetched;
-        const limit = 15; // Fetch a reasonable number for the carousel
+        const limit = 15;
 
         switch (sortBy) {
           case 'newest':
@@ -61,7 +74,7 @@ export default function TopPlaylistsSection() {
 
     fetchPlaylists();
     return () => ac.abort();
-  }, [sortBy]); // Re-fetch when sortBy changes
+  }, [sortBy]);
 
 
   // ==========================================
@@ -72,7 +85,6 @@ export default function TopPlaylistsSection() {
     setLoadingPlaylistId(playlist.id);
     addRecentlyPlayedPlaylist(playlist);
     try {
-      // 1. Fetch the full playlist details to get song IDs
       const fullPlaylist = await getPlaylistById(playlist.id);
       const songIds = fullPlaylist.songs;
 
@@ -81,7 +93,6 @@ export default function TopPlaylistsSection() {
         return;
       }
 
-      // 2. Fetch full song objects from IDs
       const songResults = await Promise.allSettled(
         songIds.map(id => getSongById(id))
       );
@@ -95,7 +106,6 @@ export default function TopPlaylistsSection() {
         return;
       }
       
-      // 3. Normalize and load queue
       const normalizedSongs = fetchedSongs.map((song, index) => ({
         id: song.id ?? index,
         title: song.title,
@@ -151,10 +161,10 @@ export default function TopPlaylistsSection() {
         </Box>
       ) : playlists.length > 0 ? (
         <PlaylistCarousel
-          key={sortBy}          // ép remount khi đổi sort
+          key={sortBy}
           playlists={playlists}
-          columns={3}
-          // Khi bấm play playlist → nạp queue + Next/Prev OK
+          columns={displayConfig.columns}
+          rows={displayConfig.rows}
           onPlay={handlePlayPlaylist}
           loadingPlaylistId={loadingPlaylistId}
         />
