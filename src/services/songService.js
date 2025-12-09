@@ -127,7 +127,36 @@ export const getSongById = async (id, signal) => {
 };
 
 /* ==========================================================
-    3) GET SONGS BY ARTIST
+    3) IS CURRENT USER UPLOADER
+========================================================== */
+export const isCurrentUserUploader = async (id, signal) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/${id}/is-uploader`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    if (res.status === 404) { // Song not found
+      return false;
+    }
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+    return data; // Expecting a boolean true/false
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error(`Error checking if current user is uploader for song ID ${id}:`, error);
+    throw error;
+  }
+};
+
+/* ==========================================================
+    4) GET SONGS BY ARTIST
 ========================================================== */
 export const getSongsByArtist = async (artistId, signal) => {
   try {

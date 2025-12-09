@@ -1,11 +1,14 @@
 import React from 'react';
-import { Box, Slide } from '@mui/material';
+import { Box, Slide, Button } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import LyricsDisplay from './LyricsDisplay';
 import LyricEditor from './LyricEditor';
+import useSong from '../../hooks/useSong';
 
 const LyricsModal = ({ isEditingLyrics, onLyricsParsed, duration }) => {
-    const { isLyricsVisible, currentTrack, currentTime, mediaPlayerHeight } = useMediaPlayer();
+    const { isLyricsVisible, currentTrack, currentTime, mediaPlayerHeight, toggleLyricsEditor } = useMediaPlayer();
+    const { isUploader } = useSong(currentTrack?.id);
 
     return (
         <Slide direction="up" in={isLyricsVisible} mountOnEnter unmountOnExit>
@@ -39,25 +42,38 @@ const LyricsModal = ({ isEditingLyrics, onLyricsParsed, duration }) => {
                         flex: isEditingLyrics ? '0 0 1200px' : '0 0 520px',
                         transition: 'flex 0.3s ease-in-out',
                         display: 'flex',
+                        flexDirection: 'column', // Changed to column
                         justifyContent: 'center',
                         alignItems: 'center',
                         mr: 6,
                     }}
                 >
                     {isEditingLyrics ? (
-                        <LyricEditor onLyricsParsed={onLyricsParsed} duration={duration} />
+                        <LyricEditor onLyricsParsed={onLyricsParsed} duration={duration} toggleLyricsEditor={toggleLyricsEditor} />
                     ) : (
-                        <img
-                            src={currentTrack?.imageUrl}
-                            alt="Artwork"
-                            style={{
-                                width: '320px',
-                                height: '320px',
-                                borderRadius: '16px',
-                                objectFit: 'cover',
-                                boxShadow: '0 20px 40px rgba(0,0,0,0.55)',
-                            }}
-                        />
+                        <>
+                            <img
+                                src={currentTrack?.imageUrl}
+                                alt="Artwork"
+                                style={{
+                                    width: '320px',
+                                    height: '320px',
+                                    borderRadius: '16px',
+                                    objectFit: 'cover',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.55)',
+                                }}
+                            />
+                            {isUploader && (
+                                <Button
+                                    variant="contained"
+                                    startIcon={<EditIcon />}
+                                    onClick={toggleLyricsEditor}
+                                    sx={{ mt: 2 }}
+                                >
+                                    Edit Lyrics
+                                </Button>
+                            )}
+                        </>
                     )}
                 </Box>
 
