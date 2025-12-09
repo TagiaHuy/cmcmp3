@@ -18,7 +18,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import useArtists from '../../hooks/useArtists';
 import { useNotifications } from '../../hooks/useNotifications';
-import { searchMySongs } from '../../services/songService';
+import { getUploadedSongs } from '../../services/songService';
 import Loading from '../Loading/Loading';
 import useUserAlbums from '../../hooks/useUserAlbums';
 
@@ -52,7 +52,7 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
     setLoadingSongSearch(true);
     const handler = setTimeout(() => {
       const ac = new AbortController();
-      searchMySongs(songSearchQuery, ac.signal)
+      getUploadedSongs(songSearchQuery, ac.signal)
         .then(results => {
           setSongSearchResults(results);
         })

@@ -252,8 +252,13 @@ export const getSongsByLikes = async (limit = 9, signal) => {
 /* ==========================================================
     7) UPLOADED SONGS
 ========================================================== */
-export const getUploadedSongs = async (signal) => {
-  const res = await fetch(`${API_BASE_URL}/api/songs/uploaded`, {
+export const getUploadedSongs = async (query = '', signal) => {
+  let url = `${API_BASE_URL}/api/songs/uploaded`;
+  if (query) {
+    url += `?q=${encodeURIComponent(query)}`;
+  }
+
+  const res = await fetch(url, {
     method: "GET",
     headers: {
       ...authHeader(),
@@ -699,31 +704,4 @@ export const getSimilarSongsByTitle = async (title, signal) => {
         if (error.name === 'AbortError') throw error;
         return [];
     }
-};
-
-export const searchMySongs = async (query, signal) => {
-  if (!query) {
-    return [];
-  }
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/songs/me/search?q=${encodeURIComponent(query)}`, {
-      method: 'GET',
-      headers: {
-        ...authHeader(),
-        Accept: 'application/json',
-      },
-      signal,
-    });
-
-    const data = await safeJson(res);
-    if (!res.ok) {
-      throw new Error(data?.message || `HTTP ${res.status}`);
-    }
-
-    return (Array.isArray(data) ? data : []).map(mapSong);
-  } catch (error) {
-    if (error.name === 'AbortError') throw error;
-    console.error('Error searching my songs:', error);
-    return []; // Return empty array on error
-  }
 };
