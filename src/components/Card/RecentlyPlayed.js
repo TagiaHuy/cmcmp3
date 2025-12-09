@@ -1,25 +1,29 @@
-import React, { useState } from 'react'; // Added useState import
+import React, { useState } from 'react';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import { Box, Typography, Menu } from '@mui/material'; // Add Menu import
-import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import the new reusable component
+import { Box, Typography, Menu } from '@mui/material';
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem';
 import ShareMenu from '../MenuItem/Specific/ShareMenu';
-// Đồng bộ với Top100 / Base
 import BasePlayableImage from './Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
+import { useAuth } from '../../context/AuthContext'; // 👈 THÊM
 
-const IMG_H = 160;           
+const IMG_H = 160;
 const PLAY_DIAMETER = 42;
 
 const BTN_BOX = 44;
-const GAP_PX  = 16;          
-const TWEAK_Y = -22;         
+const GAP_PX  = 16;
+const TWEAK_Y = -22;
 
 export default function RecentlyPlayed() {
   const { recentlyPlayed, handlePlay, addToLibrary, normalizeArtists } = useMediaPlayer();
+  const { isAuthenticated } = useAuth();            // 👈 LẤY TRẠNG THÁI LOGIN
   const theme = useTheme();
+
+  // ❗ Chưa đăng nhập → ẩn luôn section
+  if (!isAuthenticated) return null;
 
   if (!recentlyPlayed?.length) return null;
 
@@ -87,15 +91,15 @@ export default function RecentlyPlayed() {
 }
 
 function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
-  const [isHovered, setIsHovered] = useState(false); // Changed React.useState to useState
+  const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
   const mediaUrl = track.mediaSrc || track.audioUrl;
 
-  const [anchorEl, setAnchorEl] = useState(null); // Changed React.useState to useState
+  const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
   const handleMenuOpen = (event) => {
-    event.stopPropagation(); // Prevent card click
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
 
@@ -103,12 +107,11 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
     setAnchorEl(null);
   };
 
-  // ⭐ CHUẨN HÓA ARTISTS → luôn là string
   const artistText = normalizeArtists(track.artists);
 
   const handleCardClick = () => {
     navigate(`/songs/${track.id}`);
-  }
+  };
 
   return (
     <Box
@@ -215,7 +218,7 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
         {track.title}
       </Typography>
 
-      {/* ⭐ ARTISTS (đã normalize) */}
+      {/* Artists */}
       <Typography
         variant="caption"
         sx={{

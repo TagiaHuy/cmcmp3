@@ -1,8 +1,9 @@
+// src/context/MediaPlayerContext.js
 import React, {
   createContext, useState, useContext, useEffect,
   useCallback, useMemo
 } from 'react';
-import { useAuth } from './AuthContext'; // 👈 thêm
+import { useAuth } from './AuthContext';
 
 const MediaPlayerContext = createContext();
 export const useMediaPlayer = () => useContext(MediaPlayerContext);
@@ -19,11 +20,11 @@ export function normalizeArtists(artists) {
 
 /**
  * Tạo key trong localStorage theo từng user
- * - Nếu chưa đăng nhập → suffix _guest
- * - Nếu có userId → suffix _<userId>
+ * - Chỉ trả về key nếu có userId
+ * - Nếu chưa đăng nhập → return null (không lưu LS)
  */
 const buildKey = (base, userId) => {
-  if (!userId) return `${base}_guest`;
+  if (!userId) return null;
   return `${base}_${userId}`;
 };
 
@@ -32,8 +33,8 @@ const buildKey = (base, userId) => {
  * queue: [{ id, title, mediaSrc, imageUrl, artists, ... }]
  */
 export const MediaPlayerProvider = ({ children }) => {
-  const { user } = useAuth();          // 👈 lấy user từ AuthContext
-  const userId = user?.id;             // hoặc user?.email nếu bạn muốn
+  const { user } = useAuth();
+  const userId = user?.id; // hoặc user?.email nếu bạn muốn
 
   // ===== Core states =====
   const [currentPlayingSrc, setCurrentPlayingSrc] = useState(null);
@@ -53,16 +54,25 @@ export const MediaPlayerProvider = ({ children }) => {
   const [isLyricsVisible, setIsLyricsVisible] = useState(false);
   const [isEditingLyrics, setIsEditingLyrics] = useState(false);
 
-  // --- Init recently played từ localStorage, theo từng user ---
+  // --- Init recently played từ localStorage, chỉ khi ĐÃ ĐĂNG NHẬP ---
   useEffect(() => {
+    // Chưa đăng nhập → luôn rỗng, không động vào localStorage
+    if (!userId) {
+      setRecentlyPlayed([]);
+      setRecentlyPlayedPlaylists([]);
+      return;
+    }
+
     try {
       const keyTracks = buildKey('recentlyPlayed', userId);
       const keyPlaylists = buildKey('recentlyPlayedPlaylists', userId);
 
-      const storedTracks =
-        JSON.parse(localStorage.getItem(keyTracks)) || [];
-      const storedPlaylists =
-        JSON.parse(localStorage.getItem(keyPlaylists)) || [];
+      const storedTracks = keyTracks
+        ? JSON.parse(localStorage.getItem(keyTracks)) || []
+        : [];
+      const storedPlaylists = keyPlaylists
+        ? JSON.parse(localStorage.getItem(keyPlaylists)) || []
+        : [];
 
       setRecentlyPlayed(storedTracks);
       setRecentlyPlayedPlaylists(storedPlaylists);
@@ -70,15 +80,21 @@ export const MediaPlayerProvider = ({ children }) => {
       setRecentlyPlayed([]);
       setRecentlyPlayedPlaylists([]);
     }
-  }, [userId]); // 👈 user đổi → load list khác
+  }, [userId]);
 
-  // --- Sync src khi đổi track & cập nhật recentlyPlayed (theo user) ---
+  // --- Sync src khi đổi track & cập nhật recentlyPlayed (chỉ khi đã đăng nhập) ---
   useEffect(() => {
     if (!currentTrack) {
       setCurrentPlayingSrc(null);
       return;
     }
     setCurrentPlayingSrc(currentTrack.mediaSrc || null);
+
+    // Nếu chưa đăng nhập → không lưu lịch sử
+    if (!userId) {
+      setRecentlyPlayed([]);
+      return;
+    }
 
     setRecentlyPlayed(prev => {
       const filtered = (prev || []).filter(p =>
@@ -89,17 +105,24 @@ export const MediaPlayerProvider = ({ children }) => {
 
       const updated = [currentTrack, ...filtered].slice(0, 10);
       const keyTracks = buildKey('recentlyPlayed', userId);
-      localStorage.setItem(keyTracks, JSON.stringify(updated));
+      if (keyTracks) {
+        localStorage.setItem(keyTracks, JSON.stringify(updated));
+      }
       return updated;
     });
-  }, [currentTrack, userId]); // 👈 phụ thuộc userId
+  }, [currentTrack, userId]);
 
   const addRecentlyPlayedPlaylist = useCallback((playlist) => {
+    // Chưa đăng nhập → không lưu
+    if (!userId) return;
+
     setRecentlyPlayedPlaylists(prev => {
       const filtered = (prev || []).filter(p => p.id !== playlist.id);
       const updated = [playlist, ...filtered].slice(0, 10);
       const keyPlaylists = buildKey('recentlyPlayedPlaylists', userId);
-      localStorage.setItem(keyPlaylists, JSON.stringify(updated));
+      if (keyPlaylists) {
+        localStorage.setItem(keyPlaylists, JSON.stringify(updated));
+      }
       return updated;
     });
   }, [userId]);
@@ -152,8 +175,9 @@ export const MediaPlayerProvider = ({ children }) => {
 
   const clearRecentlyPlayed = useCallback(() => {
     setRecentlyPlayed([]);
+    if (!userId) return;
     const keyTracks = buildKey('recentlyPlayed', userId);
-    localStorage.removeItem(keyTracks);
+    if (keyTracks) localStorage.removeItem(keyTracks);
   }, [userId]);
 
   const toggleSidebarRight = useCallback(() => {
