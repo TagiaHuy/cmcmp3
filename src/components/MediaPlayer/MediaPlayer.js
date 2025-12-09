@@ -7,7 +7,6 @@ import MicIcon from '@mui/icons-material/Mic';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import EditIcon from '@mui/icons-material/Edit';
 // Removed DownloadOutlinedIcon
 
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
@@ -371,9 +370,6 @@ const MediaPlayer = () => {
         >
           <IconButton onClick={toggleLyrics} sx={{ color: textColor }}>
             <MicIcon />
-          </IconButton>
-          <IconButton onClick={toggleLyricsEditor} sx={{ color: textColor }}>
-            <EditIcon />
           </IconButton>
           <IconButton onClick={toggleMute} sx={{ color: textColor }}>
             {volume === 0 ? <VolumeOffIcon /> : <VolumeUpIcon />}

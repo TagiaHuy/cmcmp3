@@ -9,6 +9,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
 import {
     DndContext,
     closestCenter,
@@ -111,7 +112,7 @@ const SortableLyricItem = (props) => {
 };
 
 
-const LyricEditor = ({ onLyricsParsed, duration }) => {
+const LyricEditor = ({ onLyricsParsed, duration, toggleLyricsEditor }) => {
     const fileInputRef = useRef(null);
     const activeLyricRef = useRef(null);
     const { 
@@ -208,6 +209,10 @@ const LyricEditor = ({ onLyricsParsed, duration }) => {
     // Global key listener
     useEffect(() => {
         const handleGlobalKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                toggleLyricsEditor();
+            }
             if (event.target.tagName.toLowerCase() === 'input' || event.target.tagName.toLowerCase() === 'textarea') {
                 return;
             }
@@ -229,7 +234,7 @@ const LyricEditor = ({ onLyricsParsed, duration }) => {
         return () => {
             window.removeEventListener('keydown', handleGlobalKeyDown);
         };
-    }, [manualActiveIndex, editedLyrics, currentTime]);
+    }, [manualActiveIndex, editedLyrics, currentTime, toggleLyricsEditor]);
 
     // Click sets active index
     const handleLyricTextClick = (lyric, index) => {
@@ -466,6 +471,7 @@ const LyricEditor = ({ onLyricsParsed, duration }) => {
                     <Button variant="contained" startIcon={<CloudDownloadIcon />} onClick={handleExportLrc} sx={{ mr: 1 }}>Export LRC</Button>
                     <Button variant="contained" startIcon={<RemoveCircleOutlineIcon />} onClick={handleDiscardLyrics} sx={{ mr: 1, backgroundColor: 'rgba(165, 91, 73, 1)' }}>Discard</Button>
                     <Button variant="contained" color="success" startIcon={<SaveIcon />} onClick={handleSaveLyrics}>Save</Button>
+                    <Button  startIcon={<CloseIcon />} onClick={toggleLyricsEditor} sx={{ ml: 1 }}></Button>
                 </Box>
             </Box>
             <DndContext 
