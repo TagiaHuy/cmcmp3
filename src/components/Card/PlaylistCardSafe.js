@@ -58,13 +58,13 @@ function PlaylistCardSafe({ playlist, onPlay, variant = 'default', isLoading }) 
     artists: artistText,
   };
 
-  const handlePlayClick = (track) => {
+  const handlePlayClick = () => {
     if (onPlay) {
       // Nếu cha đã truyền onPlay riêng → dùng đúng logic cha
       onPlay(playlist);
     } else {
       // Mặc định: play playlist như một bài
-      handlePlay(track);
+      handlePlay(unifiedTrack);
     }
   };
 
