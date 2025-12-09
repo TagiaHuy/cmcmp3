@@ -5,8 +5,111 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { toast } from 'react-toastify';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import SaveIcon from '@mui/icons-material/Save';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import {CSS} from '@dnd-kit/utilities';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
+
+const formatTime = (seconds) => {
+    if (typeof seconds !== 'number' || isNaN(seconds)) {
+        seconds = 0;
+    }
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+};
+
+const SortableLyricItem = (props) => {
+    const {
+        lyric,
+        index,
+        onTimestampClick,
+        onLyricTextClick,
+        onSyncLyric,
+        onDeleteLyric,
+        onAddNewLine,
+        isPlaying,
+        isEditing,
+        isEditingTiming,
+        tempTimestamp,
+        onTimestampChange,
+        onTimestampSave,
+        onTimestampKeyDown,
+        tempLyricText,
+        onLyricTextChange,
+        onLyricTextSave,
+        onLyricTextKeyDown,
+        activeLyricRef
+    } = props;
+
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({id: lyric.id});
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isEditing ? 0.5 : 1, // Example of style change on drag
+    };
+
+    return (
+        <Box
+            ref={(node) => {
+                setNodeRef(node);
+                if (isPlaying) {
+                    activeLyricRef.current = node;
+                }
+            }}
+            style={style}
+            {...attributes}
+            sx={{ display: 'flex', alignItems: 'center', mb: 1, p: 1, borderRadius: '4px', backgroundColor: isPlaying ? 'rgba(4, 255, 4, 0.2)' : 'transparent', '&:hover': { backgroundColor: !isEditing ? 'rgba(255, 255, 0, 0.2)' : undefined, '.lyric-controls': { opacity: 1 } }, transition: 'background-color 0.3s' }}
+        >
+            <Box {...listeners} sx={{ cursor: 'grab', display: 'flex', alignItems: 'center', mr: 1 }}>
+                <DragIndicatorIcon sx={{ color: 'white' }} />
+            </Box>
+            {isEditingTiming ? (
+                <TextField value={tempTimestamp} onChange={onTimestampChange} onBlur={onTimestampSave} onKeyDown={onTimestampKeyDown} autoFocus variant="standard" size="small" sx={{ width: '80px', flexShrink: 0, input: { color: 'white' } }} />
+            ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ width: '80px', flexShrink: 0, cursor: 'pointer' }} onClick={() => onTimestampClick(lyric)}>{formatTime(lyric.time)}</Typography>
+            )}
+            {isEditing ? (
+                <TextField value={tempLyricText} onChange={onLyricTextChange} onBlur={onLyricTextSave} onKeyDown={onLyricTextKeyDown} autoFocus fullWidth variant="standard" size="small" sx={{ input: { color: 'white' } }} />
+            ) : (
+                <Typography variant="body1" color="white" sx={{ flexGrow: 1, cursor: 'pointer' }} onClick={() => onLyricTextClick(lyric, index)}>{lyric.text}</Typography>
+            )}
+            <Box className="lyric-controls" sx={{ opacity: 0, transition: 'opacity 0.3s', ml: 2 }}>
+                <IconButton size="small" color="success" onClick={() => onSyncLyric(lyric.id)}><CheckIcon fontSize="small" /></IconButton>
+                <IconButton size="small" color="error" onClick={() => onDeleteLyric(lyric.id)}><DeleteIcon fontSize="small" /></IconButton>
+                <IconButton size="small" color="primary" onClick={() => onAddNewLine(lyric.id, 'up')}><ArrowUpwardIcon fontSize="small" /></IconButton>
+                <IconButton size="small" color="primary" onClick={() => onAddNewLine(lyric.id, 'down')}><ArrowDownwardIcon fontSize="small" /></IconButton>
+            </Box>
+        </Box>
+    );
+};
+
 
 const LyricEditor = ({ onLyricsParsed, duration }) => {
     const fileInputRef = useRef(null);
@@ -25,6 +128,15 @@ const LyricEditor = ({ onLyricsParsed, duration }) => {
     const [tempLyricText, setTempLyricText] = useState('');
     const [editingTimingId, setEditingTimingId] = useState(null);
     const [tempTimestamp, setTempTimestamp] = useState('');
+    const [activeDragId, setActiveDragId] = useState(null);
+
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     // [NEW] On mount, back up original lyrics to localStorage. On unmount, clean up.
     useEffect(() => {
@@ -38,9 +150,15 @@ const LyricEditor = ({ onLyricsParsed, duration }) => {
 
     // Initialize lyrics from track
     useEffect(() => {
-        const rawLyrics = currentTrack?.lyrics || [];
-        const converted = rawLyrics.map((l, i) => ({ ...l, id: l.id || Date.now() + i }))
-                                 .sort((a, b) => a.time - b.time);
+        let rawLyrics = currentTrack?.lyrics || [];
+        let converted = rawLyrics.map((l, i) => ({ ...l, id: l.id || Date.now() + i }));
+
+        if (converted.length === 0) {
+            converted.push({ id: Date.now(), time: 0, text: '<break>' }); // Add an empty line
+        }
+                                 
+        converted.sort((a, b) => a.time - b.time); // Sort after adding default
+        
         setEditedLyrics(converted);
         setManualActiveIndex(0);
     }, [currentTrack?.id]);
@@ -77,11 +195,11 @@ const LyricEditor = ({ onLyricsParsed, duration }) => {
             const editedIndex = newLyrics.findIndex(l => l.id === lyricId);
             if (editedIndex === -1) return prevLyrics;
             newLyrics[editedIndex] = { ...newLyrics[editedIndex], time: newTime };
-            return newLyrics.sort((a, b) => a.time - b.time);
+            return newLyrics;
         };
-        const newSortedLyrics = updater(editedLyrics);
-        const newIndex = newSortedLyrics.findIndex(l => l.id === lyricId);
-        setEditedLyrics(newSortedLyrics);
+        const newLyrics = updater(editedLyrics);
+        const newIndex = newLyrics.findIndex(l => l.id === lyricId);
+        setEditedLyrics(newLyrics);
         if (newIndex !== -1) {
             setManualActiveIndex(newIndex);
         }
@@ -172,8 +290,55 @@ const LyricEditor = ({ onLyricsParsed, duration }) => {
     };
 
     const handleFileChange = (event) => {
-        // This part needs refactoring to align with the endTime model.
-        // For now, it's left as is from the previous step.
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target.result;
+            let parsedLyrics = [];
+
+            if (file.name.endsWith('.lrc')) {
+                const lines = content.split('\n');
+                lines.forEach(line => {
+                    const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/);
+                    if (match) {
+                        const minutes = parseInt(match[1], 10);
+                        const seconds = parseInt(match[2], 10);
+                        const milliseconds = parseInt(match[3].padEnd(3, '0'), 10); // Pad to 3 digits for consistency
+                        const time = minutes * 60 + seconds + milliseconds / 1000;
+                        const text = match[4].trim();
+                        if (text) {
+                            parsedLyrics.push({ id: Date.now() + Math.random(), time, text });
+                        }
+                    }
+                });
+            } else if (file.name.endsWith('.txt')) {
+                const lines = content.split('\n');
+                parsedLyrics = lines.map((line, index) => ({
+                    id: Date.now() + index,
+                    time: 0, // Default time, user can sync it
+                    text: line.trim(),
+                })).filter(lyric => lyric.text);
+            } else {
+                toast.error('Unsupported file type. Please upload a .lrc or .txt file.');
+                return;
+            }
+
+            setEditedLyrics(parsedLyrics.sort((a, b) => a.time - b.time));
+            toast.success('Lyrics imported successfully!');
+        };
+
+        reader.onerror = () => {
+            toast.error('Failed to read file.');
+        };
+
+        reader.readAsText(file);
+        
+        // Reset file input so user can upload the same file again
+        event.target.value = null;
     };
 
     const handleUploadClick = () => fileInputRef.current.click();
@@ -209,15 +374,28 @@ const LyricEditor = ({ onLyricsParsed, duration }) => {
             } else {
                 newLyrics.splice(currentIndex + 1, 0, newLyric);
             }
-            return newLyrics.sort((a, b) => a.time - b.time);
+            return newLyrics;
         });
     };
 
-    const formatTime = (seconds) => {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
-        return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-    };
+    function handleDragEnd(event) {
+        const {active, over} = event;
+        
+        if (active.id !== over.id) {
+          setEditedLyrics((items) => {
+            const oldIndex = items.findIndex(item => item.id === active.id);
+            const newIndex = items.findIndex(item => item.id === over.id);
+            
+            return arrayMove(items, oldIndex, newIndex);
+          });
+        }
+
+        setActiveDragId(null);
+    }
+
+    function handleDragStart(event) {
+        setActiveDragId(event.active.id);
+    }
 
     const generateLrcContent = (lyrics) => {
         let lrc = '';
@@ -279,36 +457,62 @@ const LyricEditor = ({ onLyricsParsed, duration }) => {
         <Box sx={{ width: '100%', height: 880, backgroundColor: 'rgba(0, 0, 0, 0.6)', borderRadius: '16px', p: 2, display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Box>
-                    <Typography variant="h6" color="white">Lyric Editor</Typography>
+                    <Typography variant="h6" color="white"> Lyric Editor</Typography>
                     {currentTrack && <Box sx={{ ml: 1, color: 'text.secondary', fontSize: '0.8rem' }}><Typography variant="body2">Title: {currentTrack.title || 'Unknown'}</Typography><Typography variant="body2">Artist: {currentTrack.artists || 'Unknown'}</Typography></Box>}
                 </Box>
                 <Box>
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} accept=".lrc,.txt" />
-                    <Button variant="contained" onClick={handleUploadClick} sx={{ mr: 1 }}>Import Lyrics</Button>
-                    <Button variant="contained" onClick={handleExportLrc} sx={{ mr: 1 }}>Export LRC</Button>
-                    <Button variant="contained" onClick={handleDiscardLyrics} sx={{ mr: 1 }}>Discard</Button>
-                    <Button variant="contained" onClick={handleSaveLyrics}>Save</Button>
+                    <Button variant="contained" startIcon={<CloudUploadIcon />} onClick={handleUploadClick} sx={{ mr: 1 }}>Import Lyrics</Button>
+                    <Button variant="contained" startIcon={<CloudDownloadIcon />} onClick={handleExportLrc} sx={{ mr: 1 }}>Export LRC</Button>
+                    <Button variant="contained" startIcon={<RemoveCircleOutlineIcon />} onClick={handleDiscardLyrics} sx={{ mr: 1, backgroundColor: 'rgba(165, 91, 73, 1)' }}>Discard</Button>
+                    <Button variant="contained" color="success" startIcon={<SaveIcon />} onClick={handleSaveLyrics}>Save</Button>
                 </Box>
             </Box>
-            <Stack sx={{ flexGrow: 1, overflowY: 'auto', pr: 1 }}>
-                {editedLyrics.map((lyric, index) => {
-                    const isPlaying = index === manualActiveIndex;
-                    const isEditing = lyric.id === editingLyricId;
-                    const isEditingTiming = lyric.id === editingTimingId;
-                    return (
-                        <Box key={lyric.id} ref={isPlaying ? activeLyricRef : null} sx={{ display: 'flex', alignItems: 'center', mb: 1, p: 1, borderRadius: '4px', backgroundColor: isPlaying ? 'rgba(4, 255, 4, 0.2)' : 'transparent', '&:hover': { backgroundColor: !isEditing ? 'rgba(255, 255, 0, 0.2)' : undefined, '.lyric-controls': { opacity: 1 } }, transition: 'background-color 0.3s' }}>
-                            {isEditingTiming ? <TextField value={tempTimestamp} onChange={handleTimestampChange} onBlur={handleTimestampSave} onKeyDown={handleTimestampKeyDown} autoFocus variant="standard" size="small" sx={{ width: '80px', flexShrink: 0, input: { color: 'white' } }} /> : <Typography variant="body2" color="text.secondary" sx={{ width: '80px', flexShrink: 0, cursor: 'pointer' }} onClick={() => handleTimestampClick(lyric)}>{formatTime(lyric.time)}</Typography>}
-                            {isEditing ? <TextField value={tempLyricText} onChange={handleLyricTextChange} onBlur={handleLyricTextSave} onKeyDown={handleLyricTextKeyDown} autoFocus fullWidth variant="standard" size="small" sx={{ input: { color: 'white' } }} /> : <Typography variant="body1" color="white" sx={{ flexGrow: 1, cursor: 'pointer' }} onClick={() => handleLyricTextClick(lyric, index)}>{lyric.text}</Typography>}
-                            <Box className="lyric-controls" sx={{ opacity: 0, transition: 'opacity 0.3s', ml: 2 }}>
-                                <IconButton size="small" color="success" onClick={() => handleSyncLyric(lyric.id)}><CheckIcon fontSize="small" /></IconButton>
-                                <IconButton size="small" color="error" onClick={() => handleDeleteLyric(lyric.id)}><DeleteIcon fontSize="small" /></IconButton>
-                                <IconButton size="small" color="primary" onClick={() => handleAddNewLine(lyric.id, 'up')}><ArrowUpwardIcon fontSize="small" /></IconButton>
-                                <IconButton size="small" color="primary" onClick={() => handleAddNewLine(lyric.id, 'down')}><ArrowDownwardIcon fontSize="small" /></IconButton>
-                            </Box>
-                        </Box>
-                    );
-                })}
-            </Stack>
+            <DndContext 
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+            >
+                <SortableContext 
+                    items={editedLyrics}
+                    strategy={verticalListSortingStrategy}
+                >
+                    <Stack sx={{ flexGrow: 1, overflowY: 'auto', pr: 1 }}>
+                        {editedLyrics.map((lyric, index) => {
+                            const isPlaying = index === manualActiveIndex;
+                            const isEditing = lyric.id === editingLyricId;
+                            const isEditingTiming = lyric.id === editingTimingId;
+
+                            return (
+                                <SortableLyricItem
+                                    key={lyric.id}
+                                    id={lyric.id}
+                                    lyric={lyric}
+                                    index={index}
+                                    isPlaying={isPlaying}
+                                    isEditing={isEditing || activeDragId === lyric.id}
+                                    isEditingTiming={isEditingTiming}
+                                    tempTimestamp={tempTimestamp}
+                                    onTimestampChange={handleTimestampChange}
+                                    onTimestampSave={handleTimestampSave}
+                                    onTimestampKeyDown={handleTimestampKeyDown}
+                                    tempLyricText={tempLyricText}
+                                    onLyricTextChange={handleLyricTextChange}
+                                    onLyricTextSave={handleLyricTextSave}
+                                    onLyricTextKeyDown={handleLyricTextKeyDown}
+                                    onTimestampClick={handleTimestampClick}
+                                    onLyricTextClick={handleLyricTextClick}
+                                    onSyncLyric={handleSyncLyric}
+                                    onDeleteLyric={handleDeleteLyric}
+                                    onAddNewLine={handleAddNewLine}
+                                    activeLyricRef={activeLyricRef}
+                                />
+                            )
+                        })}
+                    </Stack>
+                </SortableContext>
+            </DndContext>
         </Box>
     );
 };
