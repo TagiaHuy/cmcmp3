@@ -1,6 +1,6 @@
 // src/components/Section/TopSongsSection.jsx
-import React, { useState, useEffect } from "react";
-import { Box, Typography, Select, MenuItem } from "@mui/material";
+import React, { useState, useEffect, useMemo } from "react";
+import { Box, Typography, Select, MenuItem, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import {
   getTopSongs,
@@ -18,6 +18,20 @@ export default function TopSongsSection() {
 
   const { loadQueue, normalizeArtists } = useMediaPlayer();
 
+  const is2033 = useMediaQuery('(min-width:2033px)');
+  const is1644 = useMediaQuery('(min-width:1644px)');
+  const is1265 = useMediaQuery('(min-width:1265px)');
+  const is900 = useMediaQuery('(min-width:900px)');
+
+  const displayConfig = useMemo(() => {
+    if (is2033) return { columns: 4, rows: 1 };
+    if (is1644) return { columns: 3, rows: 1 }; // Force 3 columns to prevent wrapping
+    if (is1265) return { columns: 2, rows: 2 }; // The 2x2 grid
+    if (is900) return { columns: 2, rows: 1 };
+    return { columns: 1, rows: 1 };
+  }, [is2033, is1644, is1265, is900]);
+
+
   // Fetch dữ liệu theo sort
   useEffect(() => {
     const ac = new AbortController();
@@ -25,15 +39,17 @@ export default function TopSongsSection() {
     const fetchSongs = async () => {
       try {
         let songs = [];
+        // Fetch more songs if we are displaying a 2x2 grid
+        const limit = displayConfig.rows > 1 ? 12 : 9;
 
         if (sortBy === "listens") {
-          songs = await getTopSongs(9, ac.signal);
+          songs = await getTopSongs(limit, ac.signal);
         } else if (sortBy === "newest") {
-          songs = await getNewestSongs(9, ac.signal);
+          songs = await getNewestSongs(limit, ac.signal);
         } else if (sortBy === "likes") {
-          songs = await getSongsByLikes(9, ac.signal);
+          songs = await getSongsByLikes(limit, ac.signal);
         } else {
-          songs = await getTopSongs(9, ac.signal);
+          songs = await getTopSongs(limit, ac.signal);
         }
 
         setTopSongs(Array.isArray(songs) ? songs : []);
@@ -47,7 +63,7 @@ export default function TopSongsSection() {
 
     fetchSongs();
     return () => ac.abort();
-  }, [sortBy]);
+  }, [sortBy, displayConfig]); // Add displayConfig to dependency array
 
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
@@ -59,7 +75,6 @@ export default function TopSongsSection() {
       return;
     }
 
-    // Chuẩn hoá toàn bộ list → queue
     const normalizedSongs = topSongs.map((song, index) => ({
       id: song.id ?? index,
       title: song.title,
@@ -70,7 +85,6 @@ export default function TopSongsSection() {
       source: "topsongs",
     }));
 
-    // Tìm index bài click (dựa cả id và mediaSrc cho chắc)
     let startIndex = normalizedSongs.findIndex(
       (s) =>
         (clickedSong.id && s.id === clickedSong.id) ||
@@ -78,7 +92,6 @@ export default function TopSongsSection() {
     );
     if (startIndex < 0) startIndex = 0;
 
-    // Nạp queue + set bài đang phát
     loadQueue(normalizedSongs, startIndex);
   };
 
@@ -121,8 +134,9 @@ export default function TopSongsSection() {
       {topSongs.length > 0 ? (
         <SongCarousel
           songs={topSongs}
-          columns={3}
-          onPlay={handlePlaySong}   // 🔥 Quan trọng: truyền callback xuống
+          columns={displayConfig.columns}
+          rows={displayConfig.rows}
+          onPlay={handlePlaySong}
         />
       ) : (
         <Box
