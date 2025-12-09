@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Box, GlobalStyles } from '@mui/material';
 import Header from './Header';
 import SidebarLeft from '../components/Sidebar/Specific/SidebarLeft';
@@ -7,6 +7,7 @@ import MediaPlayer from '../components/MediaPlayer/MediaPlayer';
 import { MediaPlayerProvider, useMediaPlayer } from '../context/MediaPlayerContext';
 import 'react-toastify/dist/ReactToastify.css';
 import Chatbot from '../components/Chatbot/Chatbot'; // Import Chatbot component
+import Draggable from 'react-draggable';
 
 const scrollbarStyles = (
   <GlobalStyles
@@ -32,8 +33,14 @@ function MainLayoutContent({ children }) {
   const { currentPlayingSrc, isSidebarRightVisible } = useMediaPlayer();
   const drawerWidth = 280;
   const [showChatbot, setShowChatbot] = useState(false); // State to manage chatbot visibility
+  const [chatbotPosition, setChatbotPosition] = useState(null);
+  const chatbotIconRef = useRef(null);
 
   const toggleChatbot = () => {
+    if (chatbotIconRef.current && !showChatbot) {
+      const rect = chatbotIconRef.current.getBoundingClientRect();
+      setChatbotPosition({ x: rect.left, y: rect.top });
+    }
     setShowChatbot(!showChatbot);
   };
 
@@ -94,10 +101,12 @@ function MainLayoutContent({ children }) {
         </Box>
       )}
 
-      {showChatbot && <Chatbot onClose={toggleChatbot} />}
-      <button className="floating-chat-button" onClick={toggleChatbot}>
-        {showChatbot ? '—' : '💬'}
-      </button>
+      {showChatbot && <Chatbot onClose={toggleChatbot} initialPos={chatbotPosition} />}
+      <Draggable nodeRef={chatbotIconRef}>
+        <button ref={chatbotIconRef} className="floating-chat-button" onClick={toggleChatbot} style={{cursor: 'move'}}>
+          {'💬'}
+        </button>
+      </Draggable>
     </Box>
   );
 }
