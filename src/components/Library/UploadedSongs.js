@@ -23,7 +23,7 @@ const UploadedSongs = () => {
     try {
       setLoading(true);
       setError(null);
-      const uploadedSongs = await getUploadedSongs(signal);
+      const uploadedSongs = await getUploadedSongs('', signal);
       setSongs(uploadedSongs || []);
     } catch (e) {
       if (e?.name !== 'AbortError') {

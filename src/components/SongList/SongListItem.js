@@ -1,30 +1,28 @@
-import React, { useState } from 'react'; // Import useState
-import { 
-  ListItem, 
-  ListItemButton, 
-  ListItemText, 
-  Stack, 
-  Typography,
-  Box,
-  Menu // Import Menu
-} from '@mui/material';
-import GraphicEqIcon from '@mui/icons-material/GraphicEq';
-import FavoriteButton from '../Button/Specific/FavoriteButton';
-import MoreButton from '../Button/Specific/MoreButton';
+import React, { useState } from 'react';
+import { ListItem, ListItemText, Typography, Box, IconButton, Menu, MenuItem } from '@mui/material';
+import { MoreHoriz } from '@mui/icons-material';
+import { useMediaPlayer } from '../../context/MediaPlayerContext';
+import { Link } from 'react-router-dom';
 import PlayableImage from '../Card/PlayableImage';
-import { normalizeArtists } from '../../context/MediaPlayerContext';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Import DownloadMenuItem
-import ShareMenu from '../MenuItem/Specific/ShareMenu';
+import { useNotifications } from '../../hooks/useNotifications';
+import { copyToClipboard } from '../../utils/clipboard';
+import shareService from '../../services/shareService';
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem';
 
-const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
-  const navigate = useNavigate(); // Initialize useNavigate
+const SongListItem = ({ song, onPlay }) => {
+  const { handlePlay, normalizeArtists } = useMediaPlayer();
+  const { notifySuccess, notifyError } = useNotifications();
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
-  const open = Boolean(anchorEl);
+  if (!song) return null;
+
+  const handlePlayClick = () => {
+    if (!song) return;
+    const playFn = onPlay || handlePlay;
+    playFn(song);
+  };
 
   const handleMenuOpen = (event) => {
-    event.stopPropagation(); // Prevent other click events
     setAnchorEl(event.currentTarget);
   };
 
@@ -32,102 +30,87 @@ const SongListItem = ({ song, index, onPlay, isPlaying, renderActions }) => {
     setAnchorEl(null);
   };
 
-  // ⭐ Chuẩn hóa artist (phòng BE trả array)
-  const artistText = normalizeArtists(song.artists);
-
-  // ⭐ Format track (phòng handlePlay nhận track chưa đúng format)
-  const mediaUrl = song.mediaSrc || song.audioUrl;
-
-  const handleItemClick = () => {
-    navigate(`/songs/${song.id}`); // Navigate to song detail page
+  const handleCopyLink = async () => {
+    const url = await shareService.getSongShareUrl(song.id);
+    if (url && await copyToClipboard(url)) {
+      notifySuccess('Đã sao chép liên kết!');
+    } else {
+      notifyError('Không thể sao chép liên kết.');
+    }
+    handleMenuClose();
   };
 
-  const defaultActions = (
-    <Stack direction="row" spacing={1} alignItems="center">
-      <FavoriteButton songId={song.id} isFavorite={song.isFavorite} />
-      <MoreButton onClick={handleMenuOpen} />
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleMenuClose}
-        MenuListProps={{
-          'aria-labelledby': `more-button-song-list-item-${song.id}`,
-        }}
-      >
-        <DownloadMenuItem songId={song.id} songTitle={song.title} onCloseMenu={handleMenuClose} />
-        <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="song" id={song.id} />
-      </Menu>
-    </Stack>
-  );
+  const handleShareFacebook = async () => {
+    const url = await shareService.getSongShareUrl(song.id);
+    if (url) {
+      const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+      window.open(fbShareUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      notifyError('Không thể lấy liên kết để chia sẻ.');
+    }
+    handleMenuClose();
+  };
 
-  const actions = typeof renderActions === 'function'
-    ? renderActions(song, defaultActions)
-    : defaultActions;
+
+  const artistsText =
+    (normalizeArtists
+      ? normalizeArtists(song.artists)
+      : song.artists?.map((artist) => artist.name).join(', ')) || 'Unknown Artist';
 
   return (
     <ListItem
-      disablePadding
-      secondaryAction={actions}
       sx={{
-        bgcolor: isPlaying ? 'action.hover' : 'transparent',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        '&:hover': { bgcolor: 'action.hover' }
+        '&:hover': {
+          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        },
+        borderRadius: '4px',
+        p: 1,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
       }}
     >
-      <ListItemButton onClick={handleItemClick} sx={{ py: 1.5, pr: '150px' }}> {/* Use handleItemClick for navigation */}
-        
-        {/* ======== Cột 1: STT hoặc Icon Đang phát ======== */}
-        <Box
-          sx={{
-            width: 40,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            mr: 2
-          }}
-        >
-          {isPlaying ? (
-            <GraphicEqIcon color="primary" />
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              {index + 1}
-            </Typography>
-          )}
-        </Box>
-
-        {/* ======== Cột 2: Ảnh + nút Play hover ======== */}
-        <Box sx={{ mr: 2 }}>
-          <PlayableImage
-            imageUrl={song.imageUrl || ''}
+      <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, overflow: 'hidden' }}>
+        <PlayableImage
+            imageUrl={song.imageUrl}
             title={song.title}
-            size={48}
+            size={56}
             borderRadius="4px"
-            mediaSrc={mediaUrl}
-            onPlay={() => onPlay()} // Stop propagation to prevent ListItemButton click
-          />
-        </Box>
-
-        {/* ======== Cột 3: Tên bài hát & Nghệ sĩ ======== */}
+            onPlay={handlePlayClick}
+            hideOverlay={false}
+            hidePlayButtonBorder={true}
+            sx={{ mr: 2, flexShrink: 0 }}
+        />
         <ListItemText
           primary={
-            <Typography
-              variant="subtitle1"
-              fontWeight={isPlaying ? 600 : 500}
-              color={isPlaying ? 'primary' : 'text.primary'}
-              noWrap
-            >
-              {song.title}
-            </Typography>
+            <Link to={`/songs/${song.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Typography noWrap variant="h6" sx={{ color: 'text.primary', '&:hover': { textDecoration: 'underline' } }}>
+                {song.title}
+              </Typography>
+            </Link>
           }
           secondary={
-            <Typography variant="body2" color="text.secondary" noWrap>
-              {artistText}
+            <Typography noWrap variant="body2" sx={{ color: 'text.secondary' }}>
+              {artistsText}
             </Typography>
           }
+          sx={{ overflow: 'hidden' }}
         />
-
-      </ListItemButton>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', ml: 2, flexShrink: 0 }}>
+        <IconButton onClick={handleMenuOpen}>
+          <MoreHoriz />
+        </IconButton>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <DownloadMenuItem songId={song.id} songTitle={song.title} onCloseMenu={handleMenuClose} />
+          <MenuItem onClick={handleCopyLink}>Sao chép liên kết</MenuItem>
+          <MenuItem onClick={handleShareFacebook}>Chia sẻ lên Facebook</MenuItem>
+        </Menu>
+      </Box>
     </ListItem>
   );
 };

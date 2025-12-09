@@ -36,7 +36,7 @@ const LibraryPage = () => {
   return (
     <Box sx={{ p: 3, width: '100%', overflowX: 'hidden' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h3" component="h1" gutterBottom sx={{ mr: 1, color: 'text.primary' }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ mr: 1, color: 'text.primary', fontWeight: 700 }}>
           Thư viện của bạn
         </Typography>
         <IconButton color="primary" aria-label="play library">

@@ -16,13 +16,14 @@ const BasePlayableImage = ({
   onMouseEnter,
   onMouseLeave,
   hidePlayButtonBorder = false,
+  hideOverlay = false,
   isLoading = false,
 }) => {
 
   // ⭐ BasePlayableImage KHÔNG format data — chỉ gọi play
   const handlePlayClick = (e) => {
     e.stopPropagation();
-    if (onPlay) onPlay();
+    if (onPlay) onPlay(e);
   };
 
   return (
@@ -44,7 +45,7 @@ const BasePlayableImage = ({
       {children}
 
       {/* Overlay mờ khi hover */}
-      {(isHovered || isLoading) && (
+      {!hideOverlay && (isHovered || isLoading) && (
         <Box
           sx={{
             position: "absolute",

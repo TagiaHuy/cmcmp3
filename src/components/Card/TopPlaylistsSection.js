@@ -20,7 +20,7 @@ export default function TopPlaylistsSection() {
   const [loading, setLoading] = useState(true);
   const [loadingPlaylistId, setLoadingPlaylistId] = useState(null);
 
-  const { loadQueue, normalizeArtists } = useMediaPlayer();
+  const { loadQueue, normalizeArtists, addRecentlyPlayedPlaylist } = useMediaPlayer();
   const theme = useTheme();
   const headerColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
 
@@ -70,6 +70,7 @@ export default function TopPlaylistsSection() {
   const handlePlayPlaylist = async (playlist) => {
     if (!playlist || !playlist.id) return;
     setLoadingPlaylistId(playlist.id);
+    addRecentlyPlayedPlaylist(playlist);
     try {
       // 1. Fetch the full playlist details to get song IDs
       const fullPlaylist = await getPlaylistById(playlist.id);
