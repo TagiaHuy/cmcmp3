@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Box, Typography, Stack, Divider, Button, Menu } from '@mui/material';
+import { Box, Typography, Stack, Divider, Button, Menu, MenuItem, ListItemIcon } from '@mui/material';
 import HeadsetMicIcon from '@mui/icons-material/HeadsetMic'; // Icon Lượt Nghe
 import FavoriteIcon from '@mui/icons-material/Favorite'; // Icon Lượt Thích
 import MusicNoteIcon from '@mui/icons-material/MusicNote'; // Icon Số Bài hát
 import LockIcon from '@mui/icons-material/Lock'; // Icon cho playlist riêng tư
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FavoritePlaylistButton from '../Button/Specific/FavoritePlaylistButton';
 import MoreButton from '../Button/Specific/MoreButton';
 import PlayallButton from '../Button/Specific/PlayallButton'; // Thường là nút nổi bật
@@ -148,6 +150,22 @@ const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying, isOwner, 
           }}
         >
           <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="playlist" id={playlist.id} />
+          {isOwner && (
+            <MenuItem onClick={() => { onEdit(); handleMenuClose(); }}>
+              <ListItemIcon>
+                <EditIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="inherit">Edit</Typography>
+            </MenuItem>
+          )}
+          {isOwner && (
+            <MenuItem onClick={() => { onDelete(); handleMenuClose(); }}>
+              <ListItemIcon>
+                <DeleteIcon fontSize="small" />
+              </ListItemIcon>
+              <Typography variant="inherit">Delete</Typography>
+            </MenuItem>
+          )}
         </Menu>
       </Box>
       
