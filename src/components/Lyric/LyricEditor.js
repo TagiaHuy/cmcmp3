@@ -352,7 +352,6 @@ const LyricEditor = ({ onLyricsParsed, duration, toggleLyricsEditor }) => {
     const handleSaveLyrics = () => {
         onLyricsParsed(editedLyrics);
         localStorage.removeItem('lyric-editor-backup');
-        toast.success('Lyrics saved!');
     };
     
     const handleDeleteLyric = (idToDelete) => {
