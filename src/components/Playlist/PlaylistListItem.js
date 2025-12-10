@@ -1,14 +1,13 @@
 import React from 'react';
 import { ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Box, IconButton } from '@mui/material';
-import { PlayArrow, MoreHoriz } from '@mui/icons-material';
+import { PlayArrow, Edit, Delete } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 
-const PlaylistListItem = ({ playlist }) => {
+const PlaylistListItem = ({ playlist, onEdit, onDelete }) => {
   if (!playlist) return null;
 
   return (
     <ListItem
-      button
       component={Link}
       to={`/playlists/${playlist.id}`}
       sx={{
@@ -37,9 +36,16 @@ const PlaylistListItem = ({ playlist }) => {
         }
       />
       <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
-        <IconButton onClick={(e) => { e.preventDefault(); e.stopPropagation(); /* Handle more options */ }}>
-          <MoreHoriz />
-        </IconButton>
+        {onEdit && onDelete && (
+          <>
+            <IconButton onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(playlist); }}>
+              <Edit fontSize="small" />
+            </IconButton>
+            <IconButton onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(playlist.id); }}>
+              <Delete fontSize="small" />
+            </IconButton>
+          </>
+        )}
       </Box>
     </ListItem>
   );

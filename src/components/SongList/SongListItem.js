@@ -9,7 +9,7 @@ import { copyToClipboard } from '../../utils/clipboard';
 import shareService from '../../services/shareService';
 import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem';
 
-const SongListItem = ({ song, onPlay }) => {
+const SongListItem = ({ song, onPlay, renderActions }) => {
   const { handlePlay, normalizeArtists } = useMediaPlayer();
   const { notifySuccess, notifyError } = useNotifications();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -51,11 +51,27 @@ const SongListItem = ({ song, onPlay }) => {
     handleMenuClose();
   };
 
-
   const artistsText =
     (normalizeArtists
       ? normalizeArtists(song.artists)
       : song.artists?.map((artist) => artist.name).join(', ')) || 'Unknown Artist';
+
+  const defaultActions = (
+    <>
+      <IconButton onClick={handleMenuOpen}>
+        <MoreHoriz />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <DownloadMenuItem songId={song.id} songTitle={song.title} onCloseMenu={handleMenuClose} />
+        <MenuItem onClick={handleCopyLink}>Sao chép liên kết</MenuItem>
+        <MenuItem onClick={handleShareFacebook}>Chia sẻ lên Facebook</MenuItem>
+      </Menu>
+    </>
+  );
 
   return (
     <ListItem
@@ -98,18 +114,7 @@ const SongListItem = ({ song, onPlay }) => {
         />
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', ml: 2, flexShrink: 0 }}>
-        <IconButton onClick={handleMenuOpen}>
-          <MoreHoriz />
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-        >
-          <DownloadMenuItem songId={song.id} songTitle={song.title} onCloseMenu={handleMenuClose} />
-          <MenuItem onClick={handleCopyLink}>Sao chép liên kết</MenuItem>
-          <MenuItem onClick={handleShareFacebook}>Chia sẻ lên Facebook</MenuItem>
-        </Menu>
+        {renderActions ? renderActions(song, defaultActions) : defaultActions}
       </Box>
     </ListItem>
   );

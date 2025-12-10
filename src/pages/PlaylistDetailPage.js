@@ -1,5 +1,3 @@
-import API_BASE_URL from '../config';
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, CircularProgress, Tabs, Tab, Modal } from '@mui/material';
@@ -66,6 +64,12 @@ const PlaylistDetailPage = () => {
   const isOwner = useMemo(() => {
     if (!user || !playlist) return false;
     // Assuming playlist.creator is an object with an id
+    console.log('isOwner check:', {
+      isAdmin,
+      userId: user.id,
+      creatorId: playlist.creator?.id,
+      isOwner: isAdmin || user.id === playlist.creator?.id
+    });
     return isAdmin || user.id === playlist.creator?.id;
   }, [user, playlist, isAdmin]);
 
@@ -152,7 +156,10 @@ const PlaylistDetailPage = () => {
           handlePlayPlaylist={handlePlayPlaylist} 
           isPlaying={isPlaylistCurrentlyLoaded && isPlaying}
           isOwner={isOwner}
+          onEdit={handleOpenEditModal}
+          onDelete={handleDelete}
         />
+
         <Box sx={{width: '100%'}}>
           <Tabs value={selectedTab} onChange={handleTabChange} centered>
             <Tab label="Songs" />
