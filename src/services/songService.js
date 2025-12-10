@@ -128,32 +128,56 @@ export const getSongById = async (id, signal) => {
 
 /* ==========================================================
     3) IS CURRENT USER UPLOADER
+   - Guest (không token)  → trả về false, KHÔNG gọi API
+   - 401 / 403 từ server  → coi như false, KHÔNG throw
 ========================================================== */
 export const isCurrentUserUploader = async (id, signal) => {
   try {
+    const baseHeaders = authHeader() || {};
+    const hasAuth =
+      !!baseHeaders.Authorization || !!baseHeaders.authorization;
+
+    // Nếu không có token → chắc chắn không phải uploader
+    if (!hasAuth) {
+      return false;
+    }
+
     const res = await fetch(`${API_BASE_URL}/api/songs/${id}/is-uploader`, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        ...authHeader(),
-        Accept: "application/json",
+        ...baseHeaders,
+        Accept: 'application/json',
       },
       signal,
     });
 
-    if (res.status === 404) { // Song not found
+    // Không đăng nhập / không có quyền → coi như false
+    if (res.status === 401 || res.status === 403) {
+      return false;
+    }
+
+    if (res.status === 404) {
+      // Song không tồn tại → cũng coi là false
       return false;
     }
 
     const data = await safeJson(res);
-    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+    if (!res.ok) {
+      throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+    }
 
-    return data; // Expecting a boolean true/false
+    return !!data; // mong đợi boolean true/false
   } catch (error) {
     if (error.name === 'AbortError') throw error;
-    console.error(`Error checking if current user is uploader for song ID ${id}:`, error);
-    throw error;
+    console.error(
+      `Error checking if current user is uploader for song ID ${id}:`,
+      error
+    );
+    // Đừng ném lỗi nữa, để tránh spam console + UI
+    return false;
   }
 };
+
 
 /* ==========================================================
     4) GET SONGS BY ARTIST
