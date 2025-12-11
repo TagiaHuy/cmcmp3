@@ -4,6 +4,7 @@ import usePlaylists from '../hooks/usePlaylists';
 import ZingChartSection from '../components/Chart/ZingChartSection';
 import TopPlaylistsSection from '../components/Card/TopPlaylistsSection';
 import TopSongsSection from '../components/Card/TopSongsSection';
+import RecommendationSection from '../components/Card/RecommendationSection';
 import PlaylistView from '../components/Card/PlaylistView';
 import Top100Section from '../components/Card/Top100Section';
 import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
@@ -31,6 +32,7 @@ const HomePage = () => {
       <TopPlaylistsSection />
 
       <TopSongsSection />
+      <RecommendationSection />
       <RecentlyPlayed />
 
       <Top100Section />
