@@ -73,7 +73,7 @@ function Search() {
           },
         }}
         onChange={handleSearch}
-        placeholder="Tìm kiếm bài hát, nghệ sĩ, lời bài hát..."
+        placeholder="Tìm kiếm bài hát, playlist, nghệ sĩ,..."
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">

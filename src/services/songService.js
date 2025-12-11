@@ -758,3 +758,25 @@ export const getSimilarSongsByTitle = async (title, signal) => {
         return [];
     }
 };
+
+export const searchSongsByLyric = async (query, signal) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/songs/search/lyric?query=${encodeURIComponent(query)}`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+    return (Array.isArray(data) ? data : []).map(mapSong);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error("Error searching songs by lyric:", error);
+    return [];
+  }
+};

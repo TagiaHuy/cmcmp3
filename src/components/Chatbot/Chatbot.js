@@ -8,7 +8,8 @@
         getSongDetails, 
         getSimilarSongs, 
         getRecommendedSongs,
-        getSimilarSongsByTitle
+        getSimilarSongsByTitle,
+        searchSongsByLyric
     } from '../../services/songService';
     import { getArtistBySongTitle } from '../../services/artistService';
     import { getSummary } from '../../services/statsService';
@@ -73,6 +74,9 @@
                                 break;
                             case '/api/songs/similar-by-title':
                                 toolResult = await getSimilarSongsByTitle(parsed.params.title);
+                                break;
+                            case '/api/songs/search/lyric':
+                                toolResult = await searchSongsByLyric(parsed.params.query);
                                 break;
                             case '/api/stats/summary':
                                 toolResult = await getSummary();

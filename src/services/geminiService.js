@@ -74,6 +74,12 @@ GET /api/stats/summary
 Use Case: “How many songs are in the database?”
 Response: { "totalSongs": 100, "totalArtists": 50, "totalPlaylists": 25 }
 
+8. Search Songs by Lyric
+
+GET /api/songs/search/lyric?query={lyric}
+Use Case: “Find songs with the lyric 'I will always love you'”
+Response: List<SongDTO>
+
 
 Available Tools
 1. Play a Song
@@ -92,6 +98,7 @@ Example Responses
 { "useEndpoint": "/api/recommendations/songs", "params": { "mood": "sad" } }
 { "useEndpoint": "/api/songs/similar-by-title", "params": { "title": "Let It Be" } }
 { "useEndpoint": "/api/stats/summary", "params": {} }
+{ "useEndpoint": "/api/songs/search/lyric", "params": { "query": "I will always love you" } }
 { "tool": "play_song", "params": { "songTitle": "Let It Be" } }
 `;
 
