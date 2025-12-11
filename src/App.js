@@ -15,6 +15,7 @@ import TestPage from './pages/TestPage';
 import SongDetailPage from './pages/SongDetailPage';
 import ArtistDetailPage from './pages/ArtistDetailPage';
 import PlaylistDetailPage from './pages/PlaylistDetailPage';
+import AlbumDetailPage from './pages/AlbumDetailPage'; // New Album Detail Page
 import TagDetailPage from './pages/TagDetailPage'; // Import TagDetailPage
 import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler';
 import ProfilePage from './pages/ProfilePage';
@@ -74,6 +75,7 @@ function App() {
           <Route path="/songs/:songId" element={<SongDetailPage />} />
           <Route path="/artist/:artistId" element={<ArtistDetailPage />} />
           <Route path="/playlists/:playlistId" element={<PlaylistDetailPage />} />
+          <Route path="/albums/:albumId" element={<AlbumDetailPage />} /> {/* NEW ALBUM ROUTE */}
           <Route path="/tags/:tagId" element={<TagDetailPage />} />
           <Route path="/artists" element={<ArtistsPage />} /> {/* Re-added route for ArtistsPage */}
 

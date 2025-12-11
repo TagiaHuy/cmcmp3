@@ -142,7 +142,7 @@ const RecentlyPlayedPage = () => {
             '&:hover': { color: theme.palette.text.primary },
           }}
         >
-          MV
+          
         </Typography>
       </Box>
 

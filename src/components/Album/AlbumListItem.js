@@ -1,75 +1,65 @@
 import React from 'react';
-import {
-  ListItem,
-  ListItemText,
-  IconButton,
-  Box,
-  Typography,
-  Avatar,
-  ListItemButton
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
-import { useNavigate } from 'react-router-dom';
+import { ListItem, ListItemText, Typography, Box } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
+import PlayableImage from '../Card/PlayableImage'; // Using PlayableImage like SongListItem
 
-const AlbumListItem = ({ album, onEdit, onDelete }) => {
+const AlbumListItem = ({ album, onPlay, renderActions }) => {
   const navigate = useNavigate();
 
-  const handleItemClick = () => {
+  if (!album) return null;
+
+  // Since albums don't play directly, the onPlay for the image can navigate or do nothing.
+  const handleImageClick = () => {
     navigate(`/albums/${album.id}`);
   };
 
+  const secondaryText = `${album.songCount || 0} bài hát • ${album.privacy || 'Public'}`;
+
+  // Default actions can be defined here if needed, but for now, we rely on renderActions
+  const defaultActions = null;
+
   return (
     <ListItem
-      divider
       sx={{
         '&:hover': {
-          backgroundColor: 'action.hover',
+          backgroundColor: 'rgba(255, 255, 255, 0.08)',
         },
-        borderRadius: '8px',
-        mb: 1,
+        borderRadius: '4px',
+        p: '16px 32px', // Changed padding to apply more horizontal spacing
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
       }}
-      secondaryAction={
-        <Box>
-          {onEdit && (
-            <IconButton aria-label="edit" onClick={(e) => { e.stopPropagation(); onEdit(album); }}>
-              <EditIcon />
-            </IconButton>
-          )}
-          {onDelete && (
-            <IconButton aria-label="delete" onClick={(e) => { e.stopPropagation(); onDelete(album.id); }}>
-              <DeleteIcon />
-            </IconButton>
-          )}
-        </Box>
-      }
     >
-      <ListItemButton onClick={handleItemClick} sx={{ borderRadius: '8px', '&:hover': { backgroundColor: 'transparent' } }}>
-        <Avatar variant="rounded" src={album.imageUrl} sx={{ mr: 2, width: 56, height: 56, backgroundColor: 'grey.800' }}>
-          <MusicNoteIcon />
-        </Avatar>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, overflow: 'hidden' }}>
+        <PlayableImage
+            imageUrl={album.imageUrl}
+            title={album.title}
+            size={56}
+            borderRadius="4px"
+            onPlay={handleImageClick} // Navigates on click
+            hideOverlay={true} // Hide overlay as albums aren't directly playable
+            sx={{ mr: 2, flexShrink: 0 }}
+        />
         <ListItemText
           primary={
-            <Typography variant="body1" color="text.primary" fontWeight={600}>
-              {album.title}
-            </Typography>
+            <Link to={`/albums/${album.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Typography noWrap variant="h6" sx={{ color: 'text.primary', '&:hover': { textDecoration: 'underline' } }}>
+                {album.title}
+              </Typography>
+            </Link>
           }
           secondary={
-            <Box component="span" sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Typography component="span" variant="body2" color="text.primary">
-                {`${album.songCount} bài hát`}
-              </Typography>
-              <Typography component="span" variant="body2" color="text.primary">
-                •
-              </Typography>
-              <Typography component="span" variant="body2" color="text.primary">
-                {album.privacy}
-              </Typography>
-            </Box>
+            <Typography noWrap variant="body2" sx={{ color: 'text.secondary' }}>
+              {secondaryText}
+            </Typography>
           }
+          sx={{ overflow: 'hidden' }}
         />
-      </ListItemButton>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', ml: 2, flexShrink: 0 }}>
+        {renderActions ? renderActions(album, defaultActions) : defaultActions}
+      </Box>
     </ListItem>
   );
 };

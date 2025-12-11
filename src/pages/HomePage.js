@@ -3,6 +3,7 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import usePlaylists from '../hooks/usePlaylists';
 import ZingChartSection from '../components/Chart/ZingChartSection';
 import TopPlaylistsSection from '../components/Card/TopPlaylistsSection';
+import UserAlbums from '../components/Album/UserAlbums'; // Re-import UserAlbums
 import TopSongsSection from '../components/Card/TopSongsSection';
 import PlaylistView from '../components/Card/PlaylistView';
 import Top100Section from '../components/Card/Top100Section';
@@ -31,6 +32,13 @@ const HomePage = () => {
       <TopPlaylistsSection />
 
       <TopSongsSection />
+      
+      <Box sx={{ my: 5, ml: 11, mr: 11 }}>
+        <Typography variant="h5" component="h2" gutterBottom sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+          Album của bạn
+        </Typography>
+        <UserAlbums isHomepage={true} />
+      </Box>
       <RecentlyPlayed />
 
       <Top100Section />

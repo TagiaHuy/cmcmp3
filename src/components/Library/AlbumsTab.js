@@ -19,7 +19,7 @@ const AlbumsTab = () => {
           variant={view === 'user_created' ? 'contained' : 'outlined'}
           onClick={() => setView('user_created')}
         >
-          Đã tạo
+          Đã tải lên
         </Button>
       </ButtonGroup>
 

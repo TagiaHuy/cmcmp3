@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8083';
+const API_BASE_URL = 'http://localhost:8081';
 export const GEMINI_API_KEY = 'AIzaSyDS5W2tU8eGgsZlHjP8lBfSMKuh4cOyoSg';
 
 export default API_BASE_URL;
