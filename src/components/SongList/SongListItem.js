@@ -54,7 +54,7 @@ const SongListItem = ({ song, onPlay, renderActions }) => {
   const artistsText =
     (normalizeArtists
       ? normalizeArtists(song.artists)
-      : song.artists?.map((artist) => artist.name).join(', ')) || 'Unknown Artist';
+      : song.artists?.map((artist) => artist.name).join(', ')) || 'Nghệ sĩ chưa xác định';
 
   const defaultActions = (
     <>
