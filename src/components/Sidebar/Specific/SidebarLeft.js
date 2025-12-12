@@ -18,17 +18,17 @@ function SidebarLeft() {
 
   const items = useMemo(() => {
     const librarySection = [
-      { section: 'Library' },
-      { text: 'Thư viện', icon: <LibraryMusicIcon />, to: '/library' },
+      { section: 'Thư viện' },
+      { text: 'Thư viện của tôi', icon: <LibraryMusicIcon />, to: '/library' },
       { text: 'Nghệ sĩ', icon: <PeopleAltRoundedIcon />, to: '/artists' },
       { text: 'Nghe gần đây', icon: <HistoryIcon />, to: '/recently-played' },
-      { text: 'Playlist', icon: <PlaylistPlayIcon />, to: '/my-playlists' },
-      { text: 'CMC mp3 chart', icon: <ShowChartIcon />, to: '/zing-chart' }, // New chart item
+      { text: 'Playlist cá nhân', icon: <PlaylistPlayIcon />, to: '/my-playlists' },
+      { text: 'BXH CMC MP3', icon: <ShowChartIcon />, to: '/zing-chart' }, // New chart item
     ];
 
     const adminSection = isAdmin
       ? [
-          { section: 'Admin' },
+          { section: 'Quản trị' },
           { text: 'Quản lý tài khoản', icon: <PeopleAltRoundedIcon />, to: '/admin/users' },
           { text: 'Quản lý bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs' },
           { text: 'Kiểm duyệt bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs/moderation' },
