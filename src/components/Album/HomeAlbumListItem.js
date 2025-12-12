@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Menu, IconButton } from '@mui/material';
+import { Box, Typography, Menu } from '@mui/material';
 import BasePlayableImage from '../Card/Base/BasePlayableImage';
-import FavoriteAlbumButton from '../Button/Specific/FavoriteAlbumButton';
+import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ShareMenu from '../MenuItem/Specific/ShareMenu'; // For MoreButton menu
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Assuming albums might have a primary song to download
+import ShareMenu from '../MenuItem/Specific/ShareMenu';
 
 const IMG_H = 160;
 const PLAY_DIAMETER = 42;
+
 const BTN_BOX = 44;
-const GAP_PX  = 16;
+const GAP_PX = 16;
 const TWEAK_Y = -22;
 
-const HomeAlbumListItem = ({ album }) => {
+function HomeAlbumListItem({ album, onPlay, onFavorite }) {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
+  // Assuming album has an imageUrl and a title. Adjust as per actual album object structure.
+  // Assuming onPlay would play the first song in the album or open the album detail page
+  // Assuming onFavorite would add/remove the album from favorites.
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -34,13 +37,6 @@ const HomeAlbumListItem = ({ album }) => {
     navigate(`/albums/${album.id}`);
   };
 
-  // onLikeToggle for FavoriteAlbumButton will be handled by the parent (UserAlbums)
-  const onLikeToggle = () => {
-    // This button will optimistically update itself,
-    // and the parent's state will be re-fetched on modal close.
-    // So, no need to directly update parent state here.
-  };
-
   return (
     <Box
       sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', cursor: 'pointer' }}
@@ -48,11 +44,12 @@ const HomeAlbumListItem = ({ album }) => {
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
     >
-      {/* Ảnh */}
-      <BasePlayableImage size={IMG_H} isHovered={isHovered}>
+      {/* Ảnh + nút ▶ */}
+      {/* Assuming album has an imageUrl and a mediaSrc for play */}
+      <BasePlayableImage mediaSrc={album.mediaSrc || album.songs?.[0]?.audioUrl} onPlay={onPlay} size={IMG_H} isHovered={isHovered}>
         <img
-          src={album.imageUrl}
-          alt={album.title}
+          src={album.imageUrl || 'default-album-image.png'} // Use a default image if none
+          alt={album.title || album.name}
           style={{
             width: '100%',
             height: '100%',
@@ -95,11 +92,12 @@ const HomeAlbumListItem = ({ album }) => {
               pointerEvents: 'auto',
               cursor: 'pointer',
             }}
+            onClick={(e) => { e.stopPropagation(); onFavorite?.(); }}
           >
-            <FavoriteAlbumButton albumId={album.id} isFavorite={album.isFavorite} onLikeToggle={onLikeToggle} />
+            {/* Assuming FavoriteButton can handle album.id */}
+            <FavoriteButton visible={isHovered} entityType="album" entityId={album.id} />
           </Box>
 
-          {/* Placeholder for play button to align MoreButton */}
           <Box sx={{ width: PLAY_DIAMETER, height: PLAY_DIAMETER }} />
 
           <Box
@@ -118,9 +116,14 @@ const HomeAlbumListItem = ({ album }) => {
               open={open}
               onClose={handleMenuClose}
               MenuListProps={{
-                'aria-labelledby': 'more-button-home-album-item',
+                'aria-labelledby': 'more-button-album-item',
               }}
             >
+              {/* Assuming there's a primary song in the album to download or disable if no song */}
+              {album.songs?.[0]?.id && (
+                <DownloadMenuItem songId={album.songs[0].id} songTitle={album.songs[0].title} onCloseMenu={handleMenuClose} />
+              )}
+              {/* Assuming ShareMenu can handle album type */}
               <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="album" id={album.id} />
             </Menu>
           </Box>
@@ -140,30 +143,31 @@ const HomeAlbumListItem = ({ album }) => {
           WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
         }}
-        title={album.title}
+        title={album.title || album.name}
       >
-        {album.title}
+        {album.title || album.name}
       </Typography>
 
-      {/* Creator */}
-      <Typography
-        variant="caption"
-        sx={{
-          color: 'text.secondary',
-          mt: 0.25,
-          lineHeight: 1.2,
-          display: '-webkit-box',
-          WebkitLineClamp: 1,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}
-        title={album.creator?.name || 'Unknown'}
-      >
-        {album.creator?.name || 'Unknown'}
-      </Typography>
+      {/* Artist(s) - Assuming album has an artist or artists */}
+      {album.artist && (
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+            mt: 0.25,
+            lineHeight: 1.2,
+            display: '-webkit-box',
+            WebkitLineClamp: 1,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+          title={album.artist.name}
+        >
+          {album.artist.name}
+        </Typography>
+      )}
     </Box>
   );
-};
+}
 
 export default HomeAlbumListItem;
-

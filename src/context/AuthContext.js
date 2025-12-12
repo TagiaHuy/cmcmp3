@@ -1,5 +1,5 @@
 // src/context/AuthContext.js
-import React, { createContext, useState, useEffect, useContext, useMemo } from "react";
+import React, { createContext, useState, useEffect, useContext, useMemo, useCallback } from "react";
 import { register as apiRegister, login as apiLogin, getUserMe } from "../services/authService";
 
 const AuthContext = createContext(null);
@@ -143,10 +143,24 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userToSet));
   };
 
+  const hasRole = useCallback((roleName) => {
+    if (!user) return false;
+    const roleCandidates = [
+      ...(Array.isArray(user.roles) ? user.roles : []),
+      ...(Array.isArray(user.authorities) ? user.authorities : []),
+      ...(Array.isArray(user.roleList) ? user.roleList : []),
+    ];
+    const roleStrs = roleCandidates
+      .map(r => (typeof r === "string" ? r : (r?.authority || r?.name || r?.role || r?.code || "")))
+      .map(s => String(s).toUpperCase());
+    return roleStrs.includes(String(roleName).toUpperCase());
+  }, [user]);
+
   const value = useMemo(() => ({
     user, token, loading, error,
     isAuthenticated: !!token,
     isAdmin,
+    hasRole, // <-- Add hasRole here
     login, register, logout,
     completeLogin, // <-- export here
     handleSocialLogin: (rawToken) => {
@@ -155,7 +169,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", clean);
     },
     setUser,
-  }), [user, token, loading, error, isAdmin]);
+  }), [user, token, loading, error, isAdmin, hasRole]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
