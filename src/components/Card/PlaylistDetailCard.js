@@ -150,22 +150,7 @@ const PlaylistDetailCard = ({ playlist, handlePlayPlaylist, isPlaying, isOwner, 
           }}
         >
           <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="playlist" id={playlist.id} />
-          {isOwner && (
-            <MenuItem onClick={() => { onEdit(); handleMenuClose(); }}>
-              <ListItemIcon>
-                <EditIcon fontSize="small" />
-              </ListItemIcon>
-              <Typography variant="inherit">Edit</Typography>
-            </MenuItem>
-          )}
-          {isOwner && (
-            <MenuItem onClick={() => { onDelete(); handleMenuClose(); }}>
-              <ListItemIcon>
-                <DeleteIcon fontSize="small" />
-              </ListItemIcon>
-              <Typography variant="inherit">Delete</Typography>
-            </MenuItem>
-          )}
+
         </Menu>
       </Box>
       

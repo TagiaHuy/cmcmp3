@@ -1,10 +1,35 @@
-import React from 'react';
-import { Box, Typography } from '@mui/material';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Box, Typography, IconButton, useMediaQuery } from '@mui/material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import HomeAlbumListItem from './HomeAlbumListItem';
-import { useNotifications } from '../../hooks/useNotifications'; // Assuming notifications are needed for actions
 
-const HomeAlbumList = ({ albums, renderActions }) => {
-  const { notifyError } = useNotifications(); // for error handling if any
+const ITEM_WIDTH = 160;
+const GAP_WIDTH = 60; // giống Nghe gần đây
+
+const HomeAlbumList = ({ albums }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // responsive
+  const is2033 = useMediaQuery('(min-width:2033px)');
+  const is1644 = useMediaQuery('(min-width:1644px)');
+  const is1265 = useMediaQuery('(min-width:1265px)');
+  const is900  = useMediaQuery('(min-width:900px)');
+
+  const itemsToShow = useMemo(() => {
+    if (is2033) return 7;
+    if (is1644) return 6;
+    if (is1265) return 5;
+    if (is900)  return 4;
+    return 2;
+  }, [is2033, is1644, is1265, is900]);
+
+  const total = albums?.length || 0;
+  const maxIndex = Math.max(0, total - itemsToShow);
+
+  useEffect(() => {
+    setCurrentIndex(prev => Math.min(prev, maxIndex));
+  }, [maxIndex]);
 
   if (!albums || albums.length === 0) {
     return (
@@ -18,41 +43,80 @@ const HomeAlbumList = ({ albums, renderActions }) => {
     );
   }
 
+  const stepPx = ITEM_WIDTH + GAP_WIDTH;
+
+  const handleNext = () => {
+    setCurrentIndex(prev => Math.min(prev + itemsToShow, maxIndex));
+  };
+
+  const handlePrevious = () => {
+    setCurrentIndex(prev => Math.max(prev - itemsToShow, 0));
+  };
+
+  const showPrev = currentIndex > 0;
+  const showNext = currentIndex < maxIndex;
+
   return (
     <Box
       sx={{
-        position: 'relative',
         display: 'flex',
-        flexWrap: 'nowrap',
-        justifyContent: 'space-between',
-        gap: 3,
-        transition: 'gap .3s ease',
-        willChange: 'gap',
-        overflowX: 'auto',
-        scrollbarWidth: 'thin',
-        '&::-webkit-scrollbar': { height: 6 },
-        '&::-webkit-scrollbar-thumb': {
-          background: 'rgba(127,127,127,.35)',
-          borderRadius: 4,
-        },
-        minWidth: 'min(100%, 6 * 160px + 5 * 24px)', // Adjust as needed
-        py: 1, // Padding vertical for scrollbar
+        alignItems: 'center',
+        width: '100%',
       }}
     >
-      {albums.map((album, index) => (
-        <Box
-            key={album.id || index}
+      {/* NÚT TRÁI (ngoài ảnh) */}
+      <Box sx={{ width: 40, textAlign: 'center' }}>
+        {showPrev && (
+          <IconButton
+            onClick={handlePrevious}
             sx={{
-              width: 160,
-              flex: '0 0 160px',
-              transition: 'transform .3s ease',
+              color: 'text.primary',
             }}
           >
-            <HomeAlbumListItem
-              album={album}
-            />
+            <ArrowBackIosNewIcon fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
+
+      {/* DANH SÁCH ALBUM */}
+      <Box sx={{ overflow: 'hidden', flex: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: `${GAP_WIDTH}px`,
+            transform: `translateX(-${currentIndex * stepPx}px)`,
+            transition: 'transform 0.4s ease',
+            py: 1.5,
+            width: `${total * stepPx}px`,
+          }}
+        >
+          {albums.map(album => (
+            <Box
+              key={album.id}
+              sx={{
+                width: ITEM_WIDTH,
+                flex: `0 0 ${ITEM_WIDTH}px`,
+              }}
+            >
+              <HomeAlbumListItem album={album} />
+            </Box>
+          ))}
         </Box>
-      ))}
+      </Box>
+
+      {/* NÚT PHẢI (ngoài ảnh) */}
+      <Box sx={{ width: 40, textAlign: 'center' }}>
+        {showNext && (
+          <IconButton
+            onClick={handleNext}
+            sx={{
+              color: 'text.primary',
+            }}
+          >
+            <ArrowForwardIosIcon fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
     </Box>
   );
 };

@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Menu } from '@mui/material';
 import BasePlayableImage from '../Card/Base/BasePlayableImage';
 import FavoriteButton from '../Button/Specific/FavoriteButton';
 import MoreButton from '../Button/Specific/MoreButton';
-import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem'; // Assuming albums might have a primary song to download
+import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem';
 import ShareMenu from '../MenuItem/Specific/ShareMenu';
+
+import { normalizeArtists } from '../../context/MediaPlayerContext';
+import { useMediaActions } from '../../hooks/useMediaActions';
+import { getAlbumSongs } from '../../services/albumService';
+import { useNotifications } from '../../hooks/useNotifications';
 
 const IMG_H = 160;
 const PLAY_DIAMETER = 42;
@@ -14,12 +19,11 @@ const BTN_BOX = 44;
 const GAP_PX = 16;
 const TWEAK_Y = -22;
 
-function HomeAlbumListItem({ album, onPlay, onFavorite }) {
+function HomeAlbumListItem({ album, onFavorite }) {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
-  // Assuming album has an imageUrl and a title. Adjust as per actual album object structure.
-  // Assuming onPlay would play the first song in the album or open the album detail page
-  // Assuming onFavorite would add/remove the album from favorites.
+  const { playAll } = useMediaActions();
+  const { notifyError } = useNotifications();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -29,13 +33,46 @@ function HomeAlbumListItem({ album, onPlay, onFavorite }) {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+  const handleMenuClose = () => setAnchorEl(null);
 
-  const handleCardClick = () => {
-    navigate(`/albums/${album.id}`);
-  };
+  const handleCardClick = () => navigate(`/albums/${album.id}`);
+
+  const artistsText = useMemo(
+    () => normalizeArtists(album?.artists ?? album?.artist),
+    [album]
+  );
+
+  // ⚠️ Home list thường không có album.songs → preview có thể rỗng, không sao
+  const previewMediaSrc =
+    album?.mediaSrc || album?.songs?.[0]?.audioUrl || album?.songs?.[0]?.filePath || '';
+
+  // ✅ Play: luôn fetch bài của album rồi playAll
+  const handlePlayAlbum = useCallback(async (e) => {
+    e.stopPropagation();
+    try {
+      const songs = await getAlbumSongs(album.id);
+
+      const formattedSongs = (songs || [])
+        .map(s => ({
+          ...s,
+          mediaSrc: s.mediaSrc || s.filePath || s.audioUrl || s.audioPath || '',
+          imageUrl: s.imageUrl || album.imageUrl,
+          artists: s.artists ?? album.artists ?? album.artist,
+          title: s.title || s.name || 'Unknown',
+        }))
+        .filter(s => !!s.mediaSrc);
+
+      if (!formattedSongs.length) {
+        notifyError('Album này chưa có bài hát (hoặc bài chưa có link mp3).');
+        return;
+      }
+
+      playAll(formattedSongs);
+    } catch (err) {
+      console.error(err);
+      notifyError('Không thể tải bài hát của album. Vui lòng thử lại sau.');
+    }
+  }, [album, playAll, notifyError]);
 
   return (
     <Box
@@ -44,23 +81,19 @@ function HomeAlbumListItem({ album, onPlay, onFavorite }) {
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
     >
-      {/* Ảnh + nút ▶ */}
-      {/* Assuming album has an imageUrl and a mediaSrc for play */}
-      <BasePlayableImage mediaSrc={album.mediaSrc || album.songs?.[0]?.audioUrl} onPlay={onPlay} size={IMG_H} isHovered={isHovered}>
+      <BasePlayableImage
+        mediaSrc={previewMediaSrc}
+        onPlay={handlePlayAlbum}
+        size={IMG_H}
+        isHovered={isHovered}
+      >
         <img
-          src={album.imageUrl || 'default-album-image.png'} // Use a default image if none
+          src={album.imageUrl || 'default-album-image.png'}
           alt={album.title || album.name}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            display: 'block',
-            borderRadius: 8
-          }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: 8 }}
         />
       </BasePlayableImage>
 
-      {/* Nút hover: ❤️  [space]  ⋯ */}
       <Box
         sx={{
           position: 'absolute',
@@ -84,53 +117,31 @@ function HomeAlbumListItem({ album, onPlay, onFavorite }) {
           }}
         >
           <Box
-            sx={{
-              width: BTN_BOX,
-              height: BTN_BOX,
-              display: 'grid',
-              placeItems: 'center',
-              pointerEvents: 'auto',
-              cursor: 'pointer',
-            }}
+            sx={{ width: BTN_BOX, height: BTN_BOX, display: 'grid', placeItems: 'center', pointerEvents: 'auto', cursor: 'pointer' }}
             onClick={(e) => { e.stopPropagation(); onFavorite?.(); }}
           >
-            {/* Assuming FavoriteButton can handle album.id */}
             <FavoriteButton visible={isHovered} entityType="album" entityId={album.id} />
           </Box>
 
           <Box sx={{ width: PLAY_DIAMETER, height: PLAY_DIAMETER }} />
 
-          <Box
-            sx={{
-              width: BTN_BOX,
-              height: BTN_BOX,
-              display: 'grid',
-              placeItems: 'center',
-              pointerEvents: 'auto',
-              cursor: 'pointer',
-            }}
-          >
+          <Box sx={{ width: BTN_BOX, height: BTN_BOX, display: 'grid', placeItems: 'center', pointerEvents: 'auto', cursor: 'pointer' }}>
             <MoreButton visible={isHovered} onClick={handleMenuOpen} />
-            <Menu
-              anchorEl={anchorEl}
-              open={open}
-              onClose={handleMenuClose}
-              MenuListProps={{
-                'aria-labelledby': 'more-button-album-item',
-              }}
-            >
-              {/* Assuming there's a primary song in the album to download or disable if no song */}
-              {album.songs?.[0]?.id && (
-                <DownloadMenuItem songId={album.songs[0].id} songTitle={album.songs[0].title} onCloseMenu={handleMenuClose} />
+            <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+              {/* list album thường không có songs -> mục download có thể không hiện, ok */}
+              {album?.songs?.[0]?.id && (
+                <DownloadMenuItem
+                  songId={album.songs[0].id}
+                  songTitle={album.songs[0].title}
+                  onCloseMenu={handleMenuClose}
+                />
               )}
-              {/* Assuming ShareMenu can handle album type */}
               <ShareMenu anchorEl={anchorEl} open={open} onCloseMenu={handleMenuClose} type="album" id={album.id} />
             </Menu>
           </Box>
         </Box>
       </Box>
 
-      {/* Title */}
       <Typography
         variant="subtitle1"
         sx={{
@@ -148,8 +159,7 @@ function HomeAlbumListItem({ album, onPlay, onFavorite }) {
         {album.title || album.name}
       </Typography>
 
-      {/* Artist(s) - Assuming album has an artist or artists */}
-      {album.artist && (
+      {!!artistsText && (
         <Typography
           variant="caption"
           sx={{
@@ -161,9 +171,9 @@ function HomeAlbumListItem({ album, onPlay, onFavorite }) {
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
           }}
-          title={album.artist.name}
+          title={artistsText}
         >
-          {album.artist.name}
+          {artistsText}
         </Typography>
       )}
     </Box>

@@ -35,7 +35,7 @@ const HomePage = () => {
       
       <Box sx={{ my: 5, ml: 11, mr: 11 }}>
         <Typography variant="h5" component="h2" gutterBottom sx={{ color: 'text.primary', fontWeight: 'bold' }}>
-          Album của bạn
+          Album nổi bật
         </Typography>
         <UserAlbums isHomepage={true} />
       </Box>
