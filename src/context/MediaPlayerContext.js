@@ -42,6 +42,7 @@ export const MediaPlayerProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
   const [recentlyPlayedPlaylists, setRecentlyPlayedPlaylists] = useState([]);
+  const [recentlyPlayedAlbums, setRecentlyPlayedAlbums] = useState([]); // NEW STATE
   const [isSidebarRightVisible, setIsSidebarRightVisible] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [mediaPlayerHeight, setMediaPlayerHeight] = useState(0);
@@ -61,12 +62,14 @@ export const MediaPlayerProvider = ({ children }) => {
     if (!userId) {
       setRecentlyPlayed([]);
       setRecentlyPlayedPlaylists([]);
+      setRecentlyPlayedAlbums([]); // NEW INIT
       return;
     }
 
     try {
       const keyTracks = buildKey('recentlyPlayed', userId);
       const keyPlaylists = buildKey('recentlyPlayedPlaylists', userId);
+      const keyAlbums = buildKey('recentlyPlayedAlbums', userId); // NEW KEY
 
       const storedTracks = keyTracks
         ? JSON.parse(localStorage.getItem(keyTracks)) || []
@@ -74,12 +77,17 @@ export const MediaPlayerProvider = ({ children }) => {
       const storedPlaylists = keyPlaylists
         ? JSON.parse(localStorage.getItem(keyPlaylists)) || []
         : [];
+      const storedAlbums = keyAlbums // NEW STORED
+        ? JSON.parse(localStorage.getItem(keyAlbums)) || []
+        : [];
 
       setRecentlyPlayed(storedTracks);
       setRecentlyPlayedPlaylists(storedPlaylists);
+      setRecentlyPlayedAlbums(storedAlbums); // NEW SET
     } catch {
       setRecentlyPlayed([]);
       setRecentlyPlayedPlaylists([]);
+      setRecentlyPlayedAlbums([]); // NEW CATCH
     }
   }, [userId]);
 
@@ -123,6 +131,21 @@ export const MediaPlayerProvider = ({ children }) => {
       const keyPlaylists = buildKey('recentlyPlayedPlaylists', userId);
       if (keyPlaylists) {
         localStorage.setItem(keyPlaylists, JSON.stringify(updated));
+      }
+      return updated;
+    });
+  }, [userId]);
+
+  const addRecentlyPlayedAlbum = useCallback((album) => { // NEW FUNCTION
+    // Chưa đăng nhập → không lưu
+    if (!userId) return;
+
+    setRecentlyPlayedAlbums(prev => {
+      const filtered = (prev || []).filter(p => p.id !== album.id);
+      const updated = [album, ...filtered].slice(0, 10);
+      const keyAlbums = buildKey('recentlyPlayedAlbums', userId);
+      if (keyAlbums) {
+        localStorage.setItem(keyAlbums, JSON.stringify(updated));
       }
       return updated;
     });
@@ -176,9 +199,16 @@ export const MediaPlayerProvider = ({ children }) => {
 
   const clearRecentlyPlayed = useCallback(() => {
     setRecentlyPlayed([]);
+    setRecentlyPlayedPlaylists([]); // NEW: clear playlists too
+    setRecentlyPlayedAlbums([]); // NEW: clear albums
     if (!userId) return;
     const keyTracks = buildKey('recentlyPlayed', userId);
+    const keyPlaylists = buildKey('recentlyPlayedPlaylists', userId); // NEW KEY
+    const keyAlbums = buildKey('recentlyPlayedAlbums', userId); // NEW KEY
+
     if (keyTracks) localStorage.removeItem(keyTracks);
+    if (keyPlaylists) localStorage.removeItem(keyPlaylists); // NEW REMOVE
+    if (keyAlbums) localStorage.removeItem(keyAlbums); // NEW REMOVE
   }, [userId]);
 
   const toggleSidebarRight = useCallback(() => {
@@ -317,7 +347,9 @@ export const MediaPlayerProvider = ({ children }) => {
 
     recentlyPlayed,
     recentlyPlayedPlaylists,
+    recentlyPlayedAlbums, // NEW
     addRecentlyPlayedPlaylist,
+    addRecentlyPlayedAlbum, // NEW
     clearRecentlyPlayed,
     isSidebarRightVisible,
     toggleSidebarRight,
@@ -351,7 +383,8 @@ export const MediaPlayerProvider = ({ children }) => {
   }), [
     queue, currentIndex, currentTrack, currentPlayingSrc,
     isPlaying,
-    recentlyPlayed, recentlyPlayedPlaylists, addRecentlyPlayedPlaylist,
+    recentlyPlayed, recentlyPlayedPlaylists, recentlyPlayedAlbums, addRecentlyPlayedPlaylist, // NEW
+    addRecentlyPlayedAlbum, // NEW
     clearRecentlyPlayed, isSidebarRightVisible, toggleSidebarRight,
     isShuffling, repeatMode,
     handlePlay, loadQueue, playPlaylistRandom, playAt,

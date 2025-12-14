@@ -8,6 +8,10 @@ const buildSongFallbackUrl = (songId) =>
 const buildPlaylistFallbackUrl = (playlistId) =>
   `${window.location.origin}/playlists/${playlistId}`;
 
+// NEW: Fallback for album
+const buildAlbumFallbackUrl = (albumId) =>
+  `${window.location.origin}/albums/${albumId}`;
+
 async function extractShareUrl(res) {
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
@@ -59,6 +63,22 @@ const shareService = {
       return url || buildPlaylistFallbackUrl(playlistId);
     } catch (err) {
       console.error("shareService.getPlaylistShareUrl error:", err);
+      return null;
+    }
+  },
+
+  /* Lấy link chia sẻ album */ // NEW FUNCTION
+  getAlbumShareUrl: async (albumId) => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/albums/${albumId}/share`,
+        { method: "GET" }
+      );
+
+      const url = await extractShareUrl(res);
+      return url || buildAlbumFallbackUrl(albumId);
+    } catch (err) {
+      console.error("shareService.getAlbumShareUrl error:", err);
       return null;
     }
   },
