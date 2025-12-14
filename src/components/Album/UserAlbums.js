@@ -1,14 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
-  Box, Button, Typography, CircularProgress, Modal, IconButton,
-  Stack
+  Box, Button, Typography, CircularProgress, Modal, IconButton, Stack
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+
 import AlbumList from './AlbumList';
-import HomeAlbumList from './HomeAlbumList'; // NEW IMPORT
+import HomeAlbumList from './HomeAlbumList';
 import useUserAlbums from '../../hooks/useUserAlbums';
 import CreateAlbumForm from './CreateAlbumForm';
 import EditAlbumForm from './EditAlbumForm';
@@ -27,18 +27,34 @@ const style = {
   overflowY: 'auto',
 };
 
-const UserAlbums = ({ isHomepage }) => { // ACCEPT isHomepage PROP
-  // Destructure fetchAlbums from the hook
-  const { albums, loading, error, addAlbum, removeAlbum, editAlbum, fetchAlbums } = useUserAlbums();
+const UserAlbums = ({ isHomepage = false }) => {
+  // ✅ scope: homepage => public, còn lại => me
+  const scope = isHomepage ? 'public' : 'me';
+
+  const {
+    albums,
+    loading,
+    error,
+    addAlbum,
+    removeAlbum,
+    editAlbum,
+    fetchAlbums,
+  } = useUserAlbums({ scope });
+
   const [openCreateAlbumModal, setOpenCreateAlbumModal] = useState(false);
   const [openEditAlbumModal, setOpenEditAlbumModal] = useState(false);
   const [currentAlbum, setCurrentAlbum] = useState(null);
 
-  // Use useCallback for handlers
+  // ✅ khi load component: fetch đúng scope
+  useEffect(() => {
+    fetchAlbums();
+  }, [fetchAlbums]);
+
   const handleOpenCreateAlbumModal = useCallback(() => setOpenCreateAlbumModal(true), []);
+
   const handleCloseCreateAlbumModal = useCallback(() => {
     setOpenCreateAlbumModal(false);
-    fetchAlbums(); // Refetch albums after closing create modal
+    fetchAlbums(); // refetch albums (scope=me) sau khi tạo
   }, [fetchAlbums]);
 
   const handleOpenEditAlbumModal = useCallback((album) => {
@@ -64,11 +80,13 @@ const UserAlbums = ({ isHomepage }) => { // ACCEPT isHomepage PROP
   const handleDeleteAlbum = useCallback(async (albumId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa album này không?')) {
       await removeAlbum(albumId);
+      fetchAlbums();
     }
-  }, [removeAlbum]);
+  }, [removeAlbum, fetchAlbums]);
 
+  // ✅ HomePage: KHÔNG render nút sửa/xóa
   const renderAlbumActions = (album) => (
-    <Stack direction="row" spacing={2} alignItems="center"> {/* Changed spacing from 1 to 2 */}
+    <Stack direction="row" spacing={2} alignItems="center">
       <IconButton
         size="small"
         color="primary"
@@ -85,7 +103,7 @@ const UserAlbums = ({ isHomepage }) => { // ACCEPT isHomepage PROP
       </IconButton>
     </Stack>
   );
-  
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -104,6 +122,7 @@ const UserAlbums = ({ isHomepage }) => { // ACCEPT isHomepage PROP
 
   return (
     <Box sx={{ width: '100%' }}>
+      {/* ✅ chỉ scope=me mới hiện nút tạo */}
       {!isHomepage && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, pr: 2 }}>
           <Button
@@ -115,13 +134,20 @@ const UserAlbums = ({ isHomepage }) => { // ACCEPT isHomepage PROP
           </Button>
         </Box>
       )}
-      
+
       {isHomepage ? (
-        <HomeAlbumList albums={albums} renderActions={renderAlbumActions} />
+        <HomeAlbumList
+          albums={albums}
+          renderActions={null} // ✅ homepage ẩn action
+        />
       ) : (
-        <AlbumList albums={albums} renderActions={renderAlbumActions} />
+        <AlbumList
+          albums={albums}
+          renderActions={renderAlbumActions}
+        />
       )}
 
+      {/* ✅ Modal create/edit chỉ dùng cho scope=me */}
       <Modal
         open={openCreateAlbumModal}
         onClose={handleCloseCreateAlbumModal}
@@ -149,6 +175,7 @@ const UserAlbums = ({ isHomepage }) => { // ACCEPT isHomepage PROP
               <CloseIcon />
             </IconButton>
           </Box>
+
           {currentAlbum && (
             <EditAlbumForm
               album={currentAlbum}

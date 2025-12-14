@@ -7,6 +7,9 @@ const AuthContext = createContext(null);
 // helper: loại bỏ tiền tố "Bearer " nếu có
 const cleanToken = (t) => (t || "").replace(/^Bearer\s+/i, "").trim();
 
+// helper: normalize "ADMIN"/"ROLE_ADMIN"
+const normalizeRole = (r) => String(r || "").toUpperCase().replace(/^ROLE_/, "");
+
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => {
     const stored = localStorage.getItem("token");
@@ -22,17 +25,21 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState(null);
+  const [error, setError] = useState(null);
 
-  // Đồng bộ user từ /api/user/me khi có token
+  // Đồng bộ user từ /api/users/me khi có token
   useEffect(() => {
     const ac = new AbortController();
     (async () => {
-      if (!token) { setLoading(false); return; }
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       setError(null);
       try {
-        const me = await getUserMe(token, ac.signal); // token đã sạch
+        const me = await getUserMe(token, ac.signal);
         const userToSet = me?.user ?? me;
+
         if (userToSet && Object.keys(userToSet).length > 0) {
           setUser(userToSet);
           localStorage.setItem("user", JSON.stringify(userToSet));
@@ -59,8 +66,7 @@ export const AuthProvider = ({ children }) => {
       const loginData = await apiLogin(email, password, ac.signal);
       if (!loginData?.token) throw new Error("Phản hồi đăng nhập không có token");
 
-      const raw   = loginData.token;
-      const clean = cleanToken(raw);               // ← làm sạch
+      const clean = cleanToken(loginData.token);
 
       const me = await getUserMe(clean, ac.signal);
       const userToSet = me?.user ?? me;
@@ -70,7 +76,7 @@ export const AuthProvider = ({ children }) => {
 
       setToken(clean);
       setUser(userToSet);
-      localStorage.setItem("token", clean);        // ← lưu token sạch
+      localStorage.setItem("token", clean);
       localStorage.setItem("user", JSON.stringify(userToSet));
 
       return { token: clean, user: userToSet };
@@ -103,36 +109,58 @@ export const AuthProvider = ({ children }) => {
     setError(null);
   };
 
-  // ==== TÍNH isAdmin MẠNH MẼ ====
+  // ✅ FIX: hasRole hiểu cả "ADMIN" và "ROLE_ADMIN", ưu tiên user.role nếu có
+  const hasRole = useCallback(
+    (roleName) => {
+      if (!user) return false;
+
+      const target = normalizeRole(roleName);
+      const targets = new Set([target]);
+
+      // ưu tiên role đơn nếu BE trả (ADMIN/ARTIST/USER)
+      if (user.role) {
+        const r = normalizeRole(user.role);
+        if (targets.has(r)) return true;
+      }
+
+      const roleCandidates = [
+        ...(Array.isArray(user.roles) ? user.roles : []),
+        ...(Array.isArray(user.authorities) ? user.authorities : []),
+        ...(Array.isArray(user.roleList) ? user.roleList : []),
+      ];
+
+      const roleStrs = roleCandidates
+        .map((r) => (typeof r === "string" ? r : r?.authority || r?.name || r?.role || r?.code || ""))
+        .map((s) => normalizeRole(s));
+
+      return roleStrs.some((r) => targets.has(r));
+    },
+    [user]
+  );
+
+  // ✅ NEW: isAdmin rõ ràng + dựa trên hasRole
   const isAdmin = useMemo(() => {
+    return !!user && hasRole("ADMIN");
+  }, [user, hasRole]);
+
+  // ✅ NEW (HƯỚNG A): check nghệ sĩ đã duyệt
+  const isVerifiedArtist = useMemo(() => {
     if (!user) return false;
-    const roleCandidates = [
-      ...(Array.isArray(user.roles) ? user.roles : []),
-      ...(Array.isArray(user.authorities) ? user.authorities : []),
-      ...(Array.isArray(user.roleList) ? user.roleList : []),
-    ];
+    const status = String(user.artistVerificationStatus || "").toUpperCase();
+    return hasRole("ARTIST") && status === "APPROVED";
+  }, [user, hasRole]);
 
-    const roleStrs = roleCandidates
-      .map(r => (typeof r === "string" ? r : (r?.authority || r?.name || r?.role || r?.code || "")))
-      .map(s => String(s).toUpperCase());
-
-    if (roleStrs.some(s => s.includes("ADMIN"))) return true;
-
-    const uname = (user.username || user.email || "").toString().toLowerCase();
-    if (uname.startsWith("admin")) return true;
-
-    if (user.isAdmin === true) return true;
-
-    return false;
-  }, [user]);
+  // ✅ NEW: để component khác dùng cho đúng, khỏi check lung tung
+  const canCreateAlbum = useMemo(() => {
+    return !!user && (isAdmin || isVerifiedArtist);
+  }, [user, isAdmin, isVerifiedArtist]);
 
   const completeLogin = (loginData) => {
     if (!loginData?.token) throw new Error("Phản hồi đăng nhập không có token");
 
-    const raw = loginData.token;
-    const clean = cleanToken(raw);
-
+    const clean = cleanToken(loginData.token);
     const userToSet = loginData?.user ?? loginData;
+
     if (!userToSet || Object.keys(userToSet).length === 0) {
       throw new Error("Không thể lấy thông tin người dùng sau khi đăng nhập");
     }
@@ -143,33 +171,34 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userToSet));
   };
 
-  const hasRole = useCallback((roleName) => {
-    if (!user) return false;
-    const roleCandidates = [
-      ...(Array.isArray(user.roles) ? user.roles : []),
-      ...(Array.isArray(user.authorities) ? user.authorities : []),
-      ...(Array.isArray(user.roleList) ? user.roleList : []),
-    ];
-    const roleStrs = roleCandidates
-      .map(r => (typeof r === "string" ? r : (r?.authority || r?.name || r?.role || r?.code || "")))
-      .map(s => String(s).toUpperCase());
-    return roleStrs.includes(String(roleName).toUpperCase());
-  }, [user]);
+  const value = useMemo(
+    () => ({
+      user,
+      token,
+      loading,
+      error,
+      isAuthenticated: !!token,
 
-  const value = useMemo(() => ({
-    user, token, loading, error,
-    isAuthenticated: !!token,
-    isAdmin,
-    hasRole, // <-- Add hasRole here
-    login, register, logout,
-    completeLogin, // <-- export here
-    handleSocialLogin: (rawToken) => {
-      const clean = cleanToken(rawToken);
-      setToken(clean);
-      localStorage.setItem("token", clean);
-    },
-    setUser,
-  }), [user, token, loading, error, isAdmin, hasRole]);
+      hasRole,
+      isAdmin,
+      isVerifiedArtist,
+      canCreateAlbum,
+
+      login,
+      register,
+      logout,
+      completeLogin,
+
+      handleSocialLogin: (rawToken) => {
+        const clean = cleanToken(rawToken);
+        setToken(clean);
+        localStorage.setItem("token", clean);
+      },
+
+      setUser,
+    }),
+    [user, token, loading, error, hasRole, isAdmin, isVerifiedArtist, canCreateAlbum]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
