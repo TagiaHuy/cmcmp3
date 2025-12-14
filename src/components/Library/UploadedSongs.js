@@ -1,10 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Box, Button, Typography, CircularProgress, Stack, IconButton,
-  FormControl, Select, MenuItem
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  FormControl,
+  IconButton,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  Typography,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import UploadIcon from '@mui/icons-material/Upload';
+import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
 import UploadSongForm from '../Form/UploadSongForm';
 import EditSongForm from '../Form/EditSongForm';
 import SongList from '../SongList/SongList';
@@ -18,6 +30,12 @@ const UploadedSongs = () => {
   const [error, setError] = useState(null);
   const [editingSong, setEditingSong] = useState(null);
   const { notifySuccess, notifyError } = useNotifications();
+  const statusLabels = {
+    PUBLIC: 'Công khai',
+    PRIVATE: 'Riêng tư',
+    PENDING: 'Đang chờ',
+    REJECTED: 'Bị từ chối',
+  };
 
   const fetchUploadedSongs = useCallback(async (signal) => {
     try {
@@ -101,20 +119,31 @@ const UploadedSongs = () => {
 
   const renderSongActions = (song, defaultActions) => (
     <Stack direction="row" spacing={1} alignItems="center">
-      <FormControl size="small" sx={{ minWidth: 120 }}>
+      <FormControl
+        size="small"
+        sx={{
+          minWidth: 150,
+          backgroundColor: 'rgba(255,255,255,0.04)',
+          borderRadius: 1,
+          px: 1,
+        }}
+      >
         <Select
           value={song.status || ''}
           onChange={(e) => handleStatusChange(song.id, e.target.value)}
           displayEmpty
-          inputProps={{ 'aria-label': 'Song status' }}
+          renderValue={(value) =>
+            statusLabels[value] || 'Chọn trạng thái'
+          }
+          inputProps={{ 'aria-label': 'Trạng thái bài hát' }}
           // A user can only change status of their approved songs
           // to public or private. Admin moderation handles other states.
           disabled={song.status !== 'PUBLIC' && song.status !== 'PRIVATE'}
         >
-          <MenuItem value="PUBLIC">Công khai</MenuItem>
-          <MenuItem value="PRIVATE">Riêng tư</MenuItem>
-          <MenuItem value="PENDING" disabled>Đang chờ</MenuItem>
-          <MenuItem value="REJECTED" disabled>Bị từ chối</MenuItem>
+          <MenuItem value="PUBLIC">{statusLabels.PUBLIC}</MenuItem>
+          <MenuItem value="PRIVATE">{statusLabels.PRIVATE}</MenuItem>
+          <MenuItem value="PENDING" disabled>{statusLabels.PENDING}</MenuItem>
+          <MenuItem value="REJECTED" disabled>{statusLabels.REJECTED}</MenuItem>
         </Select>
       </FormControl>
       <IconButton
@@ -138,30 +167,87 @@ const UploadedSongs = () => {
   const renderContent = () => {
     if (loading) {
       return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 1 }}>
           <CircularProgress />
+          <Typography variant="body2" color="text.secondary">
+            Đang tải danh sách bài hát của bạn...
+          </Typography>
         </Box>
       );
     }
 
     if (error) {
-      return <Typography color="error" sx={{ textAlign: 'center', py: 5 }}>{error}</Typography>;
+      return (
+        <Alert severity="error" sx={{ my: 2 }}>
+          {error}
+        </Alert>
+      );
     }
 
     if (songs.length === 0) {
-      return <Typography sx={{ textAlign: 'center', py: 5 }}>Bạn chưa có bài hát nào được tải lên.</Typography>;
+      return (
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 3,
+            textAlign: 'center',
+            backgroundColor: 'rgba(255,255,255,0.02)',
+            borderStyle: 'dashed',
+          }}
+        >
+          <LibraryMusicIcon color="primary" sx={{ fontSize: 36, mb: 1 }} />
+          <Typography variant="h6" gutterBottom>
+            Chưa có bài hát nào
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Hãy tải lên bài hát của bạn để bắt đầu bộ sưu tập cá nhân.
+          </Typography>
+          <Button startIcon={<UploadIcon />} variant="contained" onClick={handleOpenModal}>
+            Tải bài hát đầu tiên
+          </Button>
+        </Paper>
+      );
     }
 
     return <SongList songs={songs} renderActions={renderSongActions} />;
   }
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Button variant="contained" onClick={handleOpenModal}>
-          Tải bài hát mới
-        </Button>
-      </Box>
+    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1100, mx: 'auto' }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, md: 3 },
+          borderRadius: 2,
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(16,185,129,0.06))',
+          border: '1px solid rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(6px)',
+        }}
+      >
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+          justifyContent="space-between"
+          spacing={1.5}
+          sx={{ mb: 2 }}
+        >
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+              Bài hát đã tải lên
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Quản lý, chỉnh sửa và điều chỉnh quyền hiển thị bài hát của bạn.
+            </Typography>
+          </Box>
+          <Button startIcon={<UploadIcon />} variant="contained" onClick={handleOpenModal}>
+            Tải bài hát mới
+          </Button>
+        </Stack>
+
+        <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.08)' }} />
+
+        {renderContent()}
+      </Paper>
 
       <UploadSongForm open={modalOpen} handleClose={handleCloseModal} />
       <EditSongForm
@@ -170,8 +256,6 @@ const UploadedSongs = () => {
         song={editingSong}
         onUpdated={handleSongUpdated}
       />
-
-      {renderContent()}
     </Box>
   );
 };

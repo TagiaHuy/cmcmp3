@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TextField, InputAdornment } from '@mui/material';
+import { Box, Chip, Stack, TextField, InputAdornment, Typography } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchResult from './SearchResult';
 import useSearch from '../../hooks/useSearch';
@@ -40,8 +40,18 @@ function Search() {
 
   const {handlePlay} =  useMediaPlayer();
 
+  const handleSelectGenre = (value) => {
+    setSearchTerm(value);
+    setAnchorEl(inputRef.current);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+  };
+
+  const genreChips = ['V-pop', 'Rap Việt', 'US-UK', 'Kpop'];
+
   return (
-    <div>
+    <Box>
       <TextField
         inputRef={inputRef}
         type="search"
@@ -72,8 +82,9 @@ function Search() {
             },
           },
         }}
+        value={searchTerm}
         onChange={handleSearch}
-        placeholder="Tìm kiếm bài hát, nghệ sĩ, lời bài hát..."
+        placeholder="Tìm kiếm bài hát, playlist, nghệ sĩ,..."
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -83,6 +94,28 @@ function Search() {
         }}
       />
 
+      <Stack direction="row" spacing={1} sx={{ mt: 1, ml: 0.5 }} alignItems="center" flexWrap="wrap">
+        <Typography variant="caption" color="text.secondary">
+          Thử nhanh:
+        </Typography>
+        {genreChips.map((genre) => (
+          <Chip
+            key={genre}
+            label={genre}
+            size="small"
+            color="secondary"
+            variant="outlined"
+            onClick={() => handleSelectGenre(genre)}
+            sx={{
+              height: 24,
+              borderRadius: 12,
+              fontWeight: 600,
+              color: (theme) => theme.palette.secondary.main,
+            }}
+          />
+        ))}
+      </Stack>
+
       <SearchResult
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -90,7 +123,7 @@ function Search() {
         results={searchResults} 
         handlePlay={handlePlay} // dùng trực tiếp từ hook
       />
-    </div>
+    </Box>
   );
 }
 

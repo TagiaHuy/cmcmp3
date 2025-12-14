@@ -1,4 +1,4 @@
-import React, { useState } from 'react'; // Import useState
+import React, { useState } from 'react';
 import { useMediaPlayer } from '../../../context/MediaPlayerContext';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -8,27 +8,30 @@ import {
   ListItem,
   ListItemAvatar,
   Avatar,
-  Menu // Import Menu
+  Menu,
+  CircularProgress // Import CircularProgress for loading
 } from '@mui/material';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link } from 'react-router-dom';
 
 import FavoriteButton from '../../Button/Specific/FavoriteButton';
 import MoreButton from '../../Button/Specific/MoreButton';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
-import DownloadMenuItem from '../../MenuItem/Specific/DownloadMenuItem'; // Import DownloadMenuItem
+import DownloadMenuItem from '../../MenuItem/Specific/DownloadMenuItem';
 import ShareMenu from '../../MenuItem/Specific/ShareMenu';
+import useRecommendations from '../../../hooks/useRecommendations'; // Import the new hook
 
 const ACTION_WIDTH = 96;
 
 const SuggestionList = () => {
-  const { recentlyPlayed, handlePlay, currentTrack, normalizeArtists } = useMediaPlayer();
+  const { handlePlay, currentTrack, normalizeArtists } = useMediaPlayer();
   const theme = useTheme();
+  const { recs: suggestions, loading, error } = useRecommendations(); // Use the new hook
 
-  const [anchorEl, setAnchorEl] = useState(null); // State for MoreButton menu
+  const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
   const handleMenuOpen = (event) => {
-    event.stopPropagation(); // Prevent other click events
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
 
@@ -36,13 +39,32 @@ const SuggestionList = () => {
     setAnchorEl(null);
   };
 
-  if (!currentTrack) return null;
+  if (loading) {
+    return (
+      <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const suggestions = recentlyPlayed.filter(
-    (track) => track.mediaSrc !== currentTrack?.mediaSrc
+  if (error) {
+    return (
+      <Box sx={{ mt: 4 }}>
+        <Typography color="error">Lỗi khi tải gợi ý.</Typography>
+      </Box>
+    );
+  }
+  
+  if (!suggestions.length) {
+    return null; // Don't render anything if there are no suggestions
+  }
+
+  // Filter out the currently playing track from suggestions
+  const filteredSuggestions = suggestions.filter(
+    (track) => track.id !== currentTrack?.id
   );
 
-  if (!suggestions.length) return null;
+  if (!filteredSuggestions.length) return null;
 
 
   return (
@@ -54,11 +76,10 @@ const SuggestionList = () => {
         Gợi ý cho bạn
       </Typography>
 
-      {/* List sát mép trái/phải */}
       <List disablePadding>
-        {suggestions.map((track, index) => (
+        {filteredSuggestions.map((track, index) => (
           <ListItem
-            key={index}
+            key={track.id || index}
             button
             disableGutters
             onClick={() => handlePlay(track)}
@@ -115,7 +136,6 @@ const SuggestionList = () => {
               </Box>
             </ListItemAvatar>
 
-            {/* text */}
             <Box
               className="song-text"
               sx={{
@@ -136,7 +156,6 @@ const SuggestionList = () => {
               </Typography>
             </Box>
 
-            {/* action buttons */}
             <Box
               className="song-actions"
               onClick={(e) => e.stopPropagation()}
@@ -155,7 +174,7 @@ const SuggestionList = () => {
                 transition: 'opacity .15s ease'
               }}
             >
-              <FavoriteButton size="small" aria-label="Yêu thích" />
+              <FavoriteButton songId={track.id} size="small" aria-label="Yêu thích" />
               <MoreButton size="small" aria-label="Thêm" onClick={handleMenuOpen} />
               <Menu
                 anchorEl={anchorEl}

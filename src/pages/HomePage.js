@@ -1,19 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { Box, CircularProgress, Typography } from "@mui/material";
-import usePlaylists from "../hooks/usePlaylists";
-import ZingChartSection from "../components/Chart/ZingChartSection";
-import TopPlaylistsSection from "../components/Card/TopPlaylistsSection";
-import TopSongsSection from "../components/Card/TopSongsSection";
-import PlaylistView from "../components/Card/PlaylistView";
-import Top100Section from "../components/Card/Top100Section";
-import BXHNewReleaseSection from "../components/Card/BXHNewReleaseSection";
-import RecentlyPlayed from "../components/Card/RecentlyPlayed";
-import Footer from "../layout/Footer";
-
-// ✅ NEW: dùng list album public cho HomePage
-import HomeAlbumList from "../components/Album/HomeAlbumList";
-import { getHomepageAlbums } from "../services/albumService";
-
+import React from 'react';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import usePlaylists from '../hooks/usePlaylists';
+import ZingChartSection from '../components/Chart/ZingChartSection';
+import TopPlaylistsSection from '../components/Card/TopPlaylistsSection';
+import TopSongsSection from '../components/Card/TopSongsSection';
+import RecommendationSection from '../components/Card/RecommendationSection';
+import PlaylistView from '../components/Card/PlaylistView';
+import Top100Section from '../components/Card/Top100Section';
+import BXHNewReleaseSection from '../components/Card/BXHNewReleaseSection';
+import RecentlyPlayed from '../components/Card/RecentlyPlayed';
+import Footer from '../layout/Footer';
 const HomePage = () => {
   const { playlists, loading, error } = usePlaylists();
 
@@ -56,31 +52,7 @@ const HomePage = () => {
     <Box sx={{ p: 3 }}>
       <TopPlaylistsSection />
       <TopSongsSection />
-
-      {/* ✅ Album nổi bật: PUBLIC (ai cũng thấy) */}
-      <Box sx={{ my: 5, ml: 11, mr: 11 }}>
-        <Typography
-          variant="h5"
-          component="h2"
-          gutterBottom
-          sx={{ color: "text.primary", fontWeight: "bold" }}
-        >
-          Album nổi bật
-        </Typography>
-
-        {albumsLoading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-            <CircularProgress size={24} />
-          </Box>
-        ) : albumsError ? (
-          <Typography color="error" sx={{ mt: 2 }}>
-            Lỗi tải album: {albumsError.message}
-          </Typography>
-        ) : (
-          <HomeAlbumList albums={albums} />
-        )}
-      </Box>
-
+      <RecommendationSection />
       <RecentlyPlayed />
 
       <Top100Section />
