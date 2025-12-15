@@ -22,16 +22,16 @@ import useSearch from '../../hooks/useSearch'; // Import useSearch
 import Loading from '../Loading/Loading';
 import usePlaylists from '../../hooks/usePlaylists';
 
-const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
-  const [name, setName] = useState(playlist.title);
-  const [description, setDescription] = useState(playlist.description || '');
-  const [isPrivate, setIsPrivate] = useState(playlist.privacy === 'PRIVATE');
+const EditPlaylistForm = ({ playlist, onSubmit = () => {}, onCancel }) => {
+  const [name, setName] = useState(playlist?.title || '');
+  const [description, setDescription] = useState(playlist?.description || '');
+  const [isPrivate, setIsPrivate] = useState(playlist?.privacy === 'PRIVATE');
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState(playlist.imageUrl || null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(playlist?.imageUrl || null);
   const [currentSongs, setCurrentSongs] = useState([]);
   const [loadingSongs, setLoadingSongs] = useState(true);
   const [errorSongs, setErrorSongs] = useState(null);
-  const [selectedArtists, setSelectedArtists] = useState([]);
+  const [selectedArtists, setSelectedArtists] = useState(playlist?.artists || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { notifySuccess, notifyError } = useNotifications();
 
@@ -57,13 +57,16 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
         setLoadingSongs(false);
       }
     };
-    fetchCurrentSongs();
+    if (playlist?.id) { // Only fetch if playlist and its ID exist
+      fetchCurrentSongs();
+    }
+
 
     // Initialize selectedArtists from playlist.artists if available
-    if (playlist.artists && Array.isArray(playlist.artists)) {
+    if (playlist?.artists && Array.isArray(playlist.artists)) {
       setSelectedArtists(playlist.artists);
     }
-  }, [playlist.id, getSongsForPlaylist, playlist.artists, notifyError]); // Added playlist.artists to dependency array
+  }, [playlist?.id, getSongsForPlaylist, playlist?.artists, notifyError]); // Added playlist?.artists to dependency array
 
   const handleAddSong = async (song) => {
     try {
@@ -102,6 +105,7 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
     if (artistIds) {
         formData.append('artistIds', artistIds);
     }
+    console.log('onSubmit in handleSubmit:', onSubmit); // Debug log
     try {
       await onSubmit(playlist.id, formData);
     } finally {
@@ -116,6 +120,8 @@ const EditPlaylistForm = ({ playlist, onSubmit, onCancel }) => {
       imageInputRef.current.value = '';
     }
   };
+
+  if (!playlist) return null; // Moved this to here!
 
   if (loadingSongs || loadingSearchResults) {
     return (

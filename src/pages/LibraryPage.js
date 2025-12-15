@@ -47,7 +47,7 @@ const LibraryPage = () => {
         <Tabs value={value} onChange={handleChange} aria-label="Library tabs">
           <Tab label="Bài hát" id="library-tab-0" />
           <Tab label="Album" id="library-tab-1" />
-          <Tab label="Playlist" id="library-tab-3" /> {/* New tab for Playlists */}
+          <Tab label="Playlist" id="library-tab-2" />
         </Tabs>
       </Box>
 
@@ -57,7 +57,7 @@ const LibraryPage = () => {
       <TabPanel value={value} index={1}>
         <AlbumsTab />
       </TabPanel>
-      <TabPanel value={value} index={3}> {/* New TabPanel for Playlists */}
+      <TabPanel value={value} index={2}> {/* Corrected TabPanel index for Playlists */}
         <PlaylistsTab />
       </TabPanel>
     </Box>
