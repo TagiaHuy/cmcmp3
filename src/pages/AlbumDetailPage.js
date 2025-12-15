@@ -169,7 +169,7 @@ const AlbumDetailPage = () => {
             <Tab label="Songs" />
             <Tab label="Comments" />
           </Tabs>
-          {selectedTab === 0 && <SongList songs={songs} />}
+          {selectedTab === 0 && <SongList songs={songs} album={album} />}
           {selectedTab === 1 && <Comment albumId={albumId} />} {/* Pass albumId to Comment */}
         </Box>
       </Box>

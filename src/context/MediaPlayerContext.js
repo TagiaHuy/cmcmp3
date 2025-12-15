@@ -177,8 +177,12 @@ export const MediaPlayerProvider = ({ children }) => {
 
   // ===== API phát nhạc =====
 
-  const handlePlay = useCallback((track) => {
+  const handlePlay = useCallback((track, album = null) => { // Added album parameter
     if (!track || !track.mediaSrc) return;
+
+    if (album) { // If album info is provided, add it to recently played albums
+      addRecentlyPlayedAlbum(album);
+    }
 
     setQueue(prev => {
       const list = Array.isArray(prev) ? [...prev] : [];
