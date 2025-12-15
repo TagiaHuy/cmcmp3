@@ -250,3 +250,4 @@ export const getFavoritePlaylists = async (signal) => {
 
   return Array.isArray(data) ? data : [];
 };
+
