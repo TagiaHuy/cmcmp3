@@ -1,6 +1,6 @@
 // src/components/Carousel/SongCarousel.jsx
 import React, { useState } from 'react';
-import { Box, Typography, IconButton, Grid, useTheme } from '@mui/material';
+import { Box, Typography, IconButton, Grid } from '@mui/material';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
 import SongCardDetailed from '../Card/SongCardDetailed';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -9,8 +9,6 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 // Re-add 'rows' prop, defaulting to 1 for backward compatibility.
 const SongCarousel = ({ title, songs = [], columns = 3, rows = 1, onPlay }) => {
   const [startIndex, setStartIndex] = useState(0);
-  const theme = useTheme();
-  const headerColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
   const { normalizeArtists } = useMediaPlayer();
 
   // Calculate the total number of items visible per page.
@@ -51,8 +49,7 @@ const SongCarousel = ({ title, songs = [], columns = 3, rows = 1, onPlay }) => {
           variant="h5"
           component="h2"
           gutterBottom
-          fontWeight={700}
-          sx={{ color: headerColor, mb: 4 }}
+          sx={{ color: (theme) => theme.palette.text.primary }}
         >
           {title}
         </Typography>
