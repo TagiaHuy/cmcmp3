@@ -5,47 +5,38 @@ import {
   Button,
   CircularProgress,
   Divider,
-  FormControl,
   IconButton,
-  MenuItem,
   Paper,
-  Select,
   Stack,
   Typography,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import UploadIcon from '@mui/icons-material/Upload';
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
-import UploadSongForm from '../Form/UploadSongForm';
-import EditSongForm from '../Form/EditSongForm';
-import SongList from '../SongList/SongList';
-import { getUploadedSongs, updateUploadedSongStatus, deleteSong } from '../../services/songService';
+import CreateAlbumForm from '../Album/CreateAlbumForm';
+import EditAlbumForm from '../Album/EditAlbumForm';
+import AlbumList from '../Album/AlbumList';
+import { getAlbumsMe, deleteAlbum } from '../../services/albumService';
 import { useNotifications } from '../../hooks/useNotifications';
 
-const UploadedSongs = () => {
+const UploadedAlbums = () => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [songs, setSongs] = useState([]);
+  const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editingSong, setEditingSong] = useState(null);
+  const [editingAlbum, setEditingAlbum] = useState(null);
   const { notifySuccess, notifyError } = useNotifications();
-  const statusLabels = {
-    PUBLIC: 'Công khai',
-    PRIVATE: 'Riêng tư',
-    PENDING: 'Đang chờ',
-    REJECTED: 'Bị từ chối',
-  };
 
-  const fetchUploadedSongs = useCallback(async (signal) => {
+  const fetchUploadedAlbums = useCallback(async (signal) => {
     try {
       setLoading(true);
       setError(null);
-      const uploadedSongs = await getUploadedSongs('', signal);
-      setSongs(uploadedSongs || []);
+      const uploadedAlbums = await getAlbumsMe(signal); 
+      setAlbums(uploadedAlbums || []);
     } catch (e) {
       if (e?.name !== 'AbortError') {
-        setError('Không thể tải danh sách bài hát đã tải lên.');
+        setError('Không thể tải danh sách album đã tạo.');
         console.error(e);
       }
     } finally {
@@ -55,9 +46,9 @@ const UploadedSongs = () => {
 
   useEffect(() => {
     const ac = new AbortController();
-    fetchUploadedSongs(ac.signal);
+    fetchUploadedAlbums(ac.signal);
     return () => ac.abort();
-  }, [fetchUploadedSongs]);
+  }, [fetchUploadedAlbums]);
 
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -65,85 +56,59 @@ const UploadedSongs = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    // Refresh the list after upload
+    // Refresh the list after creation
     const ac = new AbortController();
-    fetchUploadedSongs(ac.signal);
+    fetchUploadedAlbums(ac.signal);
   };
 
-  const handleEditClick = (song) => {
-    setEditingSong(song);
+  const handleEditClick = (album) => {
+    setEditingAlbum(album);
   };
 
   const handleEditClose = () => {
-    setEditingSong(null);
+    setEditingAlbum(null);
   };
 
-  const handleSongUpdated = (updatedSong) => {
-    setSongs((prev) =>
-      prev.map((song) => (song.id === updatedSong.id ? updatedSong : song))
+  const handleAlbumUpdated = (updatedAlbum) => {
+    setAlbums((prev) =>
+      prev.map((album) => (album.id === updatedAlbum.id ? updatedAlbum : album))
     );
     // also refetch to be sure
     const ac = new AbortController();
-    fetchUploadedSongs(ac.signal);
+    fetchUploadedAlbums(ac.signal);
   };
 
-  const handleStatusChange = async (songId, newStatus) => {
-    try {
-      const updatedSong = await updateUploadedSongStatus(songId, newStatus);
-      setSongs((prevSongs) =>
-        prevSongs.map((s) => (s.id === songId ? updatedSong : s))
-      );
-      notifySuccess('Cập nhật trạng thái bài hát thành công!');
-    } catch (err) {
-      notifyError(err.message || 'Lỗi khi cập nhật trạng thái.');
-      // Optional: Re-fetch to revert optimistic update on failure
-      const ac = new AbortController();
-      fetchUploadedSongs(ac.signal);
-    }
-  };
-
-  const handleDeleteSong = async (songId) => {
-    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa bài hát này?');
+  const handleDeleteAlbum = async (albumId) => {
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa album này? Tất cả bài hát trong album sẽ không bị ảnh hưởng.');
     if (!confirmed) {
       return;
     }
 
     try {
-      await deleteSong(songId);
-      setSongs((prevSongs) => prevSongs.filter((song) => song.id !== songId));
-      notifySuccess('Xóa bài hát thành công!');
+      await deleteAlbum(albumId);
+      setAlbums((prevAlbums) => prevAlbums.filter((album) => album.id !== albumId));
+      notifySuccess('Xóa album thành công!');
     } catch (err) {
-      notifyError(err.message || 'Lỗi khi xóa bài hát.');
+      notifyError(err.message || 'Lỗi khi xóa album.');
     }
   };
 
-  const renderSongActions = (song, defaultActions) => (
+  const renderAlbumActions = (album) => (
     <Stack direction="row" spacing={1} alignItems="center">
-      <FormControl
-        size="small"
-        sx={{
-          minWidth: 150,
-          backgroundColor: 'rgba(255,255,255,0.04)',
-          borderRadius: 1,
-          px: 1,
-        }}
-      >
-      </FormControl>
       <IconButton
         size="small"
         color="primary"
-        onClick={() => handleEditClick(song)}
+        onClick={() => handleEditClick(album)}
       >
         <EditIcon fontSize="small" />
       </IconButton>
       <IconButton
         size="small"
         color="error"
-        onClick={() => handleDeleteSong(song.id)}
+        onClick={() => handleDeleteAlbum(album.id)}
       >
         <DeleteIcon fontSize="small" />
       </IconButton>
-      {defaultActions}
     </Stack>
   );
 
@@ -153,7 +118,7 @@ const UploadedSongs = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 1 }}>
           <CircularProgress />
           <Typography variant="body2" color="text.secondary">
-            Đang tải danh sách bài hát của bạn...
+            Đang tải danh sách album của bạn...
           </Typography>
         </Box>
       );
@@ -167,7 +132,7 @@ const UploadedSongs = () => {
       );
     }
 
-    if (songs.length === 0) {
+    if (albums.length === 0) {
       return (
         <Paper
           variant="outlined"
@@ -180,19 +145,19 @@ const UploadedSongs = () => {
         >
           <LibraryMusicIcon color="primary" sx={{ fontSize: 36, mb: 1 }} />
           <Typography variant="h6" gutterBottom>
-            Chưa có bài hát nào
+            Chưa có album nào
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Hãy tải lên bài hát của bạn để bắt đầu bộ sưu tập cá nhân.
+            Hãy tạo album đầu tiên để sắp xếp bộ sưu tập của bạn.
           </Typography>
-          <Button startIcon={<UploadIcon />} variant="contained" onClick={handleOpenModal}>
-            Tải bài hát đầu tiên
+          <Button startIcon={<AddPhotoAlternateIcon />} variant="contained" onClick={handleOpenModal}>
+            Tạo album đầu tiên
           </Button>
         </Paper>
       );
     }
 
-    return <SongList songs={songs} renderActions={renderSongActions} />;
+    return <AlbumList albums={albums} renderActions={renderAlbumActions} />;
   }
 
   return (
@@ -216,14 +181,14 @@ const UploadedSongs = () => {
         >
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-              Bài hát đã tải lên
+              Album đã tạo
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Quản lý, chỉnh sửa và điều chỉnh quyền hiển thị bài hát của bạn.
+              Quản lý và chỉnh sửa các album cá nhân của bạn.
             </Typography>
           </Box>
-          <Button startIcon={<UploadIcon />} variant="contained" onClick={handleOpenModal}>
-            Tải bài hát mới
+          <Button startIcon={<AddPhotoAlternateIcon />} variant="contained" onClick={handleOpenModal}>
+            Tạo album mới
           </Button>
         </Stack>
 
@@ -232,15 +197,15 @@ const UploadedSongs = () => {
         {renderContent()}
       </Paper>
 
-      <UploadSongForm open={modalOpen} handleClose={handleCloseModal} />
-      <EditSongForm
-        open={Boolean(editingSong)}
+      <CreateAlbumForm open={modalOpen} handleClose={handleCloseModal} onCreated={handleAlbumUpdated} />
+      <EditAlbumForm
+        open={Boolean(editingAlbum)}
         handleClose={handleEditClose}
-        song={editingSong}
-        onUpdated={handleSongUpdated}
+        album={editingAlbum}
+        onUpdated={handleAlbumUpdated}
       />
     </Box>
   );
 };
 
-export default UploadedSongs;
+export default UploadedAlbums;

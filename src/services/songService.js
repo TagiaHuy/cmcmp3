@@ -16,7 +16,7 @@ const normalizeArtists = (artists) => {
 const toArray = (value) => {
   if (!value) return [];
   if (Array.isArray(value)) return value;
-  return [value];
+  return [value]; 
 };
 
 // 🟢 Chuẩn hóa tags (tránh bị object)
@@ -28,7 +28,7 @@ const normalizeTags = (tags) => {
   return String(tags);
 };
 
-const mapSong = (song) => {
+export const mapSong = (song) => {
   if (!song) return null;
   const artistEntities = toArray(song.artists);
   const tagEntities = toArray(song.tags);

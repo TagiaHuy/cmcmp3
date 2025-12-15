@@ -1,48 +1,91 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
+  Autocomplete,
   Box,
-  TextField,
   Button,
-  FormControlLabel,
-  Switch,
+  IconButton,
+  Modal,
+  TextField,
   Typography,
   CircularProgress,
   List,
   ListItem,
   ListItemText,
-  IconButton,
-  Autocomplete,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
-import useArtists from '../../hooks/useArtists';
 import { useNotifications } from '../../hooks/useNotifications';
-import { getUploadedSongs } from '../../services/songService';
+import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+import useArtists from '../../hooks/useArtists';
 import Loading from '../Loading/Loading';
+import { updateAlbum } from '../../services/albumService';
+import { getUploadedSongs } from '../../services/songService';
 import useUserAlbums from '../../hooks/useUserAlbums';
 
-const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
-  const [name, setName] = useState(album.title);
-  const [description, setDescription] = useState(album.description || '');
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState(album.imageUrl || null);
-  const [currentSongs, setCurrentSongs] = useState([]);
-  const [loadingSongs, setLoadingSongs] = useState(true);
-  const [errorSongs, setErrorSongs] = useState(null);
-  const [selectedArtists, setSelectedArtists] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { notifySuccess, notifyError } = useNotifications();
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 420,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+  maxHeight: '90vh',
+  overflowY: 'auto',
+};
 
+const EditAlbumForm = ({ open, handleClose, album, onUpdated }) => {
+  const { artists: artistOptions } = useArtists();
+  const { notifySuccess, notifyError, notifyWarning } = useNotifications();
+  const { updateAlbumSongsList, getSongsForAlbum } = useUserAlbums(); // For song management
+
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedArtists, setSelectedArtists] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // States for song management within album
+  const [currentSongs, setCurrentSongs] = useState([]);
+  const [loadingCurrentSongs, setLoadingCurrentSongs] = useState(false);
+  const [errorCurrentSongs, setErrorCurrentSongs] = useState(null);
   const [songSearchQuery, setSongSearchQuery] = useState('');
   const [songSearchResults, setSongSearchResults] = useState([]);
   const [loadingSongSearch, setLoadingSongSearch] = useState(false);
 
-  const { updateAlbumSongsList, getSongsForAlbum } = useUserAlbums();
-  const { artists } = useArtists();
   const imageInputRef = useRef(null);
 
-  // Effect for debounced search
+  // Effect to populate form state when album changes
+  useEffect(() => {
+    if (open && album) {
+      setName(album.title || '');
+      setDescription(album.description || '');
+      setSelectedArtists(album.artistEntities || []);
+      setImageFile(null);
+      setImagePreviewUrl(album.imageUrl || null);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+      
+      // Reset song search on modal open
+      setSongSearchQuery('');
+      setSongSearchResults([]);
+    } else if (!open) {
+      // Reset form when modal closes
+      setName('');
+      setDescription('');
+      setSelectedArtists([]);
+      setImageFile(null);
+      setImagePreviewUrl(null);
+      setSongSearchQuery('');
+      setSongSearchResults([]);
+      setCurrentSongs([]);
+    }
+  }, [album, open]);
+
+  // Effect for debounced song search
   useEffect(() => {
     if (!songSearchQuery) {
       setSongSearchResults([]);
@@ -53,17 +96,11 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
     const handler = setTimeout(() => {
       const ac = new AbortController();
       getUploadedSongs(songSearchQuery, ac.signal)
-        .then(results => {
-          setSongSearchResults(results);
-        })
+        .then(results => setSongSearchResults(results))
         .catch(err => {
-          if (err.name !== 'AbortError') {
-            notifyError("Lỗi khi tìm kiếm bài hát của bạn.");
-          }
+          if (err.name !== 'AbortError') notifyError("Lỗi khi tìm kiếm bài hát của bạn.");
         })
-        .finally(() => {
-          setLoadingSongSearch(false);
-        });
+        .finally(() => setLoadingSongSearch(false));
       
       return () => ac.abort();
     }, 500); // 500ms debounce
@@ -73,72 +110,67 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
     };
   }, [songSearchQuery, notifyError]);
 
+  // Effect to fetch current songs in the album
   useEffect(() => {
+    if (!open || !album) { // Only fetch if modal is open and album is valid
+      setCurrentSongs([]);
+      setLoadingCurrentSongs(false);
+      return;
+    }
     const fetchCurrentSongs = async () => {
       try {
-        setLoadingSongs(true);
+        setLoadingCurrentSongs(true);
         const fetchedCurrentSongs = await getSongsForAlbum(album.id);
         setCurrentSongs(fetchedCurrentSongs);
       } catch (err) {
         if (err?.name !== 'AbortError' && !err.message.includes('401')) {
-          setErrorSongs(err);
+          setErrorCurrentSongs(err);
           notifyError('Lỗi khi tải các bài hát trong album.');
         }
       } finally {
-        setLoadingSongs(false);
+        setLoadingCurrentSongs(false);
       }
     };
     fetchCurrentSongs();
+  }, [album, open, getSongsForAlbum, notifyError]);
 
-    if (album.artists && Array.isArray(album.artists)) {
-      setSelectedArtists(album.artists);
+  const disabled = !album;
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (disabled) return;
+
+    if (!name.trim()) {
+      notifyWarning('Tên album không được để trống.');
+      return;
     }
-  }, [album.id, getSongsForAlbum, album.artists, notifyError]);
 
-  const handleAddSong = async (song) => {
-    try {
-      await updateAlbumSongsList(album.id, { add: [song.id] });
-      setCurrentSongs((prev) => [...prev, song]);
-      setSongSearchQuery('');
-      setSongSearchResults([]);
-      notifySuccess(`Đã thêm "${song.title}" vào album.`);
-    } catch (err) {
-      console.error('Failed to add song:', err);
-      notifyError(err.message || 'Lỗi khi thêm bài hát vào album.');
-    }
-  };
-
-  const handleRemoveSong = async (songId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa bài hát này khỏi album không?')) {
-      try {
-        await updateAlbumSongsList(album.id, { remove: [songId] });
-        setCurrentSongs((prev) => prev.filter((s) => s.id !== songId));
-      } catch (err) {
-        console.error('Failed to remove song:', err);
-      }
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
     const formData = new FormData();
-    formData.append('title', name);
-    formData.append('description', description);
+    formData.append('title', name.trim());
+    formData.append('description', description || '');
+    
+    const artistIds = selectedArtists.map((artist) => artist.id).filter(Boolean);
+    if (artistIds.length) {
+      formData.append('artistIds', artistIds.join(','));
+    }
+    
     if (imageFile) {
       formData.append('imageFile', imageFile);
     }
-    const artistIds = selectedArtists.map(artist => artist.id).join(',');
-    if (artistIds) {
-        formData.append('artistIds', artistIds);
-    }
+
     try {
-      await onSubmit(album.id, formData);
+      setIsLoading(true);
+      const updatedAlbum = await updateAlbum(album.id, formData);
+      notifySuccess('Cập nhật album thành công!');
+      onUpdated?.(updatedAlbum);
+      handleClose();
+    } catch (error) {
+      notifyError(error.message || 'Cập nhật album thất bại.');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
-  
+
   const handleRemoveImageFile = () => {
     setImageFile(null);
     setImagePreviewUrl(album?.imageUrl || null);
@@ -147,90 +179,107 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
     }
   };
 
-  if (loadingSongs) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // Handlers for song management
+  const handleAddSong = async (songToAdd) => {
+    if (album && songToAdd) {
+      try {
+        await updateAlbumSongsList(album.id, { add: [songToAdd.id] });
+        setCurrentSongs((prev) => [...prev, songToAdd]);
+        setSongSearchQuery('');
+        setSongSearchResults([]);
+        notifySuccess(`Đã thêm "${songToAdd.title}" vào album.`);
+      } catch (err) {
+        console.error('Failed to add song:', err);
+        notifyError(err.message || 'Lỗi khi thêm bài hát vào album.');
+      }
+    }
+  };
 
-  if (errorSongs) {
-    return (
-      <Typography color="error" sx={{ py: 4 }}>
-        Lỗi: {errorSongs?.message}
-      </Typography>
-    );
-  }
+  const handleRemoveSong = async (songId) => {
+    if (album && window.confirm('Bạn có chắc chắn muốn xóa bài hát này khỏi album không?')) {
+      try {
+        await updateAlbumSongsList(album.id, { remove: [songId] });
+        setCurrentSongs((prev) => prev.filter((s) => s.id !== songId));
+        notifySuccess('Đã xóa bài hát khỏi album.');
+      } catch (err) {
+        console.error('Failed to remove song:', err);
+        notifyError(err.message || 'Lỗi khi xóa bài hát khỏi album.');
+      }
+    }
+  };
 
   return (
-    <>
-      {isSubmitting && <Loading />}
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          maxHeight: '70vh',
-          overflowY: 'auto',
-          flexShrink: 1,
-          p: 2,
-        }}
-      >
+    <Modal
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="edit-album-modal-title"
+    >
+      <Box sx={modalStyle} component="form" onSubmit={handleSubmit}>
+        {isLoading && <Loading />}
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <Typography id="edit-album-modal-title" variant="h6" component="h2" color="primary.main">
+          Chỉnh sửa Album
+        </Typography>
+
         <TextField
-          label="Tên Album"
-          variant="outlined"
+          margin="normal"
+          required
           fullWidth
+          id="name"
+          label="Tên Album"
+          name="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          required
-          InputLabelProps={{
-            sx: { color: 'text.primary', fontWeight: 600 }
-          }}
-          disabled={isSubmitting}
         />
+
         <TextField
-          label="Mô tả"
-          variant="outlined"
+          margin="normal"
           fullWidth
+          id="description"
+          label="Mô tả"
+          name="description"
           multiline
           rows={4}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          InputLabelProps={{
-            sx: { color: 'text.primary', fontWeight: 600 }
-          }}
-          disabled={isSubmitting}
         />
+
         <Autocomplete
-            multiple
-            id="artist-select"
-            options={artists}
-            getOptionLabel={(option) => option.name}
-            value={selectedArtists}
-            onChange={(event, newValue) => {
-              setSelectedArtists(newValue);
-            }}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    margin="normal"
-                    fullWidth
-                    name="artist"
-                    label="Nghệ sĩ liên kết"
-                />
-            )}
-            disabled={isSubmitting}
+          multiple
+          id="artist-edit-select"
+          options={artistOptions}
+          getOptionLabel={(option) => option?.name || ''}
+          value={selectedArtists}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          onChange={(event, newValue) => setSelectedArtists(newValue)}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              margin="normal"
+              fullWidth
+              label="Nghệ sĩ"
+            />
+          )}
         />
+
         <Button
           variant="contained"
           component="label"
           fullWidth
-          disabled={isSubmitting}
+          sx={{ mt: 2 }}
         >
-          Chọn ảnh mới
+          Thay ảnh bìa
           <input
             type="file"
             hidden
@@ -241,49 +290,55 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
               setImageFile(file);
               if (file) {
                 setImagePreviewUrl(URL.createObjectURL(file));
+              } else {
+                setImagePreviewUrl(album?.imageUrl || null);
               }
             }}
-            disabled={isSubmitting}
           />
         </Button>
         {imageFile && (
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-            <Typography sx={{ flexGrow: 1, color:"text.primary" }} noWrap>{imageFile.name}</Typography>
+            <Typography sx={{ flexGrow: 1 }} noWrap>{imageFile.name}</Typography>
             <IconButton onClick={handleRemoveImageFile} size="small">
               <CloseIcon fontSize="small" />
             </IconButton>
           </Box>
         )}
+
         {imagePreviewUrl && (
           <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <img src={imagePreviewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
+            <img
+              src={imagePreviewUrl}
+              alt="Album cover preview"
+              style={{ maxWidth: '100%', height: 'auto', maxHeight: 200, borderRadius: 8 }}
+            />
           </Box>
         )}
 
-        <Typography variant="h6" mt={2} color="text.primary" fontWeight={600}>Bài hát trong Album</Typography>
-        {currentSongs.length === 0 ? (
-          <Typography variant="body2" color="text.primary">Chưa có bài hát nào trong album.</Typography>
+        {/* Song Management Section */}
+        <Typography variant="h6" mt={3} color="text.primary">Bài hát trong Album</Typography>
+        {loadingCurrentSongs && <CircularProgress size={20} />}
+        {errorCurrentSongs && <Typography color="error">{errorCurrentSongs.message}</Typography>}
+        {!loadingCurrentSongs && currentSongs.length === 0 ? (
+          <Typography variant="body2">Chưa có bài hát nào trong album.</Typography>
         ) : (
           <List dense>
             {currentSongs.map((song) => (
               <ListItem
                 key={song.id}
                 secondaryAction={
-                  <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveSong(song.id)} disabled={isSubmitting}>
+                  <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveSong(song.id)} disabled={isLoading}>
                     <DeleteIcon />
                   </IconButton>
                 }
               >
-                <ListItemText
-                  primary={<Typography color="text.primary" fontWeight={500}>{song.title}</Typography>}
-                  secondary={<Typography color="text.primary" variant="body2">{song.artistName}</Typography>}
-                />
+                <ListItemText primary={song.title} secondary={song.artists} />
               </ListItem>
             ))}
           </List>
         )}
 
-        <Typography variant="h6" mt={2} color="text.primary" fontWeight={600}>Thêm bài hát</Typography>
+        <Typography variant="h6" mt={3} color="text.primary">Thêm bài hát</Typography>
         <TextField
           label="Tìm kiếm bài hát của bạn"
           variant="outlined"
@@ -291,26 +346,23 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
           value={songSearchQuery}
           onChange={(e) => setSongSearchQuery(e.target.value)}
           sx={{ mb: 2 }}
-          disabled={isSubmitting}
+          disabled={isLoading}
         />
         {loadingSongSearch && <CircularProgress size={24} />}
-        {!loadingSongSearch && songSearchResults.length > 0 && (
+        {!loadingSongSearch && songSearchQuery && songSearchResults.length > 0 && (
           <List dense>
             {songSearchResults
-              .filter(song => !currentSongs.some(s => s.id === song.id))
+              .filter(song => !currentSongs.some(s => s.id === song.id)) // Filter out already added songs
               .map((song) => (
                 <ListItem
                   key={song.id}
                   secondaryAction={
-                    <IconButton edge="end" aria-label="add" onClick={() => handleAddSong(song)} disabled={isSubmitting}>
+                    <IconButton edge="end" aria-label="add" onClick={() => handleAddSong(song)} disabled={isLoading}>
                       <AddIcon />
                     </IconButton>
                   }
                 >
-                  <ListItemText
-                    primary={<Typography color="text.primary" fontWeight={500}>{song.title}</Typography>}
-                    secondary={<Typography color="text.primary" variant="body2">{song.artists}</Typography>}
-                  />
+                  <ListItemText primary={song.title} secondary={song.artists} />
                 </ListItem>
               ))}
           </List>
@@ -318,16 +370,18 @@ const EditAlbumForm = ({ album, onSubmit, onCancel }) => {
         {!loadingSongSearch && songSearchQuery && songSearchResults.length === 0 && (
           <Typography variant="body2" color="text.secondary">Không tìm thấy bài hát nào.</Typography>
         )}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
-          <Button variant="outlined" onClick={onCancel} disabled={isSubmitting}>
-            Hủy
-          </Button>
-          <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
-            Lưu thay đổi
-          </Button>
-        </Box>
+
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          sx={{ mt: 3, mb: 2 }}
+          disabled={disabled || isLoading}
+        >
+          Lưu thay đổi
+        </Button>
       </Box>
-    </>
+    </Modal>
   );
 };
 

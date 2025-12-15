@@ -184,7 +184,7 @@ const UserAlbums = ({ isHomepage = false }) => {
             />
           )}
         </Box>
-      </Modal>
+      </Modal> 
     </Box>
   );
 };
