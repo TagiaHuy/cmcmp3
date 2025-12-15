@@ -18,17 +18,15 @@ const RecommendationSection = () => {
   }
 
   if (error) {
-    // Optionally, render nothing or an error message
     return null;
   }
 
   if (!recs || recs.length === 0) {
-    // Render nothing if there are no recommendations
     return null;
   }
 
   return (
-    <Box sx={{ my: 4 }}>
+    <Box sx={{ my: 5, ml: 11, mr: 11 }}>
       <SongCarousel
         title="Gợi ý cho bạn"
         songs={recs}
