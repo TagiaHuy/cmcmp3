@@ -7,6 +7,8 @@ import TopPlaylistsSection from "../components/Card/TopPlaylistsSection";
 import TopSongsSection from "../components/Card/TopSongsSection";
 import RecommendationSection from "../components/Card/RecommendationSection";
 import PlaylistView from "../components/Card/PlaylistView";
+import Top100Section from "../components/Card/Top100Section";
+import BXHNewReleaseSection from "../components/Card/BXHNewReleaseSection";
 import RecentlyPlayed from "../components/Card/RecentlyPlayed";
 import Footer from "../layout/Footer";
 
@@ -83,7 +85,10 @@ const HomePage = () => {
       </Box>
 
       <RecentlyPlayed />
-      
+
+      <Top100Section />
+      <BXHNewReleaseSection />
+
       <PlaylistView playlist={l1} banners={playlists.map((p) => ({ ...p, title: p.name }))} />
       <PlaylistView playlist={l2} />
       <PlaylistView playlist={l3} />
