@@ -92,8 +92,10 @@ const LoginForm = () => {
   };
   const helperTextProps = { sx: { color: 'error.main', fontSize: '14px', fontWeight: 600 } };
 
-  const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+const handleGoogleLogin = () => {
+    const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+
+    window.location.href = `${API_URL}/oauth2/authorization/google`;
   };
 
   return (
