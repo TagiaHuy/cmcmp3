@@ -332,7 +332,7 @@ const EditAlbumForm = ({ open, handleClose, album, onUpdated }) => {
                   </IconButton>
                 }
               >
-                <ListItemText primary={song.title} secondary={song.artists} />
+                <ListItemText primary={song.title} secondary={song.artists} primaryTypographyProps={{ color: 'white' }} />
               </ListItem>
             ))}
           </List>
@@ -362,7 +362,7 @@ const EditAlbumForm = ({ open, handleClose, album, onUpdated }) => {
                     </IconButton>
                   }
                 >
-                  <ListItemText primary={song.title} secondary={song.artists} />
+                  <ListItemText primary={song.title} secondary={song.artists} primaryTypographyProps={{ color: 'white' }} />
                 </ListItem>
               ))}
           </List>
