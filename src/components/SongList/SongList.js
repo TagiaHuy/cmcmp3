@@ -8,7 +8,7 @@ import API_BASE_URL from '../../config';
 /* -------------------------------------------------------------------
    ⭐ Renderer — chỉ render UI, không fetch, không dùng hook.
 ------------------------------------------------------------------- */
-const SongListRenderer = ({ songs, onPlay, currentTrack, renderActions }) => {
+const SongListRenderer = ({ songs, onPlay, currentTrack, renderActions, album }) => {
   if (!Array.isArray(songs) || songs.length === 0) {
     return (
       <Typography
@@ -47,7 +47,7 @@ const SongListRenderer = ({ songs, onPlay, currentTrack, renderActions }) => {
             key={song.id || index}
             song={{ ...song, artists: artistText }}
             index={index}
-            onPlay={() => onPlay(unifiedTrack)}
+            onPlay={() => onPlay(unifiedTrack, album)} // Pass album here
             isPlaying={isPlaying}
             renderActions={renderActions}
           />
@@ -60,7 +60,7 @@ const SongListRenderer = ({ songs, onPlay, currentTrack, renderActions }) => {
 /* -------------------------------------------------------------------
    ⭐ SongList chính — xử lý fetch hoặc nhận sẵn dữ liệu
 ------------------------------------------------------------------- */
-const SongList = ({ songIds, songs: songsFromProps, renderActions }) => {
+const SongList = ({ songIds, songs: songsFromProps, renderActions, album }) => {
   const { handlePlay, currentTrack } = useMediaPlayer();
 
   // ⭐ Chỉ fetch khi không có songs được truyền thẳng vào props
@@ -93,6 +93,7 @@ const SongList = ({ songIds, songs: songsFromProps, renderActions }) => {
       onPlay={handlePlay}
       currentTrack={currentTrack}
       renderActions={renderActions}
+      album={album} // Pass album here
     />
   );
 };

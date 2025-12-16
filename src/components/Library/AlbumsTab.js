@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, ButtonGroup } from '@mui/material';
 import FavoriteAlbums from '../Album/FavoriteAlbums';
-import UserAlbums from '../Album/UserAlbums';
+import UploadedAlbums from './UploadedAlbums';
 import { useAuth } from '../../context/AuthContext';
 
 const AlbumsTab = () => {
@@ -36,7 +36,7 @@ const AlbumsTab = () => {
 
       {view === 'favorites'
         ? <FavoriteAlbums />
-        : (canCreateAlbum ? <UserAlbums /> : null)}
+        : (canCreateAlbum ? <UploadedAlbums /> : null)}
     </Box>
   );
 };

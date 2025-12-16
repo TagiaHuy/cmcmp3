@@ -9,6 +9,8 @@ import {
   getAlbumSongs,
   updateAlbumSongs
 } from '../services/albumService';
+import { mapSong } from '../services/songService'; // Import mapSong
+
 import { useAuth } from '../context/AuthContext';
 
 const useUserAlbums = ({
@@ -129,7 +131,8 @@ const useUserAlbums = ({
 
   const getSongsForAlbum = useCallback(async (albumId) => {
     try {
-      return await getAlbumSongs(albumId);
+      const rawSongs = await getAlbumSongs(albumId);
+      return Array.isArray(rawSongs) ? rawSongs.map(mapSong) : [];
     } catch (err) {
       handleAuthError(err);
       return [];

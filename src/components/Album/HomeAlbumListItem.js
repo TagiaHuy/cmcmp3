@@ -12,8 +12,8 @@ import { useMediaActions } from '../../hooks/useMediaActions';
 import { getAlbumSongs } from '../../services/albumService';
 import { useNotifications } from '../../hooks/useNotifications';
 
-const IMG_H = 160;
-const PLAY_DIAMETER = 42;
+const IMG_H = 210;
+const PLAY_DIAMETER = 52;
 
 const BTN_BOX = 44;
 const GAP_PX = 16;
