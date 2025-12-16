@@ -7,6 +7,7 @@ import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
 import CommentIcon from '@mui/icons-material/Comment';
 import ReportIcon from '@mui/icons-material/Report';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ShowChartIcon from '@mui/icons-material/ShowChart'; // New import for chart icon
 import LogoButton from '../../Button/Specific/LogoButton';
 import { useAuth } from '../../../context/AuthContext';
@@ -23,20 +24,21 @@ function SidebarLeft() {
       { text: 'Nghệ sĩ', icon: <PeopleAltRoundedIcon />, to: '/artists' },
       { text: 'Nghe gần đây', icon: <HistoryIcon />, to: '/recently-played' },
       { text: 'Playlist cá nhân', icon: <PlaylistPlayIcon />, to: '/my-playlists' },
+      { text: 'Thể loại', icon: <LocalOfferIcon />, to: '/tags' },
       { text: 'BXH CMC MP3', icon: <ShowChartIcon />, to: '/zing-chart' }, // New chart item
-    ];
-
-    const adminSection = isAdmin
-      ? [
-          { section: 'Quản trị' },
-          { text: 'Quản lý tài khoản', icon: <PeopleAltRoundedIcon />, to: '/admin/users' },
-          { text: 'Quản lý bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs' },
-          { text: 'Kiểm duyệt bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs/moderation' },
-          { text: 'Xác thực nghệ sĩ', icon: <VerifiedUserIcon />, to: '/admin/artist-verification' },
-          { text: 'Kiểm duyệt bình luận', icon: <CommentIcon />, to: '/admin/comments/moderation' },
-          { text: 'Quản lý báo cáo', icon: <ReportIcon />, to: '/admin/reports' },
-        ]
-      : [];
+          ];
+      
+          const adminSection = isAdmin
+            ? [
+                { section: 'Quản trị' },
+                { text: 'Quản lý tài khoản', icon: <PeopleAltRoundedIcon />, to: '/admin/users' },
+                { text: 'Quản lý bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs' },
+                { text: 'Kiểm duyệt bài hát', icon: <LibraryMusicIcon />, to: '/admin/songs/moderation' },
+                { text: 'Xác thực nghệ sĩ', icon: <VerifiedUserIcon />, to: '/admin/artist-verification' },
+                { text: 'Kiểm duyệt bình luận', icon: <CommentIcon />, to: '/admin/comments/moderation' },
+                { text: 'Quản lý báo cáo', icon: <ReportIcon />, to: '/admin/reports' },
+              ]
+            : [];
 
     return [...librarySection, ...adminSection];
   }, [isAdmin]);
