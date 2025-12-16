@@ -42,7 +42,7 @@ const RecommendationSection = () => {
       <Box
         sx={{
           display: 'grid',
-          gap: 2,
+          gap: 3,
           // Luôn 3 cột từ md trở lên; nhỏ hơn thì linh hoạt cho mobile
           gridTemplateColumns: {
             xs: '1fr',            // 1 cột trên điện thoại nhỏ
