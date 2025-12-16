@@ -33,7 +33,7 @@ const Banner = ({ imageUrl, title, description, onButtonClick, buttonText }) => 
           right: 0,
           bottom: 0,
           background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 50%)',
-          backgroundColor: 'rgba(207, 203, 203, 0.5)', // Dark overlay
+          // backgroundColor: 'rgba(207, 203, 203, 0.5)', // Dark overlay
           zIndex: 1,
         },
       }}
@@ -45,11 +45,11 @@ const Banner = ({ imageUrl, title, description, onButtonClick, buttonText }) => 
         <Typography variant="body2" mb={2}>
           {description}
         </Typography>
-        {onButtonClick && buttonText && (
+        {/* {onButtonClick && buttonText && (
           <Button variant="contained" onClick={onButtonClick}>
             {buttonText}
           </Button>
-        )}
+        )} */}
       </Box>
     </Box>
   );

@@ -9,6 +9,7 @@ import RecommendationSection from "../components/Card/RecommendationSection";
 import PlaylistView from "../components/Card/PlaylistView";
 import RecentlyPlayed from "../components/Card/RecentlyPlayed";
 import Footer from "../layout/Footer";
+import BannerCarousel from "../components/Carousel/BannerCarousel";
 
 // ✅ NEW: album public cho HomePage
 import HomeAlbumList from "../components/Album/HomeAlbumList";
@@ -56,6 +57,7 @@ const HomePage = () => {
     <Box sx={{ p: 3 }}>
       <TopPlaylistsSection />
       <TopSongsSection />
+      <BannerCarousel banners={playlists.map(p => ({ imageUrl: p.imageUrl, title: p.name, description: p.description, onButtonClick: () => console.log('Banner clicked'), buttonText: 'Listen Now' }))} />
       <RecommendationSection />
 
       {/* ✅ Album nổi bật (public ai cũng thấy) */}
