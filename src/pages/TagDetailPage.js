@@ -1,43 +1,23 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, CircularProgress, Tabs, Tab } from '@mui/material';
-import useTag from '../hooks/useTag'; // To be created
+import useTag from '../hooks/useTag';
+import useSongsByTag from '../hooks/useSongsByTag';
 import SongList from '../components/SongList/SongList';
-import TagDetailCard from '../components/Card/TagDetailCard'; // To be created
+import TagDetailCard from '../components/Card/TagDetailCard';
 import { useMediaPlayer } from '../context/MediaPlayerContext';
-import { useNotifications } from '../hooks/useNotifications';
-import { getSongsByTag } from '../services/songService'; // Assuming songService has getSongsByTag
 
 const TagDetailPage = () => {
   const { tagId } = useParams();
-  const { notifyError } = useNotifications();
+  
+  // First, fetch the tag details to get the name
+  const { tag, loading: tagLoading, error: tagError } = useTag(tagId);
 
-  const { tag, loading, error } = useTag(tagId);
+  // Then, fetch songs using the tag's name
+  const { songs, loading: songsLoading, error: songsError } = useSongsByTag(tag?.name);
+
   const { loadQueue, queue, isPlaying, setIsPlaying } = useMediaPlayer();
-
-  const [songs, setSongs] = useState([]);
-  const [songsLoading, setSongsLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState(0);
-
-  useEffect(() => {
-    if (tag) {
-      const fetchSongs = async () => {
-        try {
-          setSongsLoading(true);
-          // Assuming a function to get songs by tag id exists
-          const fetchedSongs = await getSongsByTag(tag.id);
-          setSongs(fetchedSongs);
-        } catch (err) {
-          if (err.name !== 'AbortError') {
-            notifyError('Could not load songs for the tag.');
-          }
-        } finally {
-          setSongsLoading(false);
-        }
-      };
-      fetchSongs();
-    }
-  }, [tag, notifyError]);
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -58,7 +38,8 @@ const TagDetailPage = () => {
     }
   };
 
-  if (loading || songsLoading) {
+  // Show loading spinner if either tag details or songs are loading
+  if (tagLoading || songsLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
         <CircularProgress />
@@ -66,10 +47,12 @@ const TagDetailPage = () => {
     );
   }
 
-  if (error) {
-    return <Typography color="error" sx={{p: 3}}>Error fetching tag: {error.message}</Typography>;
+  // Show error if either fetch fails
+  if (tagError || songsError) {
+    return <Typography color="error" sx={{p: 3}}>Error: {tagError?.message || songsError?.message}</Typography>;
   }
 
+  // If tag isn't found
   if (!tag) {
     return <Typography sx={{p: 3}}>Tag not found.</Typography>;
   }
