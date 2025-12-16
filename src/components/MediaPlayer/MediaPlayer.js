@@ -219,16 +219,16 @@ const MediaPlayer = () => {
 
   const handleLyricsParsed = async (newLyrics) => {
     if (!currentTrack) {
-      notifyError('No track selected to save lyrics for.');
+      notifyError('Không có lời bài hát để lưu.');
       return;
     }
     try {
       const updatedSong = await updateSongLyrics(currentTrack.id, newLyrics);
       updateSongInQueue(currentTrack.id, { lyrics: updatedSong.lyrics });
-      notifySuccess('Lyrics have been saved successfully!');
+      notifySuccess('Lời bài hát được lưu thành công!');
     } catch (error) {
       console.error('Failed to save lyrics:', error);
-      notifyError('Failed to save lyrics. Please try again.');
+      notifyError('Lỗi khi lưu bài hát. Vui lòng thử lại.');
     }
   };
 
