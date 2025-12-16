@@ -4,8 +4,8 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import HomeAlbumListItem from './HomeAlbumListItem';
 
-const ITEM_WIDTH = 160;
-const GAP_WIDTH = 60; // giống Nghe gần đây
+const ITEM_WIDTH = 200;
+const GAP_WIDTH = 70; // giống Nghe gần đây
 
 const HomeAlbumList = ({ albums }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
