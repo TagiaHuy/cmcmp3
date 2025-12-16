@@ -120,13 +120,13 @@ function HomeAlbumListItem({ album, onFavorite }) {
             sx={{ width: BTN_BOX, height: BTN_BOX, display: 'grid', placeItems: 'center', pointerEvents: 'auto', cursor: 'pointer' }}
             onClick={(e) => { e.stopPropagation(); onFavorite?.(); }}
           >
-            <FavoriteButton visible={isHovered} entityType="album" entityId={album.id} />
+            {/* <FavoriteButton visible={isHovered} entityType="album" entityId={album.id} /> */}
           </Box>
 
           <Box sx={{ width: PLAY_DIAMETER, height: PLAY_DIAMETER }} />
 
           <Box sx={{ width: BTN_BOX, height: BTN_BOX, display: 'grid', placeItems: 'center', pointerEvents: 'auto', cursor: 'pointer' }}>
-            <MoreButton visible={isHovered} onClick={handleMenuOpen} />
+            {/* <MoreButton visible={isHovered} onClick={handleMenuOpen} /> */}
             <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
               {/* list album thường không có songs -> mục download có thể không hiện, ok */}
               {album?.songs?.[0]?.id && (
