@@ -3,7 +3,7 @@ import React from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import useRecommendations from '../../hooks/useRecommendations';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
-import SongSuggestionCard from './SongSuggestionCard.js';
+import SongListItem from '../SongList/SongListItem';
 
 const RecommendationSection = () => {
   const { recs, loading, error } = useRecommendations();
@@ -57,7 +57,7 @@ const RecommendationSection = () => {
       >
         {items.map((song) => (
           <Box key={song.id} className="suggestion-item">
-            <SongSuggestionCard song={song} onPlay={handlePlay} />
+            <SongListItem song={song} onPlay={handlePlay} />
           </Box>
         ))}
       </Box>
