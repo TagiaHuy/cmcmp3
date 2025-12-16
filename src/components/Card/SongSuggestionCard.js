@@ -17,6 +17,7 @@ const formatArtists = (artists) => {
 
 const SongSuggestionCard = ({ song, onPlay }) => {
   const cover =
+    song?.imageUrl ||
     song?.coverImage ||
     song?.thumbnail ||
     song?.album?.cover ||

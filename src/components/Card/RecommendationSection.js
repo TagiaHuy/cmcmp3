@@ -3,7 +3,7 @@ import React from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import useRecommendations from '../../hooks/useRecommendations';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
-import SongSuggestionCard from './SongSuggestionCard';
+import SongSuggestionCard from './SongSuggestionCard.js';
 
 const RecommendationSection = () => {
   const { recs, loading, error } = useRecommendations();
