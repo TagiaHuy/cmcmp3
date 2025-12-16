@@ -25,7 +25,7 @@ const RecommendationSection = () => {
   const items = recs.slice(0, 9);
 
   return (
-    <Box sx={{ my: 4 }}>
+    <Box sx={{ my: 4, ml: 11, mr: 11 }}>
       <Typography
         variant="h5"
         component="h2"
