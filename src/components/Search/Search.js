@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Chip, Stack, TextField, InputAdornment, Typography } from '@mui/material';
+import { Box, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchResult from './SearchResult';
 import useSearch from '../../hooks/useSearch';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
+
 function Search() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,7 +30,7 @@ function Search() {
 
     return () => clearTimeout(debounce);
   }, [searchTerm]);
-  
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -38,17 +39,7 @@ function Search() {
     setAnchorEl(null);
   };
 
-  const {handlePlay} =  useMediaPlayer();
-
-  const handleSelectGenre = (value) => {
-    setSearchTerm(value);
-    setAnchorEl(inputRef.current);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 50);
-  };
-
-  const genreChips = ['V-pop', 'Rap Việt', 'US-UK', 'Kpop'];
+  const { handlePlay } = useMediaPlayer();
 
   return (
     <Box>
@@ -94,34 +85,14 @@ function Search() {
         }}
       />
 
-      <Stack direction="row" spacing={1} sx={{ mt: 1, ml: 0.5 }} alignItems="center" flexWrap="wrap">
-        <Typography variant="caption" color="text.secondary">
-          Thử nhanh:
-        </Typography>
-        {genreChips.map((genre) => (
-          <Chip
-            key={genre}
-            label={genre}
-            size="small"
-            color="secondary"
-            variant="outlined"
-            onClick={() => handleSelectGenre(genre)}
-            sx={{
-              height: 24,
-              borderRadius: 12,
-              fontWeight: 600,
-              color: (theme) => theme.palette.secondary.main,
-            }}
-          />
-        ))}
-      </Stack>
+      {/* ✅ Đã xóa phần "Thử nhanh" dưới ô tìm kiếm */}
 
       <SearchResult
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         handleClose={handleClose}
-        results={searchResults} 
-        handlePlay={handlePlay} // dùng trực tiếp từ hook
+        results={searchResults}
+        handlePlay={handlePlay}
       />
     </Box>
   );
