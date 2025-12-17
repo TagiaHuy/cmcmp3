@@ -113,7 +113,11 @@ const UploadedSongs = () => {
       setSongs((prevSongs) => prevSongs.filter((song) => song.id !== songId));
       notifySuccess('Xóa bài hát thành công!');
     } catch (err) {
-      notifyError(err.message || 'Lỗi khi xóa bài hát.');
+      if (err.message === 'Access Denied') {
+        notifyError('Bạn không có quyền xóa bài hát này.');
+      } else {
+        notifyError(err.message || 'Lỗi khi xóa bài hát.');
+      }
     }
   };
 

@@ -494,13 +494,23 @@ export const getSongsAdmin = async (page = 0, size = 10, signal) => {
     return data;
 };
 export const deleteSong = async (id) => {
+  const url = `${API_BASE_URL}/api/songs/${id}`;
+  const headers = {
+    ...authHeader(),
+    Accept: "application/json",
+  };
+
+  // Log the request details for debugging
+  console.log('DEBUG: Attempting to delete song. Details:', {
+    url,
+    method: 'DELETE',
+    headers,
+  });
+
   try {
-    const res = await fetch(`${API_BASE_URL}/api/songs/${id}`, {
+    const res = await fetch(url, {
       method: "DELETE",
-      headers: {
-        ...authHeader(),
-        Accept: "application/json",
-      },
+      headers,
     });
 
     if (res.status === 204 || res.status === 200) {
@@ -510,6 +520,8 @@ export const deleteSong = async (id) => {
     const data = await safeJson(res);
     if (!res.ok) {
       const msg = data?.message || data?.error || `HTTP ${res.status}`;
+      // Log the server's response on error
+      console.error('DEBUG: Server responded with an error.', { status: res.status, body: data });
       throw new Error(msg);
     }
 
