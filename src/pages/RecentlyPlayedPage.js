@@ -11,19 +11,20 @@ import SongListItem from '../components/SongList/SongListItem';
 import PlaylistGridCard from '../components/Card/PlaylistGridCard';
 import { getPlaylistById } from '../services/playlistService';
 import { getSongById } from '../services/songService';
+import HomeAlbumListItem from '../components/Album/HomeAlbumListItem'; // Add this line
 
 const RecentlyPlayedPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const {
-    recentlyPlayed,
-    recentlyPlayedPlaylists,
-    handlePlay,
-    loadQueue,
-    normalizeArtists,
-  } = useMediaPlayer();
-
+      const {
+      recentlyPlayed,
+      recentlyPlayedPlaylists,
+      recentlyPlayedAlbums, // Add this line
+      handlePlay,
+      loadQueue,
+      normalizeArtists,
+    } = useMediaPlayer();
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState('songs');
   const [loadingPlaylistId, setLoadingPlaylistId] = useState(null);
@@ -137,12 +138,16 @@ const RecentlyPlayedPage = () => {
         <Typography
           variant="h6"
           sx={{
-            color: theme.palette.text.secondary,
+            color:
+              activeTab === 'albums'
+                ? theme.palette.text.primary
+                : theme.palette.text.secondary,
             cursor: 'pointer',
             '&:hover': { color: theme.palette.text.primary },
           }}
+          onClick={() => setActiveTab('albums')}
         >
-          MV
+          Album
         </Typography>
       </Box>
 
@@ -180,6 +185,21 @@ const RecentlyPlayedPage = () => {
         ) : (
           <Typography>
             Chưa có playlist nào trong danh sách nghe gần đây.
+          </Typography>
+        ))}
+
+      {activeTab === 'albums' &&
+        (recentlyPlayedAlbums.length > 0 ? (
+          <Grid container spacing={3}>
+            {recentlyPlayedAlbums.map((album, index) => (
+              <Grid item key={album.id ?? index} xs={12} sm={6} md={4} lg={3}>
+                <HomeAlbumListItem album={album} />
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography>
+            Chưa có album nào trong danh sách nghe gần đây.
           </Typography>
         ))}
     </Box>

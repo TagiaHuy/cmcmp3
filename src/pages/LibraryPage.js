@@ -3,8 +3,6 @@ import { Box, Typography, Tabs, Tab, IconButton } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import SongsTab from '../components/Library/SongsTab';
 import AlbumsTab from '../components/Library/AlbumsTab';
-import MVsTab from '../components/Library/MVsTab';
-import PlaylistsTab from '../components/Library/PlaylistsTab'; // Import the new PlaylistsTab
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -48,8 +46,6 @@ const LibraryPage = () => {
         <Tabs value={value} onChange={handleChange} aria-label="Library tabs">
           <Tab label="Bài hát" id="library-tab-0" />
           <Tab label="Album" id="library-tab-1" />
-          <Tab label="MV" id="library-tab-2" />
-          <Tab label="Playlist" id="library-tab-3" /> {/* New tab for Playlists */}
         </Tabs>
       </Box>
 
@@ -58,12 +54,6 @@ const LibraryPage = () => {
       </TabPanel>
       <TabPanel value={value} index={1}>
         <AlbumsTab />
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        <MVsTab />
-      </TabPanel>
-      <TabPanel value={value} index={3}> {/* New TabPanel for Playlists */}
-        <PlaylistsTab />
       </TabPanel>
     </Box>
   );

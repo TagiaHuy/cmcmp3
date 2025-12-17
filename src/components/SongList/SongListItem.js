@@ -9,7 +9,7 @@ import { copyToClipboard } from '../../utils/clipboard';
 import shareService from '../../services/shareService';
 import DownloadMenuItem from '../MenuItem/Specific/DownloadMenuItem';
 
-const SongListItem = ({ song, onPlay, renderActions }) => {
+const SongListItem = ({ song, onPlay, renderActions, album }) => {
   const { handlePlay, normalizeArtists } = useMediaPlayer();
   const { notifySuccess, notifyError } = useNotifications();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -19,7 +19,7 @@ const SongListItem = ({ song, onPlay, renderActions }) => {
   const handlePlayClick = () => {
     if (!song) return;
     const playFn = onPlay || handlePlay;
-    playFn(song);
+    playFn(song, album); // Pass album here
   };
 
   const handleMenuOpen = (event) => {
@@ -58,7 +58,7 @@ const SongListItem = ({ song, onPlay, renderActions }) => {
 
   const defaultActions = (
     <>
-      <IconButton onClick={handleMenuOpen}>
+      <IconButton onClick={handleMenuOpen} sx={{ p: 1 }}>
         <MoreHoriz />
       </IconButton>
       <Menu
@@ -113,7 +113,7 @@ const SongListItem = ({ song, onPlay, renderActions }) => {
           sx={{ overflow: 'hidden' }}
         />
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', ml: 2, flexShrink: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', ml: 2, flexShrink: 0, pr: 1 }}>
         {renderActions ? renderActions(song, defaultActions) : defaultActions}
       </Box>
     </ListItem>

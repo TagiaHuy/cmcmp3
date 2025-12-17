@@ -169,7 +169,7 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
             }}
             onClick={(e) => { e.stopPropagation(); onFavorite?.(); }}
           >
-            <FavoriteButton visible={isHovered} />
+            {/* <FavoriteButton visible={isHovered} /> */}
           </Box>
 
           <Box sx={{ width: PLAY_DIAMETER, height: PLAY_DIAMETER }} />
@@ -184,7 +184,7 @@ function RecentlyPlayedItem({ track, onPlay, onFavorite, normalizeArtists }) {
               cursor: 'pointer',
             }}
           >
-            <MoreButton visible={isHovered} onClick={handleMenuOpen} />
+            {/* <MoreButton visible={isHovered} onClick={handleMenuOpen} /> */}
             <Menu
               anchorEl={anchorEl}
               open={open}

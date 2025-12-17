@@ -1,9 +1,9 @@
-// src/components/Card/RecommendationSection.js
+
 import React from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import useRecommendations from '../../hooks/useRecommendations';
-import SongCarousel from '../Carousel/SongCarousel';
 import { useMediaPlayer } from '../../context/MediaPlayerContext';
+import SongListItem from '../SongList/SongListItem';
 
 const RecommendationSection = () => {
   const { recs, loading, error } = useRecommendations();
@@ -17,24 +17,50 @@ const RecommendationSection = () => {
     );
   }
 
-  if (error) {
-    // Optionally, render nothing or an error message
+  if (error || !recs || recs.length === 0) {
     return null;
   }
 
-  if (!recs || recs.length === 0) {
-    // Render nothing if there are no recommendations
-    return null;
-  }
+  // Lấy đúng 9 bài cho layout 3×3
+  const items = recs.slice(0, 9);
 
   return (
-    <Box sx={{ my: 4 }}>
-      <SongCarousel
-        title="Gợi ý cho bạn"
-        songs={recs}
-        onPlay={handlePlay}
-        columns={5}
-      />
+    <Box sx={{ my: 4, ml: 11, mr: 11 }}>
+      <Typography
+        variant="h5"
+        component="h2"
+        gutterBottom
+        sx={{
+          color: (theme) => theme.palette.text.primary,
+          mb: 2,
+          fontWeight: 700
+        }}
+      >
+        Gợi ý cho bạn
+      </Typography>
+
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 3,
+          // Luôn 3 cột từ md trở lên; nhỏ hơn thì linh hoạt cho mobile
+          gridTemplateColumns: {
+            xs: '1fr',            // 1 cột trên điện thoại nhỏ
+            sm: 'repeat(2, 1fr)', // 2 cột trên tablet nhỏ
+            md: 'repeat(3, 1fr)'  // 3 cột trên desktop/tablet lớn
+          },
+          // (tuỳ chọn) đặt chiều cao tối thiểu để các thẻ đều nhau
+          '& > .suggestion-item': {
+            minHeight: 88 // vừa cho kiểu thẻ ngang với cover 60–64px
+          }
+        }}
+      >
+        {items.map((song) => (
+          <Box key={song.id} className="suggestion-item">
+            <SongListItem song={song} onPlay={handlePlay} />
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 };

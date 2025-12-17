@@ -328,16 +328,16 @@ const LyricEditor = ({ onLyricsParsed, duration, toggleLyricsEditor }) => {
                     text: line.trim(),
                 })).filter(lyric => lyric.text);
             } else {
-                toast.error('Unsupported file type. Please upload a .lrc or .txt file.');
+                toast.error('Định dạng file không hỗ trợ. Xin hãy sử dụng định dạng .lrc hoặc .txt file.');
                 return;
             }
 
             setEditedLyrics(parsedLyrics.sort((a, b) => a.time - b.time));
-            toast.success('Lyrics imported successfully!');
+            toast.success('Tải lời bài hát thành công!');
         };
 
         reader.onerror = () => {
-            toast.error('Failed to read file.');
+            toast.error('Lỗi đọc file.');
         };
 
         reader.readAsText(file);
@@ -436,7 +436,7 @@ const LyricEditor = ({ onLyricsParsed, duration, toggleLyricsEditor }) => {
 
     // [NEW] Discard restores from localStorage backup
     const handleDiscardLyrics = () => {
-        if (window.confirm('Are you sure you want to discard all changes?')) {
+        if (window.confirm('Bạn có chắc là muốn xoá thay đổi không?')) {
             try {
                 const backup = localStorage.getItem('lyric-editor-backup');
                 if (backup) {
@@ -449,10 +449,10 @@ const LyricEditor = ({ onLyricsParsed, duration, toggleLyricsEditor }) => {
                     }));
 
                     setEditedLyrics(lyricsWithIds);
-                    toast.info('Changes discarded!');
+                    toast.info('Xoá thay đổi thành công!');
                 }
             } catch (e) {
-                toast.error('Failed to restore lyrics from backup.');
+                toast.error('Không thể khôi phục lời bài hát từ bản sao lưu.');
             }
         }
     };
@@ -461,15 +461,15 @@ const LyricEditor = ({ onLyricsParsed, duration, toggleLyricsEditor }) => {
         <Box sx={{ width: '100%', height: 880, backgroundColor: 'rgba(0, 0, 0, 0.6)', borderRadius: '16px', p: 2, display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Box>
-                    <Typography variant="h6" color="white"> Lyric Editor</Typography>
-                    {currentTrack && <Box sx={{ ml: 1, color: 'text.secondary', fontSize: '0.8rem' }}><Typography variant="body2">Title: {currentTrack.title || 'Unknown'}</Typography><Typography variant="body2">Artist: {currentTrack.artists || 'Unknown'}</Typography></Box>}
+                    <Typography variant="h6" color="white">Chỉnh sửa lời bài hát</Typography>
+                    {currentTrack && <Box sx={{ ml: 1, color: 'text.secondary', fontSize: '0.8rem' }}><Typography variant="body2">Tiêu đề: {currentTrack.title || 'Unknown'}</Typography><Typography variant="body2">Nghệ sĩ: {currentTrack.artists || 'Unknown'}</Typography></Box>}
                 </Box>
                 <Box>
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} accept=".lrc,.txt" />
-                    <Button variant="contained" startIcon={<CloudUploadIcon />} onClick={handleUploadClick} sx={{ mr: 1 }}>Import Lyrics</Button>
-                    <Button variant="contained" startIcon={<CloudDownloadIcon />} onClick={handleExportLrc} sx={{ mr: 1 }}>Export LRC</Button>
-                    <Button variant="contained" startIcon={<RemoveCircleOutlineIcon />} onClick={handleDiscardLyrics} sx={{ mr: 1, backgroundColor: 'rgba(165, 91, 73, 1)' }}>Discard</Button>
-                    <Button variant="contained" color="success" startIcon={<SaveIcon />} onClick={handleSaveLyrics}>Save</Button>
+                    <Button variant="contained" startIcon={<CloudUploadIcon />} onClick={handleUploadClick} sx={{ mr: 1 }}>Tải lời bài hát</Button>
+                    <Button variant="contained" startIcon={<CloudDownloadIcon />} onClick={handleExportLrc} sx={{ mr: 1 }}>Xuất file LRC</Button>
+                    <Button variant="contained" startIcon={<RemoveCircleOutlineIcon />} onClick={handleDiscardLyrics} sx={{ mr: 1, backgroundColor: 'rgba(165, 91, 73, 1)' }}>Xoá thay đổi</Button>
+                    <Button variant="contained" color="success" startIcon={<SaveIcon />} onClick={handleSaveLyrics}>Lưu</Button>
                     <Button  startIcon={<CloseIcon />} onClick={toggleLyricsEditor} sx={{ ml: 1 }}></Button>
                 </Box>
             </Box>

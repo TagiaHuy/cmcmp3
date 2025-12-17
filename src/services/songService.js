@@ -16,7 +16,7 @@ const normalizeArtists = (artists) => {
 const toArray = (value) => {
   if (!value) return [];
   if (Array.isArray(value)) return value;
-  return [value];
+  return [value]; 
 };
 
 // 🟢 Chuẩn hóa tags (tránh bị object)
@@ -28,7 +28,7 @@ const normalizeTags = (tags) => {
   return String(tags);
 };
 
-const mapSong = (song) => {
+export const mapSong = (song) => {
   if (!song) return null;
   const artistEntities = toArray(song.artists);
   const tagEntities = toArray(song.tags);
@@ -226,6 +226,37 @@ export const getSongsByTag = async (tagId, signal) => {
     return [];
   }
 };
+
+/* ==========================================================
+    GET SONGS BY TAG NAME
+========================================================== */
+export const getSongsByTagName = async (tagName, limit = 10, signal) => {
+  try {
+    const queryParams = new URLSearchParams({
+      tagName,
+      limit: limit.toString(),
+    }).toString();
+
+    const res = await fetch(`${API_BASE_URL}/api/songs/by-tag?${queryParams}`, {
+      method: "GET",
+      headers: {
+        ...authHeader(),
+        Accept: "application/json",
+      },
+      signal,
+    });
+
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+
+    return (Array.isArray(data) ? data : []).map(mapSong);
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+    console.error(`Error fetching songs for tag "${tagName}":`, error);
+    return [];
+  }
+};
+
 
 /* ==========================================================
     4) TOP SONGS — Listen count
@@ -463,13 +494,23 @@ export const getSongsAdmin = async (page = 0, size = 10, signal) => {
     return data;
 };
 export const deleteSong = async (id) => {
+  const url = `${API_BASE_URL}/api/songs/${id}`;
+  const headers = {
+    ...authHeader(),
+    Accept: "application/json",
+  };
+
+  // Log the request details for debugging
+  console.log('DEBUG: Attempting to delete song. Details:', {
+    url,
+    method: 'DELETE',
+    headers,
+  });
+
   try {
-    const res = await fetch(`${API_BASE_URL}/api/songs/${id}`, {
+    const res = await fetch(url, {
       method: "DELETE",
-      headers: {
-        ...authHeader(),
-        Accept: "application/json",
-      },
+      headers,
     });
 
     if (res.status === 204 || res.status === 200) {
@@ -479,6 +520,8 @@ export const deleteSong = async (id) => {
     const data = await safeJson(res);
     if (!res.ok) {
       const msg = data?.message || data?.error || `HTTP ${res.status}`;
+      // Log the server's response on error
+      console.error('DEBUG: Server responded with an error.', { status: res.status, body: data });
       throw new Error(msg);
     }
 

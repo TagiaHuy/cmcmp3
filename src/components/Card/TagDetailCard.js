@@ -22,22 +22,73 @@ const TagDetailCard = ({ tag, handlePlayTag, isPlaying }) => {
           gap: { xs: 3, md: 4 },
         }}
       >
-        <Box
+      <Box
+        sx={{
+          width: { xs: 220, md: 300 },
+          height: { xs: 220, md: 300 },
+          borderRadius: '32px',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundSize: '300% 300%',
+          backgroundImage:
+            'linear-gradient(135deg, #667eea, #764ba2, #6dd5ed, #8fd3f4)',
+          animation: 'gradientMove 8s ease infinite',
+          boxShadow: `
+            0 40px 90px rgba(0,0,0,0.6),
+            inset 0 0 30px rgba(255,255,255,0.12)
+          `,
+          overflow: 'hidden',
+          transition: 'transform 0.4s ease',
+
+          '@keyframes gradientMove': {
+            '0%': { backgroundPosition: '0% 50%' },
+            '50%': { backgroundPosition: '100% 50%' },
+            '100%': { backgroundPosition: '0% 50%' },
+          },
+
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            background:
+              'radial-gradient(circle at top, rgba(255,255,255,0.35), transparent 60%)',
+            opacity: 0.8,
+          },
+
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            inset: -30,
+            background:
+              'radial-gradient(circle, rgba(102,126,234,0.35), transparent 70%)',
+            filter: 'blur(30px)',
+            opacity: 0.7,
+          },
+
+          '&:hover': {
+            transform: 'scale(1.06) rotate(-0.5deg)',
+          },
+        }}
+      >
+        <TagIcon
           sx={{
-            width: { xs: 200, md: 300 },
-            height: { xs: 200, md: 300 },
-            objectFit: 'cover',
-            borderRadius: 3,
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4)',
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'grey.800',
+            fontSize: 160,
+            color: 'white',
+            zIndex: 1,
+            animation: 'float 3.5s ease-in-out infinite',
+            filter: 'drop-shadow(0 12px 30px rgba(0,0,0,0.6))',
+
+            '@keyframes float': {
+              '0%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-16px)' },
+              '100%': { transform: 'translateY(0)' },
+            },
           }}
-        >
-          <TagIcon sx={{ fontSize: 150, color: 'white' }} />
-        </Box>
+        />
+      </Box>
+
 
         <Stack>
           <Typography variant="overline" color="text.secondary" fontWeight={600}>

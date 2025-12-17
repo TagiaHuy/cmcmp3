@@ -9,7 +9,7 @@ const BannerCarousel = ({ banners }) => {
     if (banners && banners.length > 0) {
       const interval = setInterval(() => {
         setStartIndex((prevIndex) => (prevIndex + 1) % banners.length);
-      }, 8000); // Auto-switch every 1 second
+      }, 1000); // Auto-switch every 1 second
 
       return () => clearInterval(interval);
     }

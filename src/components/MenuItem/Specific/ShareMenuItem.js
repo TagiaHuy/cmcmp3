@@ -18,6 +18,8 @@ const ShareMenuItem = ({ type, id, onCloseMenu, shareOption = 'copy' }) => { // 
         publicShareUrl = await shareService.getSongShareUrl(id);
       } else if (type === 'playlist') {
         publicShareUrl = await shareService.getPlaylistShareUrl(id);
+      } else if (type === 'album') { // NEW: Handle album type
+        publicShareUrl = await shareService.getAlbumShareUrl(id);
       } else {
         notifyError('Loại không hợp lệ để chia sẻ.');
         return;
