@@ -7,20 +7,30 @@ import {
   Divider,
   FormControl,
   IconButton,
-  MenuItem,
   Paper,
-  Select,
   Stack,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
+
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import UploadIcon from '@mui/icons-material/Upload';
 import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
+
 import UploadSongForm from '../Form/UploadSongForm';
 import EditSongForm from '../Form/EditSongForm';
 import SongList from '../SongList/SongList';
-import { getUploadedSongs, updateUploadedSongStatus, deleteSong } from '../../services/songService';
+
+import {
+  getUploadedSongs,
+  updateUploadedSongStatus,
+  deleteSong,
+} from '../../services/songService';
+
 import { useNotifications } from '../../hooks/useNotifications';
 
 const UploadedSongs = () => {
@@ -29,13 +39,12 @@ const UploadedSongs = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingSong, setEditingSong] = useState(null);
+
+  // 🔥 DELETE DIALOG STATE
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [songToDelete, setSongToDelete] = useState(null);
+
   const { notifySuccess, notifyError } = useNotifications();
-  const statusLabels = {
-    PUBLIC: 'Công khai',
-    PRIVATE: 'Riêng tư',
-    PENDING: 'Đang chờ',
-    REJECTED: 'Bị từ chối',
-  };
 
   const fetchUploadedSongs = useCallback(async (signal) => {
     try {
@@ -59,80 +68,54 @@ const UploadedSongs = () => {
     return () => ac.abort();
   }, [fetchUploadedSongs]);
 
-  const handleOpenModal = () => {
-    setModalOpen(true);
-  };
+  /* ===================== UPLOAD ===================== */
+  const handleOpenModal = () => setModalOpen(true);
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    // Refresh the list after upload
     const ac = new AbortController();
     fetchUploadedSongs(ac.signal);
   };
 
-  const handleEditClick = (song) => {
-    setEditingSong(song);
-  };
+  /* ===================== EDIT ===================== */
+  const handleEditClick = (song) => setEditingSong(song);
 
-  const handleEditClose = () => {
-    setEditingSong(null);
-  };
+  const handleEditClose = () => setEditingSong(null);
 
-  const handleSongUpdated = (updatedSong) => {
-    setSongs((prev) =>
-      prev.map((song) => (song.id === updatedSong.id ? updatedSong : song))
-    );
-    // also refetch to be sure
+  const handleSongUpdated = () => {
     const ac = new AbortController();
     fetchUploadedSongs(ac.signal);
   };
 
-  const handleStatusChange = async (songId, newStatus) => {
-    try {
-      const updatedSong = await updateUploadedSongStatus(songId, newStatus);
-      setSongs((prevSongs) =>
-        prevSongs.map((s) => (s.id === songId ? updatedSong : s))
-      );
-      notifySuccess('Cập nhật trạng thái bài hát thành công!');
-    } catch (err) {
-      notifyError(err.message || 'Lỗi khi cập nhật trạng thái.');
-      // Optional: Re-fetch to revert optimistic update on failure
-      const ac = new AbortController();
-      fetchUploadedSongs(ac.signal);
-    }
+  /* ===================== DELETE ===================== */
+  const handleOpenDeleteDialog = (song) => {
+    setSongToDelete(song);
+    setDeleteDialogOpen(true);
   };
 
-  const handleDeleteSong = async (songId) => {
-    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa bài hát này?');
-    if (!confirmed) {
-      return;
-    }
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSongToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!songToDelete) return;
 
     try {
-      await deleteSong(songId);
-      setSongs((prevSongs) => prevSongs.filter((song) => song.id !== songId));
+      await deleteSong(songToDelete.id);
+      setSongs((prev) => prev.filter((s) => s.id !== songToDelete.id));
       notifySuccess('Xóa bài hát thành công!');
     } catch (err) {
-      if (err.message === 'Access Denied') {
-        notifyError('Bạn không có quyền xóa bài hát này.');
-      } else {
-        notifyError(err.message || 'Lỗi khi xóa bài hát.');
-      }
+      notifyError(err.message || 'Lỗi khi xóa bài hát.');
+    } finally {
+      handleCloseDeleteDialog();
     }
   };
 
+  /* ===================== ACTIONS ===================== */
   const renderSongActions = (song, defaultActions) => (
     <Stack direction="row" spacing={1} alignItems="center">
-      <FormControl
-        size="small"
-        sx={{
-          minWidth: 150,
-          backgroundColor: 'rgba(255,255,255,0.04)',
-          borderRadius: 1,
-          px: 1,
-        }}
-      >
-      </FormControl>
+      <FormControl size="small" />
       <IconButton
         size="small"
         color="primary"
@@ -143,7 +126,7 @@ const UploadedSongs = () => {
       <IconButton
         size="small"
         color="error"
-        onClick={() => handleDeleteSong(song.id)}
+        onClick={() => handleOpenDeleteDialog(song)}
       >
         <DeleteIcon fontSize="small" />
       </IconButton>
@@ -151,12 +134,13 @@ const UploadedSongs = () => {
     </Stack>
   );
 
+  /* ===================== CONTENT ===================== */
   const renderContent = () => {
     if (loading) {
       return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6 }}>
           <CircularProgress />
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" mt={1}>
             Đang tải danh sách bài hát của bạn...
           </Typography>
         </Box>
@@ -164,11 +148,7 @@ const UploadedSongs = () => {
     }
 
     if (error) {
-      return (
-        <Alert severity="error" sx={{ my: 2 }}>
-          {error}
-        </Alert>
-      );
+      return <Alert severity="error">{error}</Alert>;
     }
 
     if (songs.length === 0) {
@@ -183,11 +163,9 @@ const UploadedSongs = () => {
           }}
         >
           <LibraryMusicIcon color="primary" sx={{ fontSize: 36, mb: 1 }} />
-          <Typography variant="h6" gutterBottom>
-            Chưa có bài hát nào
-          </Typography>
+          <Typography variant="h6">Chưa có bài hát nào</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Hãy tải lên bài hát của bạn để bắt đầu bộ sưu tập cá nhân.
+            Hãy tải lên bài hát của bạn để bắt đầu.
           </Typography>
           <Button startIcon={<UploadIcon />} variant="contained" onClick={handleOpenModal}>
             Tải bài hát đầu tiên
@@ -197,33 +175,25 @@ const UploadedSongs = () => {
     }
 
     return <SongList songs={songs} renderActions={renderSongActions} />;
-  }
+  };
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1800, mx: 'auto' }}>
       <Paper
-        elevation={0}
         sx={{
           p: { xs: 2, md: 3 },
           borderRadius: 2,
           background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(16,185,129,0.06))',
           border: '1px solid rgba(255,255,255,0.08)',
-          backdropFilter: 'blur(6px)',
         }}
       >
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          alignItems={{ xs: 'flex-start', sm: 'center' }}
-          justifyContent="space-between"
-          spacing={1.5}
-          sx={{ mb: 2 }}
-        >
+        <Stack direction="row" justifyContent="space-between" mb={2}>
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+            <Typography variant="h5" fontWeight={700}>
               Bài hát đã tải lên
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Quản lý, chỉnh sửa và điều chỉnh quyền hiển thị bài hát của bạn.
+              Quản lý bài hát của bạn
             </Typography>
           </Box>
           <Button startIcon={<UploadIcon />} variant="contained" onClick={handleOpenModal}>
@@ -231,18 +201,123 @@ const UploadedSongs = () => {
           </Button>
         </Stack>
 
-        <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.08)' }} />
-
+        <Divider sx={{ mb: 2 }} />
         {renderContent()}
       </Paper>
 
+      {/* MODALS */}
       <UploadSongForm open={modalOpen} handleClose={handleCloseModal} />
+
       <EditSongForm
         open={Boolean(editingSong)}
         handleClose={handleEditClose}
         song={editingSong}
         onUpdated={handleSongUpdated}
       />
+
+      {/* DELETE CONFIRM DIALOG */}
+<Dialog
+  open={deleteDialogOpen}
+  onClose={handleCloseDeleteDialog}
+  PaperProps={{
+    sx: {
+      background: 'linear-gradient(160deg, #1f2937, #020617)',
+      color: '#e5e7eb',
+      borderRadius: 4,
+      minWidth: 400,
+      boxShadow: '0 25px 80px rgba(0,0,0,.65)',
+      border: '1px solid rgba(255,255,255,0.08)',
+    },
+  }}
+>
+  {/* HEADER */}
+  <DialogTitle sx={{ pb: 1 }}>
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Box
+        sx={{
+          width: 42,
+          height: 42,
+          borderRadius: '50%',
+          background: 'rgba(239,68,68,.15)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <DeleteIcon sx={{ color: '#f87171' }} />
+      </Box>
+
+      <Box>
+        <Typography fontWeight={700}>Xác nhận xóa</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Thao tác không thể hoàn tác
+        </Typography>
+      </Box>
+    </Stack>
+  </DialogTitle>
+
+  {/* CONTENT */}
+  <DialogContent>
+    <Typography>
+      Bạn có chắc chắn muốn xóa bài hát
+      <Box
+        component="span"
+        sx={{
+          mx: 0.5,
+          fontWeight: 700,
+          color: '#60a5fa',
+        }}
+      >
+        {songToDelete?.title}
+      </Box>
+      ?
+    </Typography>
+
+    <Box
+      mt={2}
+      p={2}
+      borderRadius={2}
+      sx={{
+        background: 'rgba(239,68,68,.12)',
+        border: '1px solid rgba(239,68,68,.25)',
+      }}
+    >
+      <Typography variant="body2" sx={{ color: '#fecaca' }}>
+        ⚠️ Dữ liệu sau khi xóa sẽ không thể khôi phục
+      </Typography>
+    </Box>
+  </DialogContent>
+
+  {/* ACTIONS */}
+  <DialogActions sx={{ px: 3, pb: 3 }}>
+    <Button
+      onClick={handleCloseDeleteDialog}
+      sx={{
+        color: '#cbd5f5',
+        textTransform: 'none',
+      }}
+    >
+      Hủy
+    </Button>
+
+    <Button
+      onClick={handleConfirmDelete}
+      sx={{
+        px: 3,
+        fontWeight: 700,
+        borderRadius: 2,
+        textTransform: 'none',
+        color: '#fff',
+        background: 'linear-gradient(135deg,#ef4444,#dc2626)',
+        '&:hover': {
+          background: 'linear-gradient(135deg,#f87171,#ef4444)',
+        },
+      }}
+    >
+      Xóa bài hát
+    </Button>
+  </DialogActions>
+</Dialog>
     </Box>
   );
 };
